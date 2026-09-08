@@ -10,18 +10,27 @@ package com.voxivoid.recipelab;
  * matrix  : 1 = PP3 alternate colour matrix (~+45% chroma, blue/green cross-talk)
  * wbMode  : 0 = leave WB as is · 1 = auto · 14 = colour temperature (kelvin)
  * ab / gm : WB fine tune  amber(+)/blue(-)  green(+)/magenta(-)  (-7..+7)
+ * pe      : Picture Effect (persistent; when on, Creative Style is ignored by the camera and RAW is disabled)
+ * ev      : exposure bias in 1/3 EV steps (persistent)
+ * dro     : DRO 0 off, 1..5, 6 auto (live preview only until its settings slot is located)
  */
 public class Recipes {
     public static class Recipe {
-        public final int group; public final String name; public final int style, sat, con, sharp, matrix, wbMode, kelvin, ab, gm;
+        public final int group; public final String name; public final int style, sat, con, sharp, matrix, wbMode, kelvin, ab, gm, pe, ev, dro;
         Recipe(int group, String name, int style, int sat, int con, int sharp, int matrix, int wbMode, int kelvin, int ab, int gm) {
+            this(group, name, style, sat, con, sharp, matrix, wbMode, kelvin, ab, gm, 0, 0, DRO_AUTO);
+        }
+        Recipe(int group, String name, int style, int sat, int con, int sharp, int matrix, int wbMode, int kelvin, int ab, int gm, int pe, int ev, int dro) {
             this.group = group; this.name = name; this.style = style; this.sat = sat; this.con = con; this.sharp = sharp; this.matrix = matrix;
-            this.wbMode = wbMode; this.kelvin = kelvin; this.ab = ab; this.gm = gm;
+            this.wbMode = wbMode; this.kelvin = kelvin; this.ab = ab; this.gm = gm; this.pe = pe; this.ev = ev; this.dro = dro;
         }
         /** one-line summary for lists: "Neutral  -4/-1  A1" */
         public String summary() {
-            StringBuilder s = new StringBuilder(STYLE_LABEL[style]).append("  ").append(sat > 0 ? "+" : "").append(sat).append('/').append(con > 0 ? "+" : "").append(con);
-            if (matrix == 1) s.append("  MTX");
+            StringBuilder s = new StringBuilder();
+            if (pe != 0) s.append(PE_LABEL[pe]); else s.append(STYLE_LABEL[style]).append("  ").append(sat > 0 ? "+" : "").append(sat).append('/').append(con > 0 ? "+" : "").append(con);
+            if (matrix == 1 && pe == 0) s.append("  MTX");
+            if (ev != 0) s.append("  ").append(evLabel(ev));
+            if (dro != DRO_AUTO) s.append("  DRO ").append(droLabel(dro));
             if (wbMode == 14) s.append("  ").append(kelvin).append('K');
             if (ab != 0) s.append("  ").append(ab > 0 ? "A" + ab : "B" + (-ab));
             if (gm != 0) s.append("  ").append(gm > 0 ? "G" + gm : "M" + (-gm));
@@ -36,6 +45,20 @@ public class Recipes {
 
     private static final int AUTO = 1, K = 14;
 
+    /** Picture Effect: stored byte assumed = index in the runtime list (provisional, verify against the menu) */
+    public static final String[] PE_KEYS = { "off", "toy-camera", "pop-color", "posterization", "retro-photo", "soft-high-key", "part-color", "rough-mono", "soft-focus", "hdr-art", "richtone-mono", "miniature", "illust", "watercolor" };
+    public static final String[] PE_LABEL = { "off", "Toy", "Pop", "Poster", "Retro", "High-key", "Part col", "HC mono", "Soft foc", "HDR art", "Rich mono", "Miniature", "Illust", "Watercol" };
+    public static final int PE_OFF = 0, PE_TOY = 1, PE_POP = 2, PE_RETRO = 4, PE_HIGHKEY = 5, PE_HCMONO = 7;
+    /** DRO: 0 off, 1..5 level, 6 auto (runtime preview only until the settings slot is found) */
+    public static final int DRO_OFF = 0, DRO_AUTO = 6;
+    public static String droLabel(int v) { return v == DRO_AUTO ? "auto" : v == 0 ? "off" : "Lv" + v; }
+    /** exposure bias in 1/3 EV steps -> "+0.7" */
+    public static String evLabel(int ev) {
+        if (ev == 0) return "0";
+        int a = Math.abs(ev); String frac = a % 3 == 0 ? ".0" : a % 3 == 1 ? ".3" : ".7";
+        return (ev > 0 ? "+" : "-") + (a / 3) + frac;
+    }
+
     // ---- groups (brands) — recipes below MUST be listed in group order
     public static final String[] GROUPS = { "Sony", "Fuji Sim", "Fuji Film", "Kodak", "Cine", "Ricoh GR", "Leica", "Hasselblad", "Canon / Nikon", "Pana / Olympus", "Other Stocks", "Ilford" };
     private static final int SONY = 0, FSIM = 1, FFILM = 2, KODAK = 3, CINE = 4, RICOH = 5, LEICA = 6, HASSEL = 7, CANIK = 8, PANOLY = 9, OTHER = 10, ILFORD = 11;
@@ -49,62 +72,64 @@ public class Recipes {
         new Recipe(SONY,  "Sony VV2",                            VIVID,    2,  1,  0, 1, AUTO, 0,     0,  0),
         new Recipe(SONY,  "Sony FL (film-like)",                 NEUTRAL, -4, -1,  0, 0, AUTO, 0,     1,  0),
         new Recipe(SONY,  "Sony IN (instant)",                   NEUTRAL, -6, -3,  0, 0, AUTO, 0,     0, -1),
-        new Recipe(SONY,  "Sony SH (soft high-key)",             LIGHT,   -2, -2,  0, 0, AUTO, 0,     1,  0),
+        new Recipe(SONY,  "Sony SH (soft high-key)",             LIGHT,   -2, -2,  0, 0, AUTO, 0,     1,  0,  5,  3, 6),
         // ---- Fujifilm simulations
-        new Recipe(FSIM,  "Provia",                              STD,      1,  0,  0, 0, AUTO, 0,     0,  0),
+        new Recipe(FSIM,  "Provia",                              STD,      1,  0,  0, 0, AUTO, 0,     0,  0,  0,  0, 6),
         new Recipe(FSIM,  "Velvia",                              VIVID,    5,  1,  0, 1, AUTO, 0,     0,  0),
-        new Recipe(FSIM,  "Astia",                               PORTRAIT, 0, -1,  0, 0, AUTO, 0,     1,  0),
-        new Recipe(FSIM,  "Classic Chrome",                      NEUTRAL, -5,  2,  0, 0, AUTO, 0,    -1,  0),
-        new Recipe(FSIM,  "Classic Negative",                    STD,     -3,  3,  1, 0, AUTO, 0,     0,  1),
-        new Recipe(FSIM,  "Nostalgic Neg",                       PORTRAIT,-2, -1,  0, 0, AUTO, 0,     2,  0),
+        new Recipe(FSIM,  "Astia",                               PORTRAIT, 0, -1,  0, 0, AUTO, 0,     1,  0,  0,  1, 6),
+        new Recipe(FSIM,  "Classic Chrome",                      NEUTRAL, -5,  2,  0, 0, AUTO, 0,    -1,  0,  0, -1, 6),
+        new Recipe(FSIM,  "Classic Negative",                    STD,     -3,  3,  1, 0, AUTO, 0,     0,  1,  0,  1, 6),
+        new Recipe(FSIM,  "Nostalgic Neg",                       PORTRAIT,-2, -1,  0, 0, AUTO, 0,     2,  0,  0,  1, 6),
         new Recipe(FSIM,  "Reala Ace",                           STD,      0,  1,  0, 0, AUTO, 0,     0,  0),
         new Recipe(FSIM,  "Pro Neg Std",                         PORTRAIT,-2, -1,  0, 0, AUTO, 0,     0,  0),
         new Recipe(FSIM,  "Pro Neg Hi",                          PORTRAIT,-2,  1,  0, 0, AUTO, 0,     0,  0),
-        new Recipe(FSIM,  "Eterna",                              NEUTRAL, -6, -2, -1, 0, AUTO, 0,     0,  0),
-        new Recipe(FSIM,  "Eterna Bleach Bypass",                NEUTRAL, -9,  3,  0, 0, AUTO, 0,     0,  0),
+        new Recipe(FSIM,  "Eterna",                              NEUTRAL, -6, -2, -1, 0, AUTO, 0,     0,  0,  0, -1, 3),
+        new Recipe(FSIM,  "Eterna Bleach Bypass",                NEUTRAL, -9,  3,  0, 0, AUTO, 0,     0,  0,  0, -1, 6),
         new Recipe(FSIM,  "Acros",                               MONO,     0,  1,  1, 0, AUTO, 0,     0,  0),
         new Recipe(FSIM,  "Acros +Ye (yellow filter)",           MONO,     0,  1,  1, 0, K,    4000,  0,  0),
         new Recipe(FSIM,  "Acros +R (red filter)",               MONO,     0,  2,  1, 0, K,    2500,  0,  0),
         new Recipe(FSIM,  "Acros +G (green filter)",             MONO,     0,  1,  1, 0, K,    5600,  0,  4),
         new Recipe(FSIM,  "Sepia",                               SEPIA,    0,  0,  0, 0, AUTO, 0,     0,  0),
         // ---- Fujifilm film stocks
-        new Recipe(FFILM, "Fuji Pro 400H",                       LIGHT,   -2, -1,  0, 0, AUTO, 0,    -1,  1),
-        new Recipe(FFILM, "Fuji Fortia 50",                      VIVID,    6,  2,  0, 1, AUTO, 0,     0, -1),
-        new Recipe(FFILM, "Fuji Superia 400",                    STD,      1,  1,  0, 0, AUTO, 0,     1,  1),
+        new Recipe(FFILM, "Fuji Pro 400H",                       LIGHT,   -2, -1,  0, 0, AUTO, 0,    -1,  1,  0,  2, 6),
+        new Recipe(FFILM, "Fuji Pro 400H (airy, high-key)",      LIGHT,    0,  0,  0, 0, AUTO, 0,    -1,  1,  5,  2, 6),
+        new Recipe(FFILM, "Fuji Fortia 50",                      VIVID,    6,  2,  0, 1, AUTO, 0,     0, -1,  0, -1, 6),
+        new Recipe(FFILM, "Fuji Superia 400",                    STD,      1,  1,  0, 0, AUTO, 0,     1,  1,  0,  1, 6),
         new Recipe(FFILM, "Fuji C200",                           STD,      0,  0,  0, 0, AUTO, 0,    -1,  1),
-        new Recipe(FFILM, "Fuji Natura 1600",                    PORTRAIT,-2, -2,  0, 0, AUTO, 0,     1,  0),
+        new Recipe(FFILM, "Fuji Superia (expired, faded)",       STD,      0,  0,  0, 0, AUTO, 0,     0,  2,  4,  1, 6),
+        new Recipe(FFILM, "Fuji Natura 1600",                    PORTRAIT,-2, -2,  0, 0, AUTO, 0,     1,  0,  0,  1, 6),
         // ---- Kodak
-        new Recipe(KODAK, "Kodak Portra 160",                    PORTRAIT,-2, -1,  0, 0, AUTO, 0,     1,  0),
-        new Recipe(KODAK, "Kodak Portra 400",                    PORTRAIT,-1,  0,  0, 0, AUTO, 0,     2,  1),
-        new Recipe(KODAK, "Kodak Portra 800",                    STD,     -1,  1,  0, 0, AUTO, 0,     2,  0),
-        new Recipe(KODAK, "Kodak Gold 200",                      STD,      2,  1,  0, 0, AUTO, 0,     3,  1),
-        new Recipe(KODAK, "Kodak Ultra Max 400",                 STD,      3,  1,  0, 0, AUTO, 0,     2,  0),
-        new Recipe(KODAK, "Kodak Color Plus 200",                STD,      1,  1,  0, 0, AUTO, 0,     2,  1),
-        new Recipe(KODAK, "Kodak Ektar 100",                     VIVID,    3,  2,  1, 1, AUTO, 0,     1,  0),
-        new Recipe(KODAK, "Kodak Ektachrome E100",               CLEAR,    2,  1,  0, 0, AUTO, 0,    -1,  0),
-        new Recipe(KODAK, "Kodachrome 64",                       DEEP,     1,  2,  1, 0, AUTO, 0,     1, -1),
-        new Recipe(KODAK, "Kodak Vision3 500T (daylight)",       NEUTRAL, -1,  0,  0, 0, K,    3200,  0,  0),
+        new Recipe(KODAK, "Kodak Portra 160",                    PORTRAIT,-2, -1,  0, 0, AUTO, 0,     1,  0,  0,  2, 6),
+        new Recipe(KODAK, "Kodak Portra 400",                    PORTRAIT,-1,  0,  0, 0, AUTO, 0,     2,  1,  0,  2, 6),
+        new Recipe(KODAK, "Kodak Portra 800",                    STD,     -1,  1,  0, 0, AUTO, 0,     2,  0,  0,  1, 6),
+        new Recipe(KODAK, "Kodak Gold 200",                      STD,      2,  1,  0, 0, AUTO, 0,     3,  1,  0,  1, 6),
+        new Recipe(KODAK, "Kodak Ultra Max 400",                 STD,      3,  1,  0, 0, AUTO, 0,     2,  0,  0,  1, 6),
+        new Recipe(KODAK, "Kodak Color Plus 200",                STD,      1,  1,  0, 0, AUTO, 0,     2,  1,  0,  1, 6),
+        new Recipe(KODAK, "Kodak Ektar 100",                     VIVID,    3,  2,  1, 1, AUTO, 0,     1,  0,  0, -1, 6),
+        new Recipe(KODAK, "Kodak Ektachrome E100",               CLEAR,    2,  1,  0, 0, AUTO, 0,    -1,  0,  0, -1, 6),
+        new Recipe(KODAK, "Kodachrome 64",                       DEEP,     1,  2,  1, 0, AUTO, 0,     1, -1,  0, -1, 6),
+        new Recipe(KODAK, "Kodak Vision3 500T (daylight)",       NEUTRAL, -1,  0,  0, 0, K,    3200,  0,  0,  0,  1, 3),
         new Recipe(KODAK, "Kodak Vision 200T (Asteroid City)",   LIGHT,    2, -1,  0, 0, K,    4300,  2,  2),
-        new Recipe(KODAK, "Kodak Tri-X 400",                     MONO,     0,  2,  2, 0, AUTO, 0,     0,  0),
-        new Recipe(KODAK, "Kodak T-Max",                         MONO,     0,  2,  3, 0, AUTO, 0,     0,  0),
+        new Recipe(KODAK, "Kodak Tri-X 400",                     MONO,     0,  2,  2, 0, AUTO, 0,     0,  0,  0,  1, 6),
+        new Recipe(KODAK, "Kodak T-Max",                         MONO,     0,  2,  3, 0, AUTO, 0,     0,  0,  0,  0, 6),
         // ---- Cine
         new Recipe(CINE,  "Cinestill 50D (Blue Velvet)",         STD,     -1,  1,  0, 0, K,    5600, -2,  0),
-        new Recipe(CINE,  "Cinestill 800T",                      NEUTRAL, -2,  0,  0, 0, K,    3200,  0, -1),
-        new Recipe(CINE,  "Classic Cinema",                      NEUTRAL, -4, -2, -1, 0, K,    5000,  0,  0),
-        new Recipe(CINE,  "Rec709 Video (flat-ish)",             NEUTRAL, -2, -2,  0, 0, AUTO, 0,     0,  0),
+        new Recipe(CINE,  "Cinestill 800T",                      NEUTRAL, -2,  0,  0, 0, K,    3200,  0, -1,  0,  1, 6),
+        new Recipe(CINE,  "Classic Cinema",                      NEUTRAL, -4, -2, -1, 0, K,    5000,  0,  0,  0, -1, 3),
+        new Recipe(CINE,  "Rec709 Video (flat-ish)",             NEUTRAL, -2, -2,  0, 0, AUTO, 0,     0,  0,  0,  0, 5),
         // ---- Ricoh GR image controls
-        new Recipe(RICOH, "GR Positive Film",                    STD,      3,  2,  0, 0, AUTO, 0,     2,  0),
-        new Recipe(RICOH, "GR Negative Film",                    NEUTRAL, -2,  1,  0, 0, AUTO, 0,    -1,  1),
+        new Recipe(RICOH, "GR Positive Film",                    STD,      3,  2,  0, 0, AUTO, 0,     2,  0,  0, -1, 6),
+        new Recipe(RICOH, "GR Negative Film",                    NEUTRAL, -2,  1,  0, 0, AUTO, 0,    -1,  1,  0,  1, 6),
         new Recipe(RICOH, "GR Bleach Bypass",                    NEUTRAL, -8,  3,  0, 0, AUTO, 0,     0,  0),
-        new Recipe(RICOH, "GR Retro",                            STD,     -3, -1,  0, 0, AUTO, 0,     3, -1),
+        new Recipe(RICOH, "GR Retro",                            STD,     -3, -1,  0, 0, AUTO, 0,     3, -1,  4,  0, 6),
         new Recipe(RICOH, "GR Cross Process",                    VIVID,    2,  2,  0, 0, AUTO, 0,    -2,  4),
-        new Recipe(RICOH, "GR Hi-Contrast B&W",                  MONO,     0,  3,  1, 0, AUTO, 0,     0,  0),
+        new Recipe(RICOH, "GR Hi-Contrast B&W",                  MONO,     0,  3,  1, 0, AUTO, 0,     0,  0,  7,  0, 6),
         new Recipe(RICOH, "GR Hard Monotone",                    MONO,     0,  2,  2, 0, AUTO, 0,     0,  0),
         new Recipe(RICOH, "GR Soft Monotone",                    MONO,     0, -2, -1, 0, AUTO, 0,     0,  0),
         // ---- Leica
         new Recipe(LEICA, "Leica Contemporary",                  STD,      1,  1,  0, 0, AUTO, 0,     0,  0),
         new Recipe(LEICA, "Leica Classic",                       STD,     -1,  2,  0, 0, AUTO, 0,     1,  0),
-        new Recipe(LEICA, "Leica Eternal",                       NEUTRAL, -3, -1,  0, 0, AUTO, 0,     1,  0),
+        new Recipe(LEICA, "Leica Eternal",                       NEUTRAL, -3, -1,  0, 0, AUTO, 0,     1,  0,  0,  0, 3),
         new Recipe(LEICA, "Leica Monochrom",                     MONO,     0,  2,  1, 0, AUTO, 0,     0,  0),
         // ---- Hasselblad
         new Recipe(HASSEL,"Hasselblad HNCS Natural",             NEUTRAL, -1, -1,  0, 0, AUTO, 0,     0,  0),
@@ -112,22 +137,22 @@ public class Recipes {
         new Recipe(CANIK, "Canon Standard",                      STD,      1,  1,  0, 0, AUTO, 0,     1, -1),
         new Recipe(CANIK, "Canon Portrait",                      PORTRAIT, 0,  0, -1, 0, AUTO, 0,     1, -1),
         new Recipe(CANIK, "Canon Faithful",                      NEUTRAL,  0,  0,  0, 0, AUTO, 0,     0,  0),
-        new Recipe(CANIK, "Nikon Flat",                          NEUTRAL, -3, -3, -1, 0, AUTO, 0,     0,  0),
+        new Recipe(CANIK, "Nikon Flat",                          NEUTRAL, -3, -3, -1, 0, AUTO, 0,     0,  0,  0,  0, 5),
         new Recipe(CANIK, "Nikon Vivid",                         VIVID,    1,  1,  1, 0, AUTO, 0,     0,  0),
         // ---- Panasonic / Olympus
         new Recipe(PANOLY,"Pana L.Monochrome D",                 MONO,     0,  3,  1, 0, AUTO, 0,     0,  0),
-        new Recipe(PANOLY,"Pana L.ClassicNeo",                   NEUTRAL, -3, -1,  0, 0, AUTO, 0,     2,  0),
+        new Recipe(PANOLY,"Pana L.ClassicNeo",                   NEUTRAL, -3, -1,  0, 0, AUTO, 0,     2,  0,  0,  1, 6),
         new Recipe(PANOLY,"Olympus Pop Art",                     VIVID,    8,  2,  0, 1, AUTO, 0,     0,  0),
-        new Recipe(PANOLY,"Olympus Pale & Light",                LIGHT,   -3, -2,  0, 0, AUTO, 0,     0,  0),
+        new Recipe(PANOLY,"Olympus Pale & Light",                LIGHT,   -3, -2,  0, 0, AUTO, 0,     0,  0,  0,  2, 6),
         // ---- Other stocks
-        new Recipe(OTHER, "Agfa Vista 200",                      STD,      2,  1,  0, 0, AUTO, 0,     2, -1),
+        new Recipe(OTHER, "Agfa Vista 200",                      STD,      2,  1,  0, 0, AUTO, 0,     2, -1,  0,  1, 6),
         new Recipe(OTHER, "Agfa Ultra 100",                      VIVID,    6,  1,  0, 1, AUTO, 0,     0,  0),
-        new Recipe(OTHER, "Polaroid / Instax",                   STD,     -3, -2,  0, 0, AUTO, 0,     1, -2),
+        new Recipe(OTHER, "Polaroid / Instax",                   STD,     -3, -2,  0, 0, AUTO, 0,     1, -2,  4,  1, 6),
         // ---- Ilford
-        new Recipe(ILFORD,"Ilford HP5",                          MONO,     0,  1,  0, 0, AUTO, 0,     0,  0),
+        new Recipe(ILFORD,"Ilford HP5",                          MONO,     0,  1,  0, 0, AUTO, 0,     0,  0,  0,  1, 6),
         new Recipe(ILFORD,"Ilford FP4",                          MONO,     0,  1,  1, 0, AUTO, 0,     0,  0),
         new Recipe(ILFORD,"Ilford Delta 100",                    MONO,     0,  1,  1, 0, AUTO, 0,     0,  0),
-        new Recipe(ILFORD,"Ilford Delta 3200",                   MONO,     0,  3, -2, 0, AUTO, 0,     0,  0),
+        new Recipe(ILFORD,"Ilford Delta 3200",                   MONO,     0,  3, -2, 0, AUTO, 0,     0,  0,  0,  2, 6),
         new Recipe(ILFORD,"Ilford Pan F 50",                     MONO,     0,  2,  2, 0, AUTO, 0,     0,  0),
     };
 

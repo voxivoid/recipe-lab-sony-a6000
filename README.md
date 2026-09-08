@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.17 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.18 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -26,7 +26,7 @@
 
 ## What it is
 
-Recipe Lab is a small app that runs on the Sony A6000 itself. It comes with 72 colour recipes that recreate the looks
+Recipe Lab is a small app that runs on the Sony A6000 itself. It comes with 78 colour recipes that recreate the looks
 of other cameras — Fuji film simulations, Ricoh GR image controls, Leica, Hasselblad, Canon and Nikon colour, Sony's
 newer Creative Looks — and of classic film stocks from Kodak, Fuji, Cinestill, Agfa and Ilford.
 
@@ -34,8 +34,8 @@ You turn the wheel, watch the live image change, press a button. From then on th
 mode**, photo and video, with the app closed. Turn it off and on, it is still there.
 
 > **Honest note.** The A6000 has no Picture Profile menu and cannot store tone curves. Every recipe is built only from
-> what this camera *can* keep: Creative Style, saturation, contrast, sharpness, white balance and one hidden colour
-> setting Sony never exposed. So these are approximations of a look, not copies of another brand's colour science.
+> what this camera *can* keep: Creative Style, saturation, contrast, sharpness, white balance, exposure bias, Picture
+> Effect and one hidden colour setting Sony never exposed. So these are approximations of a look, not copies of another brand's colour science.
 
 ## The recipes
 
@@ -43,8 +43,8 @@ mode**, photo and video, with the app closed. Turn it off and on, it is still th
 |---|---|
 | **Sony** | Factory (ST), PT, NT, VV, VV2, FL, IN, SH |
 | **Fuji simulations** | Provia, Velvia, Astia, Classic Chrome, Classic Negative, Nostalgic Neg, Reala Ace, Pro Neg Std / Hi, Eterna, Eterna Bleach Bypass, Acros, Acros +Ye / +R / +G, Sepia |
-| **Fuji film** | Pro 400H, Fortia 50, Superia 400, C200, Natura 1600 |
-| **Kodak** | Portra 160 / 400 / 800, Gold 200, Ultra Max 400, Color Plus 200, Ektar 100, Ektachrome E100, Kodachrome 64, Vision3 500T, Vision 200T (Asteroid City), Tri-X 400, T-Max |
+| **Fuji film** | Pro 400H, Pro 400H (airy), Fortia 50, Superia 400, Superia (expired), C200, Natura 1600 |
+| **Kodak** | Portra 160 / 400 / 800, Gold 200, Gold (faded print), Ultra Max 400, Color Plus 200, Ektar 100, Ektachrome E100, Kodachrome 64, Vision3 500T, Vision 200T (Asteroid City), Tri-X 400, Tri-X pushed (HC mono), T-Max |
 | **Cine** | Cinestill 50D, Cinestill 800T, Classic Cinema, Rec709 Video |
 | **Ricoh GR** | Positive Film, Negative Film, Bleach Bypass, Retro, Cross Process, Hi-Contrast B&W, Hard Monotone, Soft Monotone |
 | **Leica** | Contemporary, Classic, Eternal, Monochrom |
@@ -114,7 +114,8 @@ A few extras:
 
 | | |
 |---|---|
-| **up / down** | selects one of the value chips (saturation, contrast, …) so you can fine-tune with left/right before storing |
+| **up / down** | selects one of the value chips (saturation, contrast, effect, EV, …) so you can fine-tune with left/right before storing |
+| **Fn** | developer tool: snapshot of all settings; press again after changing a menu item to see which slot it lives in |
 | **TRASH** (bin button) | stages the factory look; centre button stores it |
 | **shutter** | takes a picture with whatever you are previewing |
 | **MENU** | leaves the app |
@@ -126,8 +127,10 @@ accepting changes (see [Troubleshooting](#troubleshooting)).
 ## What it changes — and how to undo it
 
 **What it actually does.** Recipe Lab sets the same things you could set by hand in the menus — Creative Style with
-its contrast, saturation and sharpness sliders, white balance and its fine-tune — plus one hidden switch that turns
-on a richer colour matrix the camera has but never shows. Nine settings, nothing else. It does not modify the
+its contrast, saturation and sharpness sliders, white balance and its fine-tune, exposure compensation, Picture
+Effect — plus one hidden switch that turns on a richer colour matrix the camera has but never shows. Eleven
+settings, nothing else. Recipes that use a Picture Effect (Retro, Soft High-key, High Contrast Mono) behave like
+that menu item does: the camera ignores Creative Style while it is on and records JPEG only, no RAW. It does not modify the
 camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
 Sony used for its own downloadable apps.
 
@@ -170,7 +173,8 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 AndroidManifest.xml            package com.voxivoid.recipelab
 src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
-  Recipes.java                 the 72 recipes, brands, GROUP_START / GROUP_COUNT
+  Recipes.java                 the 78 recipes, brands, GROUP_START / GROUP_COUNT
+  res/raw/ids.txt              all small settings IDs, used by the Fn snapshot/diff tool
   PickerView.java              Canvas-drawn brand browser
   Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
   HintBar.java                 legend view under the panel (uses Legend)
@@ -193,10 +197,14 @@ build.cmd                      full Windows build → RecipeLab.apk (+ copy to d
 | WB mode | `0x01070019` | 1 auto, 14 colour temperature |
 | WB Kelvin | `0x01070018` | Kelvin / 100 |
 | WB A-B / G-M | `0x01070017` / `0x01070016` | signed |
+| Picture Effect | `0x010706f1` | assumed = index in `picture-effect-values` (provisional) |
+| Exposure bias | `0x010700b8` | assumed 1/3 EV steps, signed (provisional) |
+| DRO | not located yet | preview only (`dro-mode` / `dro-level`); use the Fn diff tool to find it |
 
 **Live preview** goes through `Camera.Parameters`: `color-mode`, `saturation`, `contrast`, `sharpness`,
 `whitebalance`, `color-temperture-white-balance`, `light-balance-for-white-balance`,
-`color-compensation-for-white-balance`, `rgb-matrix` (Q10, 1.0 = 1024) + `rgb-matrix-mode`.
+`color-compensation-for-white-balance`, `rgb-matrix` (Q10, 1.0 = 1024) + `rgb-matrix-mode`, `picture-effect`,
+`exposure-compensation` (1/3 EV steps), `dro-mode` + `dro-level`.
 **Key scan codes:** wheel 522 / 523, top dial 525 / 526, AEL 532, C1 622, trash 595, centre 232, MENU 514.
 
 **Build** (Windows): JDK 17, Android SDK build-tools 30.0.3 with a platform jar (API 28), and **NDK r16b** — the last
