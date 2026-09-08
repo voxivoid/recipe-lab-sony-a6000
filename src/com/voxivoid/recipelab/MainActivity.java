@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.30 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.31 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -42,15 +42,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private static final int ID_STYLE = 0x01070175, ID_CON = 0x01070178, ID_SAT = 0x01070187, ID_SHARP = 0x0107018a, ID_PP_NO = 0x0107031c,
             ID_WB_MODE = 0x01070019, ID_WB_TEMP = 0x01070018, ID_WB_AB = 0x01070017, ID_WB_GM = 0x01070016,
             ID_PE = 0x010706f1, ID_EV = 0x010700b8, ID_DRO = 0 /* unknown: preview only */,
-            ID_QFMT = 0 /* still file format slot: unknown yet */, ID_QJPG = 0 /* jpeg quality slot: unknown yet */;
-    // Quality: 0 RAW, 1 RAW+JPEG, 2 JPEG Fine, 3 JPEG Std  — runtime keys storage-fmt / jpeg-quality; stored codes provisional
+            ID_QFMT = 0x01070013, ID_QJPG = 0x01070014,            // still file format / jpeg quality (verified by menu diff)
+            ID_QFMT2 = 0x01070aa9, ID_QJPG2 = 0x01070aaa;          // the camera keeps mirror copies; written too
+    // Quality: 0 RAW, 1 RAW+JPEG, 2 JPEG Fine, 3 JPEG Std  — runtime keys storage-fmt / jpeg-quality
     private static final String[] Q_LABEL = { "RAW", "RAW+JPG", "JPG Fine", "JPG Std" };
     private static final String[] Q_FMT = { "raw", "rawjpeg", "jpeg", "jpeg" };
     private static final String[] Q_JPG = { "50", "50", "50", "25" };
-    private static final int[] Q_FMT_CODE = { 1, 2, 0, 0 }, Q_JPG_CODE = { 1, 1, 1, 2 };   // provisional stored bytes
+    private static final int[] Q_FMT_CODE = { 1, 2, 0, 0 }, Q_JPG_CODE = { 1, 1, 1, 0 };   // verified: format raw=1 rawjpeg=2 jpeg=0 · jpeg std=0 fine=1
 
     private static final int R_RECIPE = 0, R_STYLE = 1, R_SAT = 2, R_CON = 3, R_SHARP = 4, R_MTX = 5, R_PE = 6, R_SUB = 7, R_WBMODE = 8, R_KELVIN = 9, R_AB = 10, R_GM = 11, R_EV = 12, R_DRO = 13, R_QUAL = 14;
-    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "EFFECT", "SUB", "WB", "KELVIN", "A-B", "G-M", "EV", "DRO*", "QUALITY*" };
+    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "EFFECT", "SUB", "WB", "KELVIN", "A-B", "G-M", "EV", "DRO*", "QUALITY" };
     private static final int[] ROW_ID = { 0, ID_STYLE, ID_SAT, ID_CON, ID_SHARP, ID_PP_NO, ID_PE, -1 /* depends on effect */, ID_WB_MODE, ID_WB_TEMP, ID_WB_AB, ID_WB_GM, ID_EV, ID_DRO, -2 /* two slots */ };
     private static final int[] ROW_MIN = { 0, 1, -16, -8, -8, 0, 0, 0, 0, 25, -7, -7, -15, 0, 0 };
     private static final int[] ROW_MAX = { 0, 13, 16, 8, 8, 1, 13, 4, 20, 99, 7, 7, 15, 6, 3 };
@@ -141,7 +142,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             holder.addCallback(this);
             previewOk = true;
             probeCinematone();
-            cur[R_QUAL] = edit[R_QUAL] = readQuality();            // needs the camera open (runtime fallback while the slot is unknown)
         } catch (Throwable t) { previewOk = false; previewErr = String.valueOf(t); }
         stageRecipe(); applyPreview(); render();
     }
@@ -208,10 +208,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     /** quality from the two stored bytes; falls back to the runtime value when the slots are not known yet */
     private int readQuality() {
         try {
-            if (ID_QFMT != 0) {
-                int f = rdu(ID_QFMT), j = ID_QJPG != 0 ? rdu(ID_QJPG) : Q_JPG_CODE[2];
-                for (int q = 0; q < 4; q++) if (Q_FMT_CODE[q] == f && (q < 2 || Q_JPG_CODE[q] == j)) return q;
-            }
+            int f = rdu(ID_QFMT), j = rdu(ID_QJPG);
+            if (f == 1) return 0; if (f == 2) return 1; if (f == 0) return j == 0 ? 3 : 2;
             if (camera != null) {
                 String fmt = camera.getParameters().get("storage-fmt"), jq = camera.getParameters().get("jpeg-quality");
                 if ("raw".equals(fmt)) return 0; if ("rawjpeg".equals(fmt)) return 1; return "25".equals(jq) ? 3 : 2;
@@ -264,9 +262,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             for (int i = 1; i < N; i++) {
                 if (!rowDirty(i)) continue;
                 if (i == R_QUAL) {
-                    if (!qualityPersistent()) continue;             // slot unknown yet: live view only
-                    NativeBackup.writeByte(ID_QFMT, Q_FMT_CODE[edit[i]]);
-                    if (ID_QJPG != 0) NativeBackup.writeByte(ID_QJPG, Q_JPG_CODE[edit[i]]);
+                    NativeBackup.writeByte(ID_QFMT, Q_FMT_CODE[edit[i]]); NativeBackup.writeByte(ID_QFMT2, Q_FMT_CODE[edit[i]]);
+                    NativeBackup.writeByte(ID_QJPG, Q_JPG_CODE[edit[i]]); NativeBackup.writeByte(ID_QJPG2, Q_JPG_CODE[edit[i]]);
                     n++; continue;
                 }
                 int id = slot(i), v = edit[i];
@@ -277,7 +274,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             NativeBackup.sync();
             msg = "Stored " + n + " value" + (n == 1 ? "" : "s") + " — power-cycle the camera to apply everywhere";
         } catch (Throwable t) { msg = "WRITE FAILED: " + t.getMessage(); }
-        load(); if (!qualityPersistent()) cur[R_QUAL] = edit[R_QUAL]; stageRecipe();
+        load(); stageRecipe();
         showToast(msg, 5000); render();
     }
 
