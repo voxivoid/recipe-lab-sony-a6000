@@ -141,8 +141,7 @@ engineering Sony's PlayMemories camera platform:
 * [OpenMemories-Tweak](https://github.com/ma1co/OpenMemories-Tweak) and
   [OpenMemories-Framework](https://github.com/ma1co/OpenMemories-Framework) — the reference for talking to
   `Backup_read/write`, the `ScalarInput` key codes and the `CameraEx` API.
-* [nex-hack](https://www.personal-view.com/talks/discussion/17253/sony-nex-and-alpha-hacking) community findings
-  he built on and documented.
+* The earlier nex-hack community research he built on and kept documented.
 
 He figured out how these cameras work, documented it openly and licensed it permissively — this project just stands
 on that.
