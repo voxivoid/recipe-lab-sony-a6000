@@ -16,9 +16,9 @@ Live preview inside the app; one button writes the recipe; power-cycle applies i
 |---|---|
 | control wheel, LEFT / RIGHT | previous / next recipe — applied to the live view immediately |
 | UP / DOWN | select a parameter chip; LEFT / RIGHT or the top dial then adjust it |
-| TRASH (also C1, DISP, Fn) | overlay: full panel → small pill → hidden (clean preview) |
+| AEL (also C1, DISP, Fn) | overlay: full panel → small pill → hidden (clean preview) |
 | ENTER | **store** the staged values in the settings store + sync |
-| AEL | stage factory values (standard, 0/0/0, WB auto) — PLAY cannot be used: the firmware always opens playback |
+| TRASH | stage factory values (standard, 0/0/0, WB auto) — PLAY cannot be used: the firmware always opens playback |
 | shutter | take a photo with the previewed look (half-press = AF) |
 | MENU | exit (live preview reverts; stored values stay) |
 

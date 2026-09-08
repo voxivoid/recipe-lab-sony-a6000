@@ -12,9 +12,9 @@ import android.view.View;
 public class HintBar extends View {
     static final int WHEEL = 0, UPDOWN = 1, LEFTRIGHT = 2, DIAL = 3, ENTER = 4, AEL = 5, TRASH = 6, MENU = 7;
 
-    private static final int[] VIEW_ICONS = { WHEEL, UPDOWN, ENTER, AEL, TRASH, MENU };
+    private static final int[] VIEW_ICONS = { WHEEL, UPDOWN, ENTER, TRASH, AEL, MENU };
     private static final String[] VIEW_TEXT = { "recipe", "parameter", "store", "factory", "hide", "exit" };
-    private static final int[] EDIT_ICONS = { DIAL, UPDOWN, ENTER, AEL, TRASH, MENU };
+    private static final int[] EDIT_ICONS = { DIAL, UPDOWN, ENTER, TRASH, AEL, MENU };
     private static final String[] EDIT_TEXT = { "adjust", "parameter", "store", "factory", "hide", "exit" };
 
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG), text = new Paint(Paint.ANTI_ALIAS_FLAG), keyText = new Paint(Paint.ANTI_ALIAS_FLAG);
