@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.38 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.39 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -185,7 +185,7 @@ AndroidManifest.xml            package com.voxivoid.recipelab
 src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
   Recipes.java                 the 77 recipes, brands, GROUP_START / GROUP_COUNT
-  res/raw/ids.txt              all small settings IDs, used by the Fn snapshot/diff tool
+  res/raw/ids.txt              every settings entry of 16 bytes or less, used by the Fn snapshot/diff tool
   PickerView.java              Canvas-drawn brand browser
   Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
   HintBar.java                 legend view under the panel (uses Legend)
