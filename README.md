@@ -14,15 +14,17 @@ Live preview inside the app; one button writes the recipe; power-cycle applies i
 
 | key | action |
 |---|---|
-| LEFT / RIGHT | previous / next recipe — applied to the live view immediately |
-| UP / DOWN | select a row (full overlay) to tweak a value manually |
-| DISP (or Fn) | overlay: full → one-line bar → hidden |
-| ENTER | **write** the staged values to the settings store + sync |
+| control wheel, LEFT / RIGHT | previous / next recipe — applied to the live view immediately |
+| UP / DOWN | select a parameter chip; LEFT / RIGHT or the top dial then adjust it |
+| TRASH (also C1, AEL, DISP, Fn) | overlay: full panel → small pill → hidden (clean preview) |
+| ENTER | **store** the staged values in the settings store + sync |
 | PLAY | stage factory values (standard, 0/0/0, WB auto) |
 | shutter | take a photo with the previewed look (half-press = AF) |
-| MENU / trash | exit (live preview reverts; stored values stay) |
+| MENU | exit (live preview reverts; stored values stay) |
 
-Changes written with ENTER take effect after a **power-cycle**.
+Badge: **STORED** = camera settings already equal the recipe · **PREVIEW** = only the live view shows it, press ENTER
+to store · **PROTECTED** = settings store is write-protected (disable protection with OpenMemories-Tweak first).
+Changes stored with ENTER take effect after a **power-cycle**.
 
 ## How it works
 

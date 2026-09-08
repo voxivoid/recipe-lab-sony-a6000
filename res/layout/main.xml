@@ -2,28 +2,116 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+
     <SurfaceView
         android:id="@+id/surface"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:background="#B0000000"
-        android:textColor="#FFFFFFFF"
-        android:textSize="13sp"
-        android:typeface="monospace"
-        android:padding="6dp" />
-    <TextView
-        android:id="@+id/bar"
+
+    <!-- full overlay: bottom panel -->
+    <LinearLayout
+        android:id="@+id/panel"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#90000000"
+        android:orientation="vertical"
+        android:background="@drawable/panel_bg"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="21sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFFFF"
+                android:shadowColor="#AA000000"
+                android:shadowDx="0" android:shadowDy="1" android:shadowRadius="2"
+                android:singleLine="true" />
+            <TextView
+                android:id="@+id/badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:paddingLeft="7dp" android:paddingRight="7dp"
+                android:paddingTop="2dp" android:paddingBottom="2dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFFFF"
+                android:background="@drawable/badge_ok" />
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            <TextView
+                android:id="@+id/count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#B3FFFFFF" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/meta"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:textSize="11sp"
+            android:textColor="#A6FFFFFF"
+            android:singleLine="true" />
+
+        <HorizontalScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:scrollbars="none">
+            <LinearLayout
+                android:id="@+id/chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/hints"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textSize="10sp"
+            android:textColor="#80FFFFFF"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <!-- minimal overlay: recipe pill -->
+    <TextView
+        android:id="@+id/mini"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:layout_margin="10dp"
+        android:paddingLeft="10dp" android:paddingRight="10dp"
+        android:paddingTop="4dp" android:paddingBottom="4dp"
+        android:textSize="13sp"
+        android:textStyle="bold"
         android:textColor="#FFFFFFFF"
-        android:textSize="14sp"
-        android:typeface="monospace"
-        android:padding="4dp" />
+        android:background="@drawable/pill" />
+
+    <!-- transient status -->
+    <TextView
+        android:id="@+id/toast"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="12dp" android:paddingRight="12dp"
+        android:paddingTop="5dp" android:paddingBottom="5dp"
+        android:textSize="12sp"
+        android:textColor="#FFFFFFFF"
+        android:background="@drawable/toast_bg"
+        android:visibility="gone" />
 </FrameLayout>

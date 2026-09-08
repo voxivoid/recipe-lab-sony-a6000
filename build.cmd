@@ -29,7 +29,7 @@ echo [3/7] d8
 setlocal enabledelayedexpansion
 set CLASSES=
 for /r out\classes %%f in (*.class) do set CLASSES=!CLASSES! "%%f"
-call "%BT%\d8.bat" --release --min-api 10 --lib "%AJ%" --output out\dex !CLASSES! || exit /b 1
+"%JAVA%\java.exe" -cp "%BT%\lib\d8.jar" com.android.tools.r8.D8 --release --min-api 10 --lib "%AJ%" --output out\dex !CLASSES! || exit /b 1
 endlocal
 echo [4/7] aapt package + dex + native lib
 "%BT%\aapt.exe" package -f -M AndroidManifest.xml -S res -I "%AJ%" -F out\unaligned.apk || exit /b 1
