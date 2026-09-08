@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.21 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.22 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -54,6 +54,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private static final int[] ROW_MIN = { 0, 1, -16, -8, -8, 0, 0, 0, 0, 25, -7, -7, -15, 0, 0 };
     private static final int[] ROW_MAX = { 0, 13, 16, 8, 8, 1, 13, 4, 20, 99, 7, 7, 15, 6, 3 };
     private static final int N = ROW_ID.length;
+    /** chip display / navigation order (quality first) */
+    private static final int[] ORDER = { R_QUAL, R_STYLE, R_SAT, R_CON, R_SHARP, R_MTX, R_PE, R_SUB, R_WBMODE, R_KELVIN, R_AB, R_GM, R_EV, R_DRO };
     // PP3 colour matrix measured on this body, Q10 fixed point (1.0 = 1024)
     private static final String PP3_MATRIX = "1331,-307,-51,-205,1331,-123,-20,-461,1485";
 
@@ -105,7 +107,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private int dp(float v) { return (int) (v * getResources().getDisplayMetrics().density + 0.5f); }
 
     private void buildChips() {
-        for (int i = 1; i < N; i++) {
+        for (int i : ORDER) {
             LinearLayout c = new LinearLayout(this);
             c.setOrientation(LinearLayout.VERTICAL);
             c.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -458,7 +460,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void moveRow(int dir) {
-        for (int k = 0; k < N; k++) { row = (row + N + dir) % N; if (row == 0 || rowVisible(row)) break; }
+        int pos = -1;                                              // -1 = recipe row
+        for (int k = 0; k < ORDER.length; k++) if (ORDER[k] == row) pos = k;
+        for (int k = 0; k <= ORDER.length; k++) {
+            pos += dir;
+            if (pos < -1) pos = ORDER.length - 1; else if (pos >= ORDER.length) pos = -1;
+            row = pos < 0 ? 0 : ORDER[pos];
+            if (row == 0 || rowVisible(row)) break;
+        }
         render();
     }
 
