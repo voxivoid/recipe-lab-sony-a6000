@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.41 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.42 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -155,7 +155,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onPause();
         handler.removeCallbacks(hideToast);
         holder.removeCallback(this);
-        try { if (camera != null && origFlat != null) { Camera.Parameters p = camera.getParameters(); p.unflatten(origFlat); camera.setParameters(p); } } catch (Throwable t) {}
+        // leave the live parameters equal to what is STORED (not to the launch snapshot): the camera writes some live
+        // values (exposure bias, WB fine-tune) straight back into the settings store, which would undo a fresh store
+        try { if (camera != null) { load(); System.arraycopy(cur, 0, edit, 0, N); applyPreview(); } } catch (Throwable t) {}
         try { if (camera != null) camera.stopPreview(); } catch (Throwable t) {}
         try { if (cameraEx != null) cameraEx.getClass().getMethod("release").invoke(cameraEx); } catch (Throwable t) {}
         cameraEx = null; camera = null;
