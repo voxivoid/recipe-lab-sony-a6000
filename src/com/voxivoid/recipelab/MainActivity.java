@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.34 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.35 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -84,7 +84,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private int row = 0, recipe = 0, overlay = 0;     // overlay: 0 full, 1 pill, 2 hidden, 3 browser
     private final int[] cur = new int[N], edit = new int[N];
     private boolean protectedStore = false, previewOk = false;
-    private String previewErr = "", cinematone = "";
+    private String previewErr = "";
 
     @Override
     protected void onCreate(Bundle b) {
@@ -142,7 +142,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             origFlat = camera.getParameters().flatten();
             holder.addCallback(this);
             previewOk = true;
-            probeCinematone();
         } catch (Throwable t) { previewOk = false; previewErr = String.valueOf(t); }
         stageRecipe(); applyPreview(); render();
     }
@@ -164,29 +163,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
     public void surfaceChanged(SurfaceHolder h, int f, int w, int hh) {}
     public void surfaceDestroyed(SurfaceHolder h) {}
-
-    /** Does this body expose Sony's camcorder Cinematone gamma at runtime? (result shown in the meta line) */
-    private void probeCinematone() {
-        try {
-            Method mk = cameraEx.getClass().getMethod("createParametersModifier", Camera.Parameters.class);
-            Object pm = mk.invoke(cameraEx, camera.getParameters());
-            Object list = pm.getClass().getMethod("getSupportedCinemaTones").invoke(pm);
-            StringBuilder sb = new StringBuilder("cinematone: supported=").append(list);
-            // blind attempt: set CINEMA1 on a scratch copy and read what the HAL kept
-            for (String v : new String[] { "CINEMA1", "cinema1", "on" }) {
-                try {
-                    Camera.Parameters p = camera.getParameters();
-                    Object pm2 = mk.invoke(cameraEx, p);
-                    pm2.getClass().getMethod("setCinemaTone", String.class).invoke(pm2, v);
-                    camera.setParameters(p);
-                    Object back = mk.invoke(cameraEx, camera.getParameters());
-                    Object got = back.getClass().getMethod("getCinemaTone").invoke(back);
-                    sb.append("  set(").append(v).append(")->").append(got).append(" key=").append(camera.getParameters().get("cinema-tone"));
-                } catch (Throwable t) { sb.append("  set(").append(v).append(") ").append(t.getCause() != null ? t.getCause().getClass().getSimpleName() : t.getClass().getSimpleName()); }
-            }
-            cinematone = sb.toString();
-        } catch (Throwable t) { cinematone = "cinematone: n/a (" + t.getClass().getSimpleName() + ")"; }
-    }
 
     // ------------------------------------------------------------ stored settings
     /** settings slot for a row; SUB depends on which effect is staged */
@@ -456,7 +432,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (qualityChanges()) m.append("  ·  QUALITY → ").append(Q_LABEL[edit[R_QUAL]]).append(" (now ").append(Q_LABEL[cur[R_QUAL]]).append(")");
             if (edit[R_PE] != 0 && qualityIsRaw()) m.append("  ·  RAW is on: effect ignored");
             if (!previewOk) m.append("  ·  no live preview: ").append(previewErr);
-            else if (row == R_DRO || row == R_PE) m.append('\n').append(cinematone);
             meta.setText(m);
             for (int i = 1; i < N; i++) {
                 chip[i].setVisibility(rowVisible(i) ? View.VISIBLE : View.GONE);

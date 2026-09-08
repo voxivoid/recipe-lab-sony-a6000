@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.34 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.35 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -55,7 +55,8 @@ mode**, photo and video, with the app closed. Turn it off and on, it is still th
 | **Ilford** | HP5, FP4, Delta 100, Delta 3200, Pan F 50 |
 
 Not included, because the camera simply cannot do them: log profiles (S-Log, V-Log, Blackmagic Film, Cinelike D) and
-tinted black & white (selenium, cyanotype).
+tinted black & white (selenium, cyanotype). Sony's camcorder *Cinematone* gamma exists in the firmware but the A6000's
+camera layer neither lists nor accepts it, so that door is closed too.
 
 ## Installing
 
