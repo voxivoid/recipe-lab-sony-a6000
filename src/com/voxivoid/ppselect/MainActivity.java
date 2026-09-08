@@ -16,7 +16,7 @@ import android.widget.TextView;
 import java.lang.reflect.Method;
 
 /**
- * PP Select 0.6 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * PP Select 0.7 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters (exact for colour mode / sat / con / sharp / WB / matrix).
  * ENTER  = write the recipe's stored bytes (Creative Style + WB slots) + sync → power-cycle applies it everywhere.
@@ -43,11 +43,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private static final String PP3_MATRIX = "1331,-307,-51,-205,1331,-123,-20,-461,1485";
 
     private static final int ACCENT = 0xFFF2B85C, INK = 0xFF1A1208, WHITE = 0xFFFFFFFF, DIM = 0x99FFFFFF;
-    private static final String HINTS_VIEW = "wheel/LEFT/RIGHT recipe  ·  UP/DOWN parameter  ·  ENTER write  ·  PLAY factory  ·  TRASH hide  ·  MENU exit";
-    private static final String HINTS_EDIT = "dial/LEFT/RIGHT adjust  ·  UP/DOWN parameter  ·  ENTER write  ·  PLAY factory  ·  TRASH hide  ·  MENU exit";
 
     private View panel;
-    private TextView name, badge, count, meta, hints, mini, toast;
+    private TextView name, badge, count, meta, mini, toast;
+    private HintBar hints;
     private LinearLayout chips;
     private final TextView[] chipLabel = new TextView[N], chipValue = new TextView[N];
     private final View[] chip = new View[N];
@@ -70,7 +69,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         badge = (TextView) findViewById(R.id.badge);
         count = (TextView) findViewById(R.id.count);
         meta = (TextView) findViewById(R.id.meta);
-        hints = (TextView) findViewById(R.id.hints);
+        hints = (HintBar) findViewById(R.id.hints);
         mini = (TextView) findViewById(R.id.mini);
         toast = (TextView) findViewById(R.id.toast);
         chips = (LinearLayout) findViewById(R.id.chips);
@@ -245,7 +244,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 chipValue[i].setTextColor(sel ? INK : ch ? ACCENT : WHITE);
                 chipValue[i].setText(fmt(i, edit[i]));
             }
-            hints.setText(row == 0 ? HINTS_VIEW : HINTS_EDIT);
+            hints.setEditMode(row != 0);
         } else if (overlay == 1) {
             panel.setVisibility(View.GONE); mini.setVisibility(View.VISIBLE);
             mini.setText(r.name + "   " + pos + (dirty ? "   · preview" : "   · stored"));

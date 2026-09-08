@@ -24,7 +24,7 @@ copy /Y out\libs\armeabi\libppsel.so out\apklib\lib\armeabi\ >nul
 echo [1/7] aapt R.java
 "%BT%\aapt.exe" package -f -m -J out\gen -M AndroidManifest.xml -S res -I "%AJ%" || exit /b 1
 echo [2/7] javac
-"%JAVA%\javac.exe" --release 8 -Xlint:-options -cp "%AJ%" -d out\classes out\gen\com\voxivoid\ppselect\R.java src\com\voxivoid\ppselect\*.java || exit /b 1
+"%JAVA%\javac.exe" -encoding UTF-8 --release 8 -Xlint:-options -cp "%AJ%" -d out\classes out\gen\com\voxivoid\ppselect\R.java src\com\voxivoid\ppselect\*.java || exit /b 1
 echo [3/7] d8
 setlocal enabledelayedexpansion
 set CLASSES=

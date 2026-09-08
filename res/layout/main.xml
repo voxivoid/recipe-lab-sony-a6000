@@ -77,14 +77,11 @@
                 android:orientation="horizontal" />
         </HorizontalScrollView>
 
-        <TextView
+        <com.voxivoid.ppselect.HintBar
             android:id="@+id/hints"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textSize="10sp"
-            android:textColor="#80FFFFFF"
-            android:singleLine="true" />
+            android:layout_marginTop="7dp" />
     </LinearLayout>
 
     <!-- minimal overlay: recipe pill -->
