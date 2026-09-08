@@ -1,4 +1,4 @@
-# PP Select — persistent film-look recipes for the Sony A6000
+# Film Simulations — persistent film-look recipes for the Sony A6000
 
 A PlayMemories Camera App for the **Sony ILCE-6000 (A6000)** that stores film-simulation-style colour recipes
 directly in the camera's settings, so they apply to **every photo and video mode** and survive power cycles.
@@ -11,7 +11,91 @@ done — the look is now the camera's default in P/A/S/M, movie, everything.
 > the hidden alternate colour matrix that `PP_NO=3` switches on (~+45 % chroma). They are approximations of film
 > looks, not clones of anyone's Picture-Profile recipes.
 
-Current version: **0.10**
+Current version: **0.11** · ready-to-install APK: [`dist/FilmSimulations.apk`](dist/FilmSimulations.apk)
+
+## Installing (step by step)
+
+You need: the camera, its USB cable, a computer (Windows, macOS or Linux), Python 3. No camera modification, no
+unlocking — this is the same channel Sony used for PlayMemories Camera Apps. Everything is reversible: the app can be
+uninstalled from the camera menu and TRASH → ENTER inside the app restores factory colour settings.
+
+### 1. Get the installer (Sony-PMCA-RE)
+
+```
+git clone https://github.com/ma1co/Sony-PMCA-RE.git
+cd Sony-PMCA-RE
+pip install -r requirements.txt
+```
+
+Windows users can instead download `pmca-gui.exe` from the
+[Sony-PMCA-RE releases](https://github.com/ma1co/Sony-PMCA-RE/releases) — no Python needed.
+
+### 2. Get the app
+
+Either download [`dist/FilmSimulations.apk`](dist/FilmSimulations.apk) from this repository, or build it yourself
+(see *Building*).
+
+### 3. Prepare the camera
+
+1. Charge the battery (installation takes ~1 minute but do not let it die mid-way).
+2. `MENU → Setup → USB Connection → Mass Storage` (not MTP, not Auto).
+3. `MENU → Setup → USB LUN Setting → Multi` (default) is fine.
+4. Insert a memory card (the camera refuses USB mode without one).
+5. Turn the camera on and connect it with the USB cable. The screen shows *USB Mode*.
+
+### 4. Install
+
+Command line (all platforms):
+
+```
+python pmca-console.py install -f FilmSimulations.apk
+```
+
+GUI (Windows `pmca-gui.exe`): open it, *Install app from file*, choose the APK, wait.
+
+What you will see:
+
+```
+Switching to app install mode
+Waiting for camera to switch...
+Analyzing apk
+Package: com.voxivoid.ppselect
+Version: 0.11
+Uploading 100%
+Installing 100%
+Task completed successfully
+```
+
+The camera switches modes by itself during this; do not press anything on it. It returns to the shooting screen
+when done. Unplug the cable.
+
+Linux note: USB access needs root or a udev rule — `sudo python pmca-console.py install ...` is the quick way.
+Windows note: the console version uses the built-in mass-storage driver; if it says `No devices found`, check that
+the camera is in Mass Storage mode and shows *USB Mode* on its screen, then retry.
+
+### 5. Run it
+
+`MENU → Application → Application List → Film Simulations`. The live view appears with the recipe panel at the
+bottom. Turn the control wheel to scroll recipes, C1 for the brand browser, press the centre button to store the one
+you like, then **turn the camera off and on** — the look is now applied to every photo and video mode.
+
+Check `MENU → Creative Style`: you will see the base style and the ±values the recipe wrote. You can still change
+anything there manually; the app only sets starting values.
+
+### 6. Uninstall / undo
+
+* Undo the colour settings: open the app, TRASH, ENTER, power-cycle (or set Creative Style / WB back by hand).
+* Remove the app: `MENU → Application → Application Management → Manage and Remove → Film Simulations`.
+
+### Troubleshooting
+
+| symptom | fix |
+|---|---|
+| `No devices found` | USB Connection must be *Mass Storage*; card inserted; camera on and showing *USB Mode*; try another cable/port |
+| Camera shows *USB Mode* but install hangs at *Waiting for camera to switch* | Unplug, power-cycle the camera, plug back in and rerun |
+| Badge says **PROTECTED** in the app | Settings store is write-protected. Install [OpenMemories-Tweak](https://github.com/ma1co/OpenMemories-Tweak) and disable *Backup protection* in it, then rerun this app |
+| Look not applied after storing | You must power-cycle; the app's own preview stops when it exits |
+| Wrong Creative Style shown after power-cycle | Style enum for that entry is still provisional (only *Standard* is verified); open an issue with what you got |
 
 ## Screen
 
@@ -138,13 +222,9 @@ javac (`-encoding UTF-8` — otherwise `·` becomes `Â·` on the camera), d8 (i
 `d8.bat` picks whatever Java is on PATH), zipalign and apksigner (v1 signature only; a throw-away keystore is
 generated on first run).
 
-Install with [Sony-PMCA-RE](https://github.com/ma1co/Sony-PMCA-RE): camera in mass-storage USB mode, then
-
-```
-python pmca-console.py install -f PPSelect.apk
-```
-
-Reinstalling over an existing version keeps the same package; no uninstall needed.
+The result is `FilmSimulations.apk` (also copied to `dist/`). Install as described above. Reinstalling over an
+existing version keeps the same package (`com.voxivoid.ppselect`, unchanged from the old "PP Select" name so updates
+replace instead of duplicating); no uninstall needed.
 
 ## Credits
 

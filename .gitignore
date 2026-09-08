@@ -1,5 +1,6 @@
 out/
 *.apk
+!dist/*.apk
 debug.keystore
 *.keystore
 jni/platform/errno.h.updater_only

@@ -16,7 +16,7 @@ import android.widget.TextView;
 import java.lang.reflect.Method;
 
 /**
- * PP Select 0.10 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Film Simulations 0.11 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters (exact for colour mode / sat / con / sharp / WB / matrix).
  * ENTER  = write the recipe's stored bytes (Creative Style + WB slots) + sync → power-cycle applies it everywhere.

@@ -42,7 +42,10 @@ popd
 echo [5/7] zipalign
 "%BT%\zipalign.exe" -f 4 out\unaligned.apk out\aligned.apk || exit /b 1
 echo [6/7] sign (v1 only; any self-signed key works on the camera)
-if not exist debug.keystore "%JAVA%\keytool.exe" -genkeypair -keystore debug.keystore -alias ppselect -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=PPSelect" || exit /b 1
-call "%BT%\apksigner.bat" sign --ks debug.keystore --ks-pass pass:android --key-pass pass:android --min-sdk-version 10 --v1-signing-enabled true --v2-signing-enabled false --v3-signing-enabled false --out PPSelect.apk out\aligned.apk || exit /b 1
+if not exist debug.keystore "%JAVA%\keytool.exe" -genkeypair -keystore debug.keystore -alias ppselect -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=FilmSimulations" || exit /b 1
+call "%BT%\apksigner.bat" sign --ks debug.keystore --ks-pass pass:android --key-pass pass:android --min-sdk-version 10 --v1-signing-enabled true --v2-signing-enabled false --v3-signing-enabled false --out FilmSimulations.apk out\aligned.apk || exit /b 1
 echo [7/7] verify
-call "%BT%\apksigner.bat" verify --min-sdk-version 10 PPSelect.apk && echo BUILD OK: %~dp0PPSelect.apk
+call "%BT%\apksigner.bat" verify --min-sdk-version 10 FilmSimulations.apk || exit /b 1
+if not exist dist mkdir dist
+copy /Y FilmSimulations.apk dist\FilmSimulations.apk >nul
+echo BUILD OK: %~dp0FilmSimulations.apk (copied to dist\)
