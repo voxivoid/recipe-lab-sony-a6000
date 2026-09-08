@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.19 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.20 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -360,7 +360,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 chipValue[i].setTextColor(sel ? INK : ch ? ACCENT : WHITE);
                 chipValue[i].setText(fmt(i, edit[i]));
             }
-            if (row > 0) {
+            if (row == 0) chipScroll.post(new Runnable() { public void run() { chipScroll.smoothScrollTo(0, 0); } });
+            else {
                 final View c = chip[row];
                 chipScroll.post(new Runnable() { public void run() {
                     int l = c.getLeft(), rgt = c.getRight(), sx = chipScroll.getScrollX(), w = chipScroll.getWidth();
@@ -418,6 +419,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             case K_S2: try { camera.takePicture(null, null, null); } catch (Throwable t) {} return true;
         }
         return true;
+    }
+
+    /** handle keys before any focusable view (the chip scroller would otherwise eat LEFT/RIGHT) */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        if (e.getAction() == KeyEvent.ACTION_DOWN) return onKeyDown(e.getKeyCode(), e);
+        if (e.getAction() == KeyEvent.ACTION_UP) return onKeyUp(e.getKeyCode(), e);
+        return super.dispatchKeyEvent(e);
     }
 
     @Override

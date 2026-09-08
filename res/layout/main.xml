@@ -78,6 +78,9 @@
 
         <HorizontalScrollView
             android:id="@+id/chipscroll"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:descendantFocusability="blocksDescendants"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="7dp"
