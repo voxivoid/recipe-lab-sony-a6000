@@ -103,7 +103,6 @@
         android:id="@+id/picker"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_margin="18dp"
         android:visibility="gone" />
 
     <!-- transient status -->

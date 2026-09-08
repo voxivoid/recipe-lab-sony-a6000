@@ -13,7 +13,8 @@ public class PickerView extends View {
     private static final int ACCENT = 0xFFF2B85C, INK = 0xFF1A1208;
 
     private final Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG), edge = new Paint(Paint.ANTI_ALIAS_FLAG), sel = new Paint(Paint.ANTI_ALIAS_FLAG),
-            head = new Paint(Paint.ANTI_ALIAS_FLAG), item = new Paint(Paint.ANTI_ALIAS_FLAG), small = new Paint(Paint.ANTI_ALIAS_FLAG), rule = new Paint();
+            head = new Paint(Paint.ANTI_ALIAS_FLAG), item = new Paint(Paint.ANTI_ALIAS_FLAG), small = new Paint(Paint.ANTI_ALIAS_FLAG), rule = new Paint(),
+            track = new Paint(Paint.ANTI_ALIAS_FLAG), thumb = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF r = new RectF();
     private final float d;
     private final Legend legend;
@@ -25,68 +26,84 @@ public class PickerView extends View {
         super(c, a);
         d = c.getResources().getDisplayMetrics().density;
         legend = new Legend(d);
-        bg.setColor(0xE6121212);
+        bg.setColor(0xF0101010);
         edge.setColor(0x66F2B85C); edge.setStyle(Paint.Style.STROKE); edge.setStrokeWidth(d);
         sel.setColor(ACCENT);
         head.setColor(0x99FFFFFF); head.setTextSize(9 * d); head.setFakeBoldText(true);
         item.setColor(0xFFFFFFFF); item.setTextSize(13 * d);
         small.setColor(0x99FFFFFF); small.setTextSize(10 * d);
         rule.setColor(0x33FFFFFF);
+        track.setColor(0x26FFFFFF); thumb.setColor(0xCCF2B85C);
     }
 
     public void setSelected(int i) { selected = i; invalidate(); }
 
     @Override
     protected void onDraw(Canvas c) {
-        float w = getWidth(), h = getHeight(), pad = 10 * d, rad = 8 * d;
-        r.set(0, 0, w, h); c.drawRoundRect(r, rad, rad, bg); c.drawRoundRect(r, rad, rad, edge);
+        float w = getWidth(), h = getHeight(), pad = 12 * d;
+        c.drawRect(0, 0, w, h, bg);
 
         Recipes.Recipe cur = Recipes.ALL[selected];
         int g = cur.group;
-        float colX = w * 0.32f;                                 // divider
-        float top = pad + 12 * d, bottom = h - pad - 18 * d;    // header / footer reserved
+        float colX = w * 0.30f;                                 // divider
+        float top = pad + 12 * d, bottom = h - pad - 20 * d;    // header / footer reserved
+        float sbW = 4 * d;                                      // scrollbar width
         c.drawText("BRAND", pad, pad + 7 * d, head);
         c.drawText(Recipes.GROUPS[g].toUpperCase() + "  ·  " + Recipes.GROUP_COUNT[g], colX + pad, pad + 7 * d, head);
-        c.drawLine(colX, pad, colX, h - pad, rule);
+        c.drawLine(colX, pad, colX, bottom, rule);
         c.drawLine(pad, top + 3 * d, w - pad, top + 3 * d, rule);
 
         // ---- left: groups
         int ng = Recipes.GROUPS.length;
-        float rowH = Math.min(20 * d, (bottom - top - 6 * d) / ng);
-        float y = top + 6 * d;
-        for (int i = 0; i < ng; i++, y += rowH) {
+        float listTop = top + 6 * d, listH = bottom - listTop;
+        float rowH = 24 * d;
+        int gVisible = Math.max(1, (int) (listH / rowH));
+        int gFirst = ng > gVisible ? Math.max(0, Math.min(g - gVisible / 2, ng - gVisible)) : 0;
+        float gRight = colX - 8 * d - (ng > gVisible ? sbW + 4 * d : 0);
+        float y = listTop;
+        for (int i = gFirst; i < Math.min(ng, gFirst + gVisible); i++, y += rowH) {
             boolean on = i == g;
-            if (on) { r.set(pad - 4 * d, y, colX - 6 * d, y + rowH); c.drawRoundRect(r, 3 * d, 3 * d, sel); }
+            if (on) { r.set(pad - 4 * d, y, gRight, y + rowH); c.drawRoundRect(r, 3 * d, 3 * d, sel); }
             item.setColor(on ? INK : 0xCCFFFFFF); item.setFakeBoldText(on);
             c.drawText(Recipes.GROUPS[i], pad, y + rowH / 2 + item.getTextSize() * 0.36f, item);
             small.setColor(on ? 0xAA1A1208 : 0x66FFFFFF);
             String n = String.valueOf(Recipes.GROUP_COUNT[i]);
-            c.drawText(n, colX - 10 * d - small.measureText(n), y + rowH / 2 + small.getTextSize() * 0.36f, small);
+            c.drawText(n, gRight - 6 * d - small.measureText(n), y + rowH / 2 + small.getTextSize() * 0.36f, small);
         }
         item.setFakeBoldText(false);
+        if (ng > gVisible) scrollbar(c, colX - 6 * d - sbW, listTop, listH, sbW, gFirst, gVisible, ng);
 
         // ---- right: recipes of group, windowed around selection
         int start = Recipes.GROUP_START[g], count = Recipes.GROUP_COUNT[g];
-        float rh = 24 * d;
-        int visible = Math.max(1, (int) ((bottom - top - 6 * d) / rh));
+        float rh = 26 * d;
+        int visible = Math.max(1, (int) (listH / rh));
         int first = 0;
-        if (count > visible) { first = Math.max(0, Math.min(selected - start - visible / 2, count - visible)); }
-        float x = colX + pad, xr = w - pad;
-        y = top + 6 * d;
+        boolean scroll = count > visible;
+        if (scroll) { first = Math.max(0, Math.min(selected - start - visible / 2, count - visible)); }
+        float x = colX + pad, xr = w - pad - (scroll ? sbW + 6 * d : 0);
+        y = listTop;
         for (int k = first; k < Math.min(count, first + visible); k++, y += rh) {
             int idx = start + k; Recipes.Recipe rc = Recipes.ALL[idx];
             boolean on = idx == selected;
             if (on) { r.set(x - 4 * d, y, xr, y + rh); c.drawRoundRect(r, 3 * d, 3 * d, sel); }
             item.setColor(on ? INK : 0xFFFFFFFF); item.setFakeBoldText(on);
-            c.drawText(rc.name, x, y + 12 * d, item);
+            c.drawText(rc.name, x, y + 13 * d, item);
             small.setColor(on ? 0xAA1A1208 : 0x80FFFFFF);
-            c.drawText(rc.summary(), x, y + 21 * d, small);
+            c.drawText(rc.summary(), x, y + 22 * d, small);
         }
         item.setFakeBoldText(false);
-        if (first > 0) c.drawText("...", xr - small.measureText("..."), top + 4 * d, small);
-        if (first + visible < count) c.drawText("...", xr - small.measureText("..."), bottom, small);
+        if (scroll) scrollbar(c, w - pad - sbW, listTop, listH, sbW, first, visible, count);
 
         // ---- footer: icon legend
+        c.drawLine(pad, h - pad - 16 * d, w - pad, h - pad - 16 * d, rule);
         legend.draw(c, pad, h - pad - 6 * d, w - 2 * pad, FOOT_ICONS, FOOT_TEXT);
+    }
+
+    /** vertical scrollbar: track + thumb proportional to the visible window */
+    private void scrollbar(Canvas c, float x, float top, float height, float width, int first, int visible, int total) {
+        r.set(x, top, x + width, top + height); c.drawRoundRect(r, width / 2, width / 2, track);
+        float thumbH = Math.max(12 * d, height * visible / total);
+        float thumbY = top + (height - thumbH) * first / Math.max(1, total - visible);
+        r.set(x, thumbY, x + width, thumbY + thumbH); c.drawRoundRect(r, width / 2, width / 2, thumb);
     }
 }
