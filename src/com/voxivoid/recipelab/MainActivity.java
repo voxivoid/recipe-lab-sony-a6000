@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.42 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.43 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -374,7 +374,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (edit[R_WBMODE] == 14) { p.set("whitebalance", "color-temp"); p.set("color-temperture-white-balance", String.valueOf(edit[R_KELVIN] * 100)); }
             else if (edit[R_WBMODE] == 1) p.set("whitebalance", "auto");
             p.set("light-balance-for-white-balance", String.valueOf(edit[R_AB]));
-            p.set("color-compensation-for-white-balance", String.valueOf(edit[R_GM]));
+            p.set("color-compensation-for-white-balance", String.valueOf(-edit[R_GM]));   // camera counts magenta positive; recipes count green positive
             p.set("storage-fmt", Q_FMT[edit[R_QUAL]]); p.set("jpeg-quality", Q_JPG[edit[R_QUAL]]);
             p.set("picture-effect", Recipes.PE_KEYS[edit[R_PE]]);
             String sk = Recipes.subKey(edit[R_PE]); String[] sv = Recipes.subValues(edit[R_PE]);
