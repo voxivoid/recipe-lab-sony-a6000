@@ -7,9 +7,9 @@ import android.view.View;
 
 /** Key legend under the main panel. */
 public class HintBar extends View {
-    private static final int[] VIEW_ICONS = { Legend.WHEEL, Legend.UPDOWN, Legend.C1, Legend.ENTER, Legend.TRASH, Legend.AEL, Legend.MENU };
+    private static final int[] VIEW_ICONS = { Legend.LEFTRIGHT, Legend.UPDOWN, Legend.C1, Legend.ENTER, Legend.TRASH, Legend.AEL, Legend.MENU };
     private static final String[] VIEW_TEXT = { "recipe", "param", "browse", "store", "factory", "hide", "exit" };
-    private static final int[] EDIT_ICONS = { Legend.DIAL, Legend.UPDOWN, Legend.C1, Legend.ENTER, Legend.TRASH, Legend.AEL, Legend.MENU };
+    private static final int[] EDIT_ICONS = { Legend.LEFTRIGHT, Legend.UPDOWN, Legend.C1, Legend.ENTER, Legend.TRASH, Legend.AEL, Legend.MENU };
     private static final String[] EDIT_TEXT = { "adjust", "param", "browse", "store", "factory", "hide", "exit" };
 
     private final Legend legend;
