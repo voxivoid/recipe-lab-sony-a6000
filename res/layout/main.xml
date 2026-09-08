@@ -74,7 +74,7 @@
             android:layout_marginTop="1dp"
             android:textSize="11sp"
             android:textColor="#A6FFFFFF"
-            android:singleLine="true" />
+            android:maxLines="3" />
 
         <HorizontalScrollView
             android:id="@+id/chipscroll"

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.33 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.34 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -456,7 +456,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (qualityChanges()) m.append("  ·  QUALITY → ").append(Q_LABEL[edit[R_QUAL]]).append(" (now ").append(Q_LABEL[cur[R_QUAL]]).append(")");
             if (edit[R_PE] != 0 && qualityIsRaw()) m.append("  ·  RAW is on: effect ignored");
             if (!previewOk) m.append("  ·  no live preview: ").append(previewErr);
-            else if (row == R_DRO || row == R_PE) m.append("  ·  ").append(cinematone);
+            else if (row == R_DRO || row == R_PE) m.append('\n').append(cinematone);
             meta.setText(m);
             for (int i = 1; i < N; i++) {
                 chip[i].setVisibility(rowVisible(i) ? View.VISIBLE : View.GONE);
