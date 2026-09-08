@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.28 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.29 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -141,6 +141,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             holder.addCallback(this);
             previewOk = true;
             probeCinematone();
+            cur[R_QUAL] = edit[R_QUAL] = readQuality();            // needs the camera open (runtime fallback while the slot is unknown)
         } catch (Throwable t) { previewOk = false; previewErr = String.valueOf(t); }
         stageRecipe(); applyPreview(); render();
     }
@@ -276,7 +277,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             NativeBackup.sync();
             msg = "Stored " + n + " value" + (n == 1 ? "" : "s") + " — power-cycle the camera to apply everywhere";
         } catch (Throwable t) { msg = "WRITE FAILED: " + t.getMessage(); }
-        load(); stageRecipe();
+        load(); if (!qualityPersistent()) cur[R_QUAL] = edit[R_QUAL]; stageRecipe();
         showToast(msg, 5000); render();
     }
 
