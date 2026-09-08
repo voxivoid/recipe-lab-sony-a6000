@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.13 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.14 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -172,7 +172,8 @@ src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
   Recipes.java                 the 72 recipes, brands, GROUP_START / GROUP_COUNT
   PickerView.java              Canvas-drawn brand browser
-  HintBar.java                 Canvas-drawn key legend (camera font has no symbol glyphs)
+  Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
+  HintBar.java                 legend view under the panel (uses Legend)
   NativeBackup.java            JNI: read / write / attr / sync / isProtected
 jni/jni.cpp                    Backup_read / Backup_write / Backup_sync_all via OpenMemories-Platform
 jni/platform/                  git submodule: ma1co/OpenMemories-Platform

@@ -16,11 +16,15 @@ public class PickerView extends View {
             head = new Paint(Paint.ANTI_ALIAS_FLAG), item = new Paint(Paint.ANTI_ALIAS_FLAG), small = new Paint(Paint.ANTI_ALIAS_FLAG), rule = new Paint();
     private final RectF r = new RectF();
     private final float d;
+    private final Legend legend;
+    private static final int[] FOOT_ICONS = { Legend.WHEEL, Legend.LEFTRIGHT, Legend.ENTER, Legend.C1 };
+    private static final String[] FOOT_TEXT = { "recipe", "brand", "pick", "close" };
     private int selected = 0;
 
     public PickerView(Context c, AttributeSet a) {
         super(c, a);
         d = c.getResources().getDisplayMetrics().density;
+        legend = new Legend(d);
         bg.setColor(0xE6121212);
         edge.setColor(0x66F2B85C); edge.setStyle(Paint.Style.STROKE); edge.setStrokeWidth(d);
         sel.setColor(ACCENT);
@@ -40,7 +44,7 @@ public class PickerView extends View {
         Recipes.Recipe cur = Recipes.ALL[selected];
         int g = cur.group;
         float colX = w * 0.32f;                                 // divider
-        float top = pad + 12 * d, bottom = h - pad - 14 * d;    // header / footer reserved
+        float top = pad + 12 * d, bottom = h - pad - 18 * d;    // header / footer reserved
         c.drawText("BRAND", pad, pad + 7 * d, head);
         c.drawText(Recipes.GROUPS[g].toUpperCase() + "  ·  " + Recipes.GROUP_COUNT[g], colX + pad, pad + 7 * d, head);
         c.drawLine(colX, pad, colX, h - pad, rule);
@@ -82,8 +86,7 @@ public class PickerView extends View {
         if (first > 0) c.drawText("...", xr - small.measureText("..."), top + 4 * d, small);
         if (first + visible < count) c.drawText("...", xr - small.measureText("..."), bottom, small);
 
-        // ---- footer
-        small.setColor(0x80FFFFFF);
-        c.drawText("wheel / UP / DOWN  recipe      LEFT / RIGHT  brand      ENTER  choose      C1  close", pad, h - pad, small);
+        // ---- footer: icon legend
+        legend.draw(c, pad, h - pad - 6 * d, w - 2 * pad, FOOT_ICONS, FOOT_TEXT);
     }
 }
