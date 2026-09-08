@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.40 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.41 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -107,8 +107,9 @@ shooting screen.
 2. **Turn the control wheel** (the ring on the back). Every click is a different recipe and the live image changes
    immediately — this is exactly how your photos and videos will look.
 3. To jump between brands press **C1** (the small button next to the shutter). A list opens: brands on the left,
-   recipes on the right. Wheel or up/down moves through recipes, left/right switches brand, the image keeps
-   following. Press the **centre button** to pick one and close the list.
+   recipes on the right. Left/right picks which column you are scrolling (the active one is amber), up/down or the
+   wheel scrolls it, the image keeps following. Centre button on a brand jumps into its recipes; centre button on a
+   recipe picks it and closes the list.
 4. To see the image without any text press **AEL**: once for a tiny label, twice for nothing at all. The wheel still
    works. Press again to bring the panel back.
 5. Like it? Press the **centre button**. A message confirms it was stored.

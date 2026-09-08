@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.40 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.41 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -83,7 +83,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private SurfaceHolder holder;
     private Object cameraEx; private Camera camera; private String origFlat;
     private int row = 0, recipe = 0, overlay = 0;     // overlay: 0 full, 1 pill, 2 hidden, 3 browser
-    private boolean focus = false;                    // a chip is focused: UP/DOWN change its value
+    private boolean focus = false;
+    private int browserCol = 1;                       // browser: 0 brand column, 1 recipe column                    // a chip is focused: UP/DOWN change its value
     private int lastChip = 0;                         // chip to return to when leaving the recipe line
     private final int[] cur = new int[N], edit = new int[N];
     private boolean protectedStore = false, previewOk = false;
@@ -418,7 +419,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         String pos = (recipe + 1) + " / " + Recipes.ALL.length;
         String grp = Recipes.GROUPS[r.group].toUpperCase();
         picker.setVisibility(overlay == 3 ? View.VISIBLE : View.GONE);
-        if (overlay == 3) { panel.setVisibility(View.GONE); mini.setVisibility(View.GONE); picker.setSelected(recipe); return; }
+        if (overlay == 3) { panel.setVisibility(View.GONE); mini.setVisibility(View.GONE); picker.setSelected(recipe, browserCol); return; }
         if (overlay == 0) {
             panel.setVisibility(View.VISIBLE); mini.setVisibility(View.GONE);
             name.setText(r.name);
@@ -512,17 +513,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         recipe = Recipes.GROUP_START[g]; stageRecipe(); applyPreview(); render();
     }
 
-    private void openBrowser(boolean open) { overlay = open ? 3 : 0; row = 0; focus = false; render(); }
+    private void openBrowser(boolean open) { overlay = open ? 3 : 0; row = 0; focus = false; browserCol = 1; render(); }
+
+    /** recipe within the current brand, wrapping */
+    private void nextInGroup(int dir) {
+        int g = Recipes.ALL[recipe].group, start = Recipes.GROUP_START[g], n = Recipes.GROUP_COUNT[g];
+        recipe = start + ((recipe - start + n + dir) % n); stageRecipe(); applyPreview(); render();
+    }
 
     private void stageFactory() { recipe = 0; stageRecipe(); applyPreview(); showToast("Factory values staged — ENTER to store", 3000); render(); }
 
     private boolean browserKey(int sc) {
         switch (sc) {
-            case K_UP: case K_WHEEL_CCW: case K_DIAL_CCW: nextRecipe(-1); return true;
-            case K_DOWN: case K_WHEEL_CW: case K_DIAL_CW: nextRecipe(+1); return true;
-            case K_LEFT: nextGroup(-1); return true;
-            case K_RIGHT: nextGroup(+1); return true;
-            case K_ENTER: openBrowser(false); showToast(Recipes.ALL[recipe].name + " previewed — ENTER to store", 3000); return true;
+            case K_UP: case K_WHEEL_CCW: case K_DIAL_CCW: if (browserCol == 0) nextGroup(-1); else nextInGroup(-1); return true;
+            case K_DOWN: case K_WHEEL_CW: case K_DIAL_CW: if (browserCol == 0) nextGroup(+1); else nextInGroup(+1); return true;
+            case K_LEFT: case K_RIGHT: browserCol ^= 1; render(); return true;
+            case K_ENTER:
+                if (browserCol == 0) { browserCol = 1; render(); return true; }
+                openBrowser(false); showToast(Recipes.ALL[recipe].name + " previewed — ENTER to store", 3000); return true;
             case K_MENU: case K_SK1: swallowMenuUp = true; openBrowser(false); return true;
             case K_C1: case K_AEL: case K_DISP: openBrowser(false); return true;
             case K_DELETE: case K_SK2: stageFactory(); return true;
