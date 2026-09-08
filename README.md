@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.35 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.36 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -26,7 +26,7 @@
 
 ## What it is
 
-Recipe Lab is a small app that runs on the Sony A6000 itself. It comes with 78 colour recipes that recreate the looks
+Recipe Lab is a small app that runs on the Sony A6000 itself. It comes with 76 colour recipes that recreate the looks
 of other cameras — Fuji film simulations, Ricoh GR image controls, Leica, Hasselblad, Canon and Nikon colour, Sony's
 newer Creative Looks — and of classic film stocks from Kodak, Fuji, Cinestill, Agfa and Ilford.
 
@@ -43,8 +43,8 @@ mode**, photo and video, with the app closed. Turn it off and on, it is still th
 |---|---|
 | **Sony** | Factory (ST), PT, NT, VV, VV2, FL, IN, SH |
 | **Fuji simulations** | Provia, Velvia, Astia, Classic Chrome, Classic Negative, Nostalgic Neg, Reala Ace, Pro Neg Std / Hi, Eterna, Eterna Bleach Bypass, Acros, Acros +Ye / +R / +G, Sepia |
-| **Fuji film** | Pro 400H, Pro 400H (airy), Fortia 50, Superia 400, Superia (expired), C200, Natura 1600 |
-| **Kodak** | Portra 160 / 400 / 800, Gold 200, Gold (faded print), Ultra Max 400, Color Plus 200, Ektar 100, Ektachrome E100, Kodachrome 64, Vision3 500T, Vision 200T (Asteroid City), Tri-X 400, Tri-X pushed (HC mono), T-Max |
+| **Fuji film** | Pro 400H, Fortia 50, Superia 400, C200, Natura 1600 |
+| **Kodak** | Portra 160 / 400 / 800, Gold 200, Ultra Max 400, Color Plus 200, Ektar 100, Ektachrome E100, Kodachrome 64, Vision3 500T, Vision 200T (Asteroid City), Tri-X 400, Tri-X 1600 (pushed), T-Max |
 | **Cine** | Cinestill 50D, Cinestill 800T, Classic Cinema, Rec709 Video |
 | **Ricoh GR** | Positive Film, Negative Film, Bleach Bypass, Retro, Cross Process, Hi-Contrast B&W, Hard Monotone, Soft Monotone |
 | **Leica** | Contemporary, Classic, Eternal, Monochrom |
@@ -53,6 +53,10 @@ mode**, photo and video, with the app closed. Turn it off and on, it is still th
 | **Panasonic / Olympus** | L.Monochrome D, L.ClassicNeo, Pop Art, Pale & Light |
 | **Other stocks** | Agfa Vista 200, Agfa Ultra 100, Polaroid / Instax |
 | **Ilford** | HP5, FP4, Delta 100, Delta 3200, Pan F 50 |
+
+Recipes marked **PE** in the app (Nostalgic Neg, Asteroid City, Fuji Pro 400H, Acros +R, Tri-X 1600, GR Retro,
+GR Hi-Contrast B&W, Sony SH, Polaroid) are built on a Picture Effect because, against the reference frames, its tone
+curve gets closer than Creative Style can; everything else stays Creative Style on purpose.
 
 Not included, because the camera simply cannot do them: log profiles (S-Log, V-Log, Blackmagic Film, Cinelike D) and
 tinted black & white (selenium, cyanotype). Sony's camcorder *Cinematone* gamma exists in the firmware but the A6000's
@@ -180,7 +184,7 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 AndroidManifest.xml            package com.voxivoid.recipelab
 src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
-  Recipes.java                 the 78 recipes, brands, GROUP_START / GROUP_COUNT
+  Recipes.java                 the 76 recipes, brands, GROUP_START / GROUP_COUNT
   res/raw/ids.txt              all small settings IDs, used by the Fn snapshot/diff tool
   PickerView.java              Canvas-drawn brand browser
   Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
