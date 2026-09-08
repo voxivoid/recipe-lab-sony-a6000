@@ -71,7 +71,11 @@ public class PromptView extends View {
             x += pw + 8 * d;
         }
         y = py + ph + 14 * d;
-        if (noteText != null) { c.drawText(noteText, pad, y, note); y += 14 * d; }
+        if (noteText != null) {
+            float ns = 10 * d, avail = w - 2 * pad;
+            while (note.measureText(noteText) > avail && ns > 7 * d) { ns -= 0.5f * d; note.setTextSize(ns); }
+            c.drawText(noteText, pad, y, note); note.setTextSize(10 * d); y += 14 * d;
+        }
         legend.draw(c, pad, y + legend.height() / 2 - 2 * d, w - 2 * pad, LEGEND_ICONS, LEGEND_TEXT);
     }
 }

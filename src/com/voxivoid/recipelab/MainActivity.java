@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.25 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.26 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -269,19 +269,23 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     // ------------------------------------------------------------ RAW vs Picture Effect prompt
-    private static final String[] PROMPT_RAW = { "JPEG Fine", "JPEG Std", "Keep RAW" };
-    private String[] promptOpts() { return promptMode == 1 ? PROMPT_RAW : new String[] { "Store", "Keep " + Q_LABEL[cur[R_QUAL]], "Cancel" }; }
+    /** the four quality choices as pills; the recipe's suggestion preselected, the current one marked */
+    private String[] promptOpts() {
+        String[] o = new String[4];
+        for (int i = 0; i < 4; i++) o[i] = Q_LABEL[i] + (i == cur[R_QUAL] ? " (now)" : "");
+        return o;
+    }
 
-    private void openPrompt(int mode) { promptMode = mode; promptOpen = true; promptSel = 0; renderPrompt(); }
+    private void openPrompt(int mode) { promptMode = mode; promptOpen = true; promptSel = edit[R_QUAL]; renderPrompt(); }
 
     private void renderPrompt() {
-        String t, b;
-        if (promptMode == 1) { t = "Effect needs JPEG"; b = "Quality is " + Q_LABEL[edit[R_QUAL]] + " — the camera drops Picture Effects when RAW is on."; }
-        else {
-            t = "Quality: " + Q_LABEL[cur[R_QUAL]] + "  →  " + Q_LABEL[edit[R_QUAL]];
-            b = edit[R_PE] != 0 ? "Picture Effect recipes need JPEG — RAW would cancel the effect." : "Creative Style recipes keep RAW: the look applies to the JPEG, the RAW stays editable.";
-        }
-        prompt.set(t, b, promptOpts(), promptSel, qualityPersistent() ? null : "quality slot not located yet — applies to the live view only");
+        String t = "Store with which Quality?";
+        String b = edit[R_PE] != 0
+                ? "Picture Effect recipe: the camera drops the effect when RAW is on — JPEG needed."
+                : "Creative Style recipe: RAW+JPEG keeps a RAW you can still edit; the look lands on the JPEG.";
+        String n = edit[R_PE] != 0 && promptSel <= 1 ? "with this choice the effect will NOT be applied" : null;
+        if (!qualityPersistent()) n = (n == null ? "" : n + "  ·  ") + "quality slot not located yet — live view only";
+        prompt.set(t, b, promptOpts(), promptSel, n);
         prompt.setVisibility(View.VISIBLE);
     }
 
@@ -289,19 +293,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private boolean promptKey(int sc) {
         switch (sc) {
-            case K_LEFT: case K_WHEEL_CCW: case K_DIAL_CCW: promptSel = (promptSel + 2) % 3; renderPrompt(); return true;
-            case K_RIGHT: case K_WHEEL_CW: case K_DIAL_CW: promptSel = (promptSel + 1) % 3; renderPrompt(); return true;
+            case K_LEFT: case K_WHEEL_CCW: case K_DIAL_CCW: promptSel = (promptSel + 3) % 4; renderPrompt(); return true;
+            case K_RIGHT: case K_WHEEL_CW: case K_DIAL_CW: promptSel = (promptSel + 1) % 4; renderPrompt(); return true;
             case K_ENTER:
                 closePrompt();
-                if (promptMode == 1) {                                       // RAW vs effect
-                    if (promptSel == 0) edit[R_QUAL] = 2; else if (promptSel == 1) edit[R_QUAL] = 3;
-                    applyPreview(); writeAll(true);
-                } else {                                                     // quality change
-                    if (promptSel == 2) { render(); return true; }           // cancel
-                    if (promptSel == 1) edit[R_QUAL] = cur[R_QUAL];          // keep current quality
-                    applyPreview();
-                    if (edit[R_PE] != 0 && qualityIsRaw()) openPrompt(1); else writeAll(true);
-                }
+                edit[R_QUAL] = promptSel; applyPreview(); writeAll(true);
                 render(); return true;
             case K_MENU: case K_SK1: swallowMenuUp = true; closePrompt(); render(); return true;
         }
