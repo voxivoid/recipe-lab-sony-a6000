@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.24 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.25 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -65,7 +65,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private PickerView picker;
     private HorizontalScrollView chipScroll;
     private boolean swallowMenuUp = false;
-    private TextView name, badge, tag, count, meta, mini, toast, prompt;
+    private TextView name, badge, tag, count, meta, mini, toast;
+    private PromptView prompt;
     private int promptSel = 0, promptMode = 0; private boolean promptOpen = false; private long fnDown = 0;   // promptMode 1 raw-vs-effect, 2 quality change
     private HintBar hints;
     private LinearLayout chips;
@@ -96,7 +97,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         hints = (HintBar) findViewById(R.id.hints);
         mini = (TextView) findViewById(R.id.mini);
         toast = (TextView) findViewById(R.id.toast);
-        prompt = (TextView) findViewById(R.id.prompt);
+        prompt = (PromptView) findViewById(R.id.prompt);
         chips = (LinearLayout) findViewById(R.id.chips);
         buildChips();
         SurfaceView sv = (SurfaceView) findViewById(R.id.surface);
@@ -274,14 +275,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private void openPrompt(int mode) { promptMode = mode; promptOpen = true; promptSel = 0; renderPrompt(); }
 
     private void renderPrompt() {
-        StringBuilder sb = new StringBuilder();
-        if (promptMode == 1) sb.append("Picture Effects only work with JPEG.\nQuality is ").append(Q_LABEL[edit[R_QUAL]]).append(" — the effect would be ignored.\n\n");
-        else sb.append("This recipe changes Quality\n").append(Q_LABEL[cur[R_QUAL]]).append("  →  ").append(Q_LABEL[edit[R_QUAL]]).append("\n\n");
-        String[] opt = promptOpts();
-        for (int i = 0; i < opt.length; i++) sb.append(i == promptSel ? "  [ " : "    ").append(opt[i]).append(i == promptSel ? " ]  " : "    ");
-        sb.append("\n\nLEFT / RIGHT choose  ·  ENTER confirm  ·  MENU cancel");
-        if (!qualityPersistent()) sb.append("\n(quality slot not located yet: applies to the live view only)");
-        prompt.setText(sb); prompt.setVisibility(View.VISIBLE);
+        String t, b;
+        if (promptMode == 1) { t = "Effect needs JPEG"; b = "Quality is " + Q_LABEL[edit[R_QUAL]] + " — the camera drops Picture Effects when RAW is on."; }
+        else {
+            t = "Quality: " + Q_LABEL[cur[R_QUAL]] + "  →  " + Q_LABEL[edit[R_QUAL]];
+            b = edit[R_PE] != 0 ? "Picture Effect recipes need JPEG — RAW would cancel the effect." : "Creative Style recipes keep RAW: the look applies to the JPEG, the RAW stays editable.";
+        }
+        prompt.set(t, b, promptOpts(), promptSel, qualityPersistent() ? null : "quality slot not located yet — applies to the live view only");
+        prompt.setVisibility(View.VISIBLE);
     }
 
     private void closePrompt() { prompt.setVisibility(View.GONE); promptOpen = false; }

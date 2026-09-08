@@ -121,17 +121,11 @@
         android:visibility="gone" />
 
     <!-- RAW / JPEG prompt -->
-    <TextView
+    <com.voxivoid.recipelab.PromptView
         android:id="@+id/prompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:paddingLeft="18dp" android:paddingRight="18dp"
-        android:paddingTop="12dp" android:paddingBottom="12dp"
-        android:textSize="13sp"
-        android:textColor="#FFFFFFFF"
-        android:gravity="center"
-        android:background="@drawable/toast_bg"
         android:visibility="gone" />
 
     <!-- transient status -->
