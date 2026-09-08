@@ -128,7 +128,25 @@ Reinstalling over an existing version keeps the same package; no uninstall neede
 
 ## Credits
 
-Built on [ma1co](https://github.com/ma1co)'s OpenMemories-Platform (MIT, git submodule) and Sony-PMCA-RE.
+**Author:** [André Domingues (voxivoid)](https://github.com/voxivoid) — reverse engineering of the A6000 settings
+store and firmware (backup IDs, PP_NO behaviour, colour-matrix measurement), the app, the recipes.
+
+**Huge thanks to [ma1co](https://github.com/ma1co).** None of this would exist without his years of work reverse
+engineering Sony's PlayMemories camera platform:
+
+* [Sony-PMCA-RE](https://github.com/ma1co/Sony-PMCA-RE) — the app-install channel, the updater shell used to dump
+  this camera's firmware and `Backup.bin`, and `fwtool` for unpacking it.
+* [OpenMemories-Platform](https://github.com/ma1co/OpenMemories-Platform) — the backup driver / OSAL bindings this
+  app links against (vendored here as a git submodule).
+* [OpenMemories-Tweak](https://github.com/ma1co/OpenMemories-Tweak) and
+  [OpenMemories-Framework](https://github.com/ma1co/OpenMemories-Framework) — the reference for talking to
+  `Backup_read/write`, the `ScalarInput` key codes and the `CameraEx` API.
+* [nex-hack](https://www.personal-view.com/talks/discussion/17253/sony-nex-and-alpha-hacking) community findings
+  he built on and documented.
+
+He figured out how these cameras work, documented it openly and licensed it permissively — this project just stands
+on that.
+
 Recipe names follow the popular Sony film-simulation list; the values are original approximations for this body.
 
 ## License
