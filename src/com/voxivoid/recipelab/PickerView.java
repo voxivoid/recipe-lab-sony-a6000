@@ -18,8 +18,10 @@ public class PickerView extends View {
     private final RectF r = new RectF();
     private final float d;
     private final Legend legend;
-    private static final int[] FOOT_ICONS = { Legend.WHEEL, Legend.LEFTRIGHT, Legend.ENTER, Legend.C1 };
-    private static final String[] FOOT_TEXT = { "recipe", "brand", "pick", "close" };
+    private static final int[] LEFT_ICONS = { Legend.LEFTRIGHT };
+    private static final String[] LEFT_TEXT = { "brand" };
+    private static final int[] RIGHT_ICONS = { Legend.UPDOWN, Legend.ENTER, Legend.C1 };
+    private static final String[] RIGHT_TEXT = { "recipe", "pick", "close" };
     private int selected = 0;
 
     public PickerView(Context c, AttributeSet a) {
@@ -50,7 +52,7 @@ public class PickerView extends View {
         float sbW = 4 * d;                                      // scrollbar width
         c.drawText("BRAND", pad, pad + 7 * d, head);
         c.drawText(Recipes.GROUPS[g].toUpperCase() + "  ·  " + Recipes.GROUP_COUNT[g], colX + pad, pad + 7 * d, head);
-        c.drawLine(colX, pad, colX, bottom, rule);
+        c.drawLine(colX, pad, colX, h - pad, rule);
         c.drawLine(pad, top + 3 * d, w - pad, top + 3 * d, rule);
 
         // ---- left: groups
@@ -96,7 +98,8 @@ public class PickerView extends View {
 
         // ---- footer: icon legend
         c.drawLine(pad, h - pad - 16 * d, w - pad, h - pad - 16 * d, rule);
-        legend.draw(c, pad, h - pad - 6 * d, w - 2 * pad, FOOT_ICONS, FOOT_TEXT);
+        legend.draw(c, pad, h - pad - 6 * d, colX - 2 * pad, LEFT_ICONS, LEFT_TEXT);           // under the brand column
+        legend.draw(c, colX + pad, h - pad - 6 * d, w - colX - 2 * pad, RIGHT_ICONS, RIGHT_TEXT); // under the recipe column
     }
 
     /** vertical scrollbar: track + thumb proportional to the visible window */
