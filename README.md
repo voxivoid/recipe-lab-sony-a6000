@@ -26,7 +26,7 @@
 
 ## What it is
 
-Recipe Lab is a small app that runs on the Sony A6000 itself. It comes with 76 colour recipes that recreate the looks
+Recipe Lab is a small app that runs on the Sony A6000 itself. It comes with 77 colour recipes that recreate the looks
 of other cameras — Fuji film simulations, Ricoh GR image controls, Leica, Hasselblad, Canon and Nikon colour, Sony's
 newer Creative Looks — and of classic film stocks from Kodak, Fuji, Cinestill, Agfa and Ilford.
 
@@ -184,7 +184,7 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 AndroidManifest.xml            package com.voxivoid.recipelab
 src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
-  Recipes.java                 the 76 recipes, brands, GROUP_START / GROUP_COUNT
+  Recipes.java                 the 77 recipes, brands, GROUP_START / GROUP_COUNT
   res/raw/ids.txt              all small settings IDs, used by the Fn snapshot/diff tool
   PickerView.java              Canvas-drawn brand browser
   Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
