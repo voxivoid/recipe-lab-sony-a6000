@@ -2,7 +2,8 @@
 
 A PlayMemories Camera App for the **Sony ILCE-6000 (A6000)** that stores film-simulation-style colour recipes
 directly in the camera's settings, so they apply to **every photo and video mode** and survive power cycles.
-Live preview inside the app; one button writes the recipe; power-cycle applies it.
+Pick a recipe with the control wheel while watching the live view, press the centre button to store it, power-cycle,
+done — the look is now the camera's default in P/A/S/M, movie, everything.
 
 > The A6000 has no Picture Profile menu and cannot store PP gamma / colour-depth values (the UI was never compiled
 > into its firmware; the controller code exists but has no storage). Recipes here use only what this body stores
@@ -10,21 +11,61 @@ Live preview inside the app; one button writes the recipe; power-cycle applies i
 > the hidden alternate colour matrix that `PP_NO=3` switches on (~+45 % chroma). They are approximations of film
 > looks, not clones of anyone's Picture-Profile recipes.
 
+Current version: **0.9**
+
+## Screen
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│                                                               │
+│                      live view (full frame)                   │
+│                                                               │
+│ Kodak Portra 400  PREVIEW                            12 / 31 │
+│ Portrait  ·  WB auto                                          │
+│ [STYLE  ][SAT ][CON ][SHARP][MATRIX][WB  ][KELVIN][A-B][G-M]  │
+│  Portrait  -1    0     0     off    auto    -     A2   G1     │
+│ ◎ recipe  ▲▼ parameter  ● store  🗑 factory  AEL hide  ▤ exit │
+└───────────────────────────────────────────────────────────────┘
+```
+
+* **Title row** — recipe name, badge, position in the list.
+  Badge: **STORED** = camera settings already equal the recipe · **PREVIEW** = only the live view shows it, press the
+  centre button to store · **PROTECTED** = settings store is write-protected (disable protection with
+  OpenMemories-Tweak first; the app will not be able to write).
+* **Meta line** — base Creative Style, white balance, colour-matrix flag, preview errors if any.
+* **Parameter chips** — the nine stored values. Amber chip = selected for editing; amber value = differs from what is
+  stored. Kelvin shows `-` unless WB is in colour-temperature mode.
+* **Legend** — drawn with Canvas (the camera font has no symbol glyphs); switches to "adjust" when a chip is selected.
+* **Pill / hidden** — press AEL to shrink the overlay to a small pill (recipe name + index) or hide it completely.
+  Recipe scrolling keeps working in both states so you can compare looks on a clean frame.
+* **Toast** — status messages (stored, protected, errors) appear top-centre and fade.
+
 ## Controls
 
 | key | action |
 |---|---|
 | control wheel, LEFT / RIGHT | previous / next recipe — applied to the live view immediately |
 | UP / DOWN | select a parameter chip; LEFT / RIGHT or the top dial then adjust it |
-| AEL (also C1, DISP, Fn) | overlay: full panel → small pill → hidden (clean preview) |
-| ENTER | **store** the staged values in the settings store + sync |
-| TRASH | stage factory values (standard, 0/0/0, WB auto) — PLAY cannot be used: the firmware always opens playback |
+| centre button (ENTER) | **store** the staged values in the settings store + sync |
+| AEL (also C1, DISP, Fn) | overlay: full panel → small pill → hidden |
+| TRASH | stage factory values (Standard, 0 / 0 / 0, matrix off, WB auto) — press ENTER to store them |
 | shutter | take a photo with the previewed look (half-press = AF) |
 | MENU | exit (live preview reverts; stored values stay) |
 
-Badge: **STORED** = camera settings already equal the recipe · **PREVIEW** = only the live view shows it, press ENTER
-to store · **PROTECTED** = settings store is write-protected (disable protection with OpenMemories-Tweak first).
+PLAY is deliberately unbound: the firmware always opens playback on that key, nothing an app can do about it.
 Changes stored with ENTER take effect after a **power-cycle**.
+
+## Recipes
+
+31 entries in `Recipes.java`. Only looks that map credibly onto this body's controls were kept; each has a base
+Creative Style, saturation / contrast / sharpness, optional PP3 colour matrix and a white-balance setting.
+
+| colour | black & white |
+|---|---|
+| FACTORY, Fuji 400H, Ektar 100, Kodak Portra 800, Kodak Gold, Blue Velvet (Cinestill 50D), Cinestill 800T, Fuji Eterna, Classic Chrome, Kodachrome 64, Kodak Ultra Max 400, Kodak Portra 400, Astia, Classic Negative, Fuji Fortia 50, Kodak Portra 160, Ektachrome, Velvia Pro, Provia RX, Classic Cinema, Kodak Color Plus 200, Nostalgic Neg, Asteroid City (Vision 200T) | Delta 3200, T-Max, Kodak Tri-X 400, Acros X, Acros XY / XR / XG (filter looks via WB shift), Ilford HP5 |
+
+Editing a recipe: pick it, UP/DOWN to a chip, dial or LEFT/RIGHT, ENTER. The live view is always what will be stored.
+Adding a recipe: one line in `Recipes.java`, rebuild.
 
 ## How it works
 
@@ -47,12 +88,15 @@ Changes stored with ENTER take effect after a **power-cycle**.
 
 * Live preview uses the app camera API (`CameraEx` → `Camera.Parameters`): `color-mode`, `saturation`, `contrast`,
   `sharpness`, `whitebalance` / `color-temperture-white-balance`, `light-balance-for-white-balance`,
-  `color-compensation-for-white-balance`, `rgb-matrix` (Q10 fixed point, 1.0 = 1024).
+  `color-compensation-for-white-balance`, `rgb-matrix` (Q10 fixed point, 1.0 = 1024). Runtime parameters revert
+  when the app closes; only the stored bytes persist.
+* Keys arrive as Linux scan codes (`ScalarInput.ISV_KEY_*`): wheel rotation 522 / 523, top dial 525 / 526, AEL 532,
+  C1 622, trash 595, centre 232, MENU 514.
 
 ## Safety
 
-* Only writes bytes whose factory values are known; **PLAY → ENTER** restores them. Backup protection must be off
-  (it is by default on this body; OpenMemories-Tweak can toggle it).
+* Only writes bytes whose factory values are known; **TRASH → ENTER** restores them. Backup protection must be off
+  (OpenMemories-Tweak can toggle it; the badge shows PROTECTED otherwise).
 * Nothing touches firmware, bootloader or the PlayMemories system. Uninstall via *Application Management*.
 * Tested on ILCE-6000 firmware 3.21 only. Other CXD90014 bodies likely share the slots — verify with the on-screen
   readings before trusting a recipe.
@@ -69,11 +113,18 @@ set ANDROID_NDK=C:\path\to\android-ndk-r16b      REM optional overrides: JAVA_HO
 build.cmd
 ```
 
+`build.cmd` renames the platform's `errno.h` shim (updater-only, shadows the NDK header), runs ndk-build, aapt,
+javac (`-encoding UTF-8` — otherwise `·` becomes `Â·` on the camera), d8 (invoked as `java -cp d8.jar`, since
+`d8.bat` picks whatever Java is on PATH), zipalign and apksigner (v1 signature only; a throw-away keystore is
+generated on first run).
+
 Install with [Sony-PMCA-RE](https://github.com/ma1co/Sony-PMCA-RE): camera in mass-storage USB mode, then
 
 ```
 python pmca-console.py install -f PPSelect.apk
 ```
+
+Reinstalling over an existing version keeps the same package; no uninstall needed.
 
 ## Credits
 
