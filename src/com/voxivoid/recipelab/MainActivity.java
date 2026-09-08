@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.23 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.24 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -66,7 +66,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private HorizontalScrollView chipScroll;
     private boolean swallowMenuUp = false;
     private TextView name, badge, tag, count, meta, mini, toast, prompt;
-    private int promptSel = 0; private boolean promptOpen = false; private long fnDown = 0;
+    private int promptSel = 0, promptMode = 0; private boolean promptOpen = false; private long fnDown = 0;   // promptMode 1 raw-vs-effect, 2 quality change
     private HintBar hints;
     private LinearLayout chips;
     private final TextView[] chipLabel = new TextView[N], chipValue = new TextView[N];
@@ -218,8 +218,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     /** stored value of the SUB slot for the staged effect (the slot changes with the effect) */
     private int storedSub() { int sid = Recipes.subId(edit[R_PE]); if (sid == 0) return edit[R_SUB]; try { return rdu(sid); } catch (Throwable t) { return edit[R_SUB]; } }
 
+    private boolean qualityChanges() { return edit[R_QUAL] != cur[R_QUAL]; }
+
     private boolean rowDirty(int i) {
-        if (i == R_QUAL) return qualityPersistent() && edit[i] != cur[i];
+        if (i == R_QUAL) return edit[i] != cur[i];
         if (i == R_SUB) return Recipes.subId(edit[R_PE]) != 0 && edit[i] != storedSub();
         return ROW_ID[i] != 0 && edit[i] != cur[i];
     }
@@ -236,8 +238,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         }
     }
 
-    private void writeAll() {
-        if (edit[R_PE] != 0 && qualityIsRaw() && !promptOpen) { openPrompt(); return; }
+    private void writeAll() { writeAll(false); }
+
+    private void writeAll(boolean confirmed) {
+        if (!confirmed && qualityChanges()) { openPrompt(2); return; }
+        if (!confirmed && edit[R_PE] != 0 && qualityIsRaw()) { openPrompt(1); return; }
         if (!dirty()) { showToast("Already stored — nothing to write", 2500); return; }
         String msg;
         try {
@@ -245,6 +250,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             for (int i = 1; i < N; i++) {
                 if (!rowDirty(i)) continue;
                 if (i == R_QUAL) {
+                    if (!qualityPersistent()) continue;             // slot unknown yet: live view only
                     NativeBackup.writeByte(ID_QFMT, Q_FMT_CODE[edit[i]]);
                     if (ID_QJPG != 0) NativeBackup.writeByte(ID_QJPG, Q_JPG_CODE[edit[i]]);
                     n++; continue;
@@ -262,27 +268,41 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     // ------------------------------------------------------------ RAW vs Picture Effect prompt
-    private static final String[] PROMPT_OPT = { "JPEG Fine", "JPEG Std", "Keep RAW" };
+    private static final String[] PROMPT_RAW = { "JPEG Fine", "JPEG Std", "Keep RAW" };
+    private String[] promptOpts() { return promptMode == 1 ? PROMPT_RAW : new String[] { "Store", "Keep " + Q_LABEL[cur[R_QUAL]], "Cancel" }; }
 
-    private void openPrompt() { promptOpen = true; promptSel = 0; renderPrompt(); }
+    private void openPrompt(int mode) { promptMode = mode; promptOpen = true; promptSel = 0; renderPrompt(); }
 
     private void renderPrompt() {
-        StringBuilder sb = new StringBuilder("Picture Effects only work with JPEG.\nQuality is ").append(Q_LABEL[edit[R_QUAL]]).append(" — the effect would be ignored.\n\n");
-        for (int i = 0; i < PROMPT_OPT.length; i++) sb.append(i == promptSel ? "  [ " : "    ").append(PROMPT_OPT[i]).append(i == promptSel ? " ]  " : "    ");
+        StringBuilder sb = new StringBuilder();
+        if (promptMode == 1) sb.append("Picture Effects only work with JPEG.\nQuality is ").append(Q_LABEL[edit[R_QUAL]]).append(" — the effect would be ignored.\n\n");
+        else sb.append("This recipe changes Quality\n").append(Q_LABEL[cur[R_QUAL]]).append("  →  ").append(Q_LABEL[edit[R_QUAL]]).append("\n\n");
+        String[] opt = promptOpts();
+        for (int i = 0; i < opt.length; i++) sb.append(i == promptSel ? "  [ " : "    ").append(opt[i]).append(i == promptSel ? " ]  " : "    ");
         sb.append("\n\nLEFT / RIGHT choose  ·  ENTER confirm  ·  MENU cancel");
-        if (!qualityPersistent()) sb.append("\n(quality slot not located yet: choice applies to the live view only)");
+        if (!qualityPersistent()) sb.append("\n(quality slot not located yet: applies to the live view only)");
         prompt.setText(sb); prompt.setVisibility(View.VISIBLE);
     }
+
+    private void closePrompt() { prompt.setVisibility(View.GONE); promptOpen = false; }
 
     private boolean promptKey(int sc) {
         switch (sc) {
             case K_LEFT: case K_WHEEL_CCW: case K_DIAL_CCW: promptSel = (promptSel + 2) % 3; renderPrompt(); return true;
             case K_RIGHT: case K_WHEEL_CW: case K_DIAL_CW: promptSel = (promptSel + 1) % 3; renderPrompt(); return true;
             case K_ENTER:
-                prompt.setVisibility(View.GONE);
-                if (promptSel == 0) edit[R_QUAL] = 2; else if (promptSel == 1) edit[R_QUAL] = 3;
-                applyPreview(); writeAll(); promptOpen = false; render(); return true;
-            case K_MENU: case K_SK1: swallowMenuUp = true; prompt.setVisibility(View.GONE); promptOpen = false; render(); return true;
+                closePrompt();
+                if (promptMode == 1) {                                       // RAW vs effect
+                    if (promptSel == 0) edit[R_QUAL] = 2; else if (promptSel == 1) edit[R_QUAL] = 3;
+                    applyPreview(); writeAll(true);
+                } else {                                                     // quality change
+                    if (promptSel == 2) { render(); return true; }           // cancel
+                    if (promptSel == 1) edit[R_QUAL] = cur[R_QUAL];          // keep current quality
+                    applyPreview();
+                    if (edit[R_PE] != 0 && qualityIsRaw()) openPrompt(1); else writeAll(true);
+                }
+                render(); return true;
+            case K_MENU: case K_SK1: swallowMenuUp = true; closePrompt(); render(); return true;
         }
         return true;
     }
@@ -418,6 +438,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (edit[R_MTX] == 1 && edit[R_PE] == 0) m.append("  ·  PP3 matrix");
             if (edit[R_EV] != 0) m.append("  ·  EV ").append(Recipes.evLabel(edit[R_EV]));
             if (edit[R_DRO] != Recipes.DRO_AUTO) m.append("  ·  DRO ").append(Recipes.droLabel(edit[R_DRO])).append(" (preview only)");
+            if (qualityChanges()) m.append("  ·  QUALITY → ").append(Q_LABEL[edit[R_QUAL]]).append(" (now ").append(Q_LABEL[cur[R_QUAL]]).append(")");
             if (edit[R_PE] != 0 && qualityIsRaw()) m.append("  ·  RAW is on: effect ignored — ENTER asks to switch to JPEG");
             if (!previewOk) m.append("  ·  no live preview: ").append(previewErr);
             else if (row == R_DRO || row == R_PE) m.append("  ·  ").append(cinematone);
@@ -441,7 +462,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             hints.setEditMode(row != 0);
         } else if (overlay == 1) {
             panel.setVisibility(View.GONE); mini.setVisibility(View.VISIBLE);
-            mini.setText((edit[R_PE] != 0 ? "PE  " : "CS  ") + r.name + "   " + pos + (dirty ? "   · preview" : "   · stored"));
+            mini.setText((edit[R_PE] != 0 ? "PE  " : "CS  ") + r.name + "   " + pos + (dirty ? "   · preview" : "   · stored") + (qualityChanges() ? "   · quality → " + Q_LABEL[edit[R_QUAL]] : ""));
         } else {
             panel.setVisibility(View.GONE); mini.setVisibility(View.GONE);
         }
