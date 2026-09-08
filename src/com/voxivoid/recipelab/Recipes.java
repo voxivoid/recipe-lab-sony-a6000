@@ -12,7 +12,7 @@ package com.voxivoid.recipelab;
  * ab / gm : WB fine tune  amber(+)/blue(-)  green(+)/magenta(-)  (-7..+7)
  * pe      : Picture Effect (persistent; when on, Creative Style is ignored by the camera and RAW is disabled)
  * ev      : exposure bias in 1/3 EV steps (persistent)
- * dro     : DRO 0 off, 1..5, 6 auto (live preview only until its settings slot is located)
+ * dro     : DRO 0 off, 1..5, 6 auto (persistent)
  * sub     : effect sub-parameter — Soft High-key tint 0 blue / 1 pink / 2 green, Toy tone 0..4, Partial hue 0..3, Posterization 0 colour / 1 b&w
  */
 public class Recipes {
@@ -68,7 +68,7 @@ public class Recipes {
         }
     }
     public static String subLabel(int pe, int sub) { String[] v = subValues(pe); return v == null ? null : (sub >= 0 && sub < v.length ? v[sub].replace("posterization-", "") : "?" + sub); }
-    /** DRO: 0 off, 1..5 level, 6 auto (runtime preview only until the settings slot is found) */
+    /** DRO: 0 off, 1..5 level, 6 auto */
     public static final int DRO_OFF = 0, DRO_AUTO = 6;
     public static String droLabel(int v) { return v == DRO_AUTO ? "auto" : v == 0 ? "off" : "Lv" + v; }
     /** exposure bias in 1/3 EV steps -> "+0.7" */

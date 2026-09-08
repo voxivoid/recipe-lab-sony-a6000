@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.31 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.32 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -41,7 +41,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private static final int ID_STYLE = 0x01070175, ID_CON = 0x01070178, ID_SAT = 0x01070187, ID_SHARP = 0x0107018a, ID_PP_NO = 0x0107031c,
             ID_WB_MODE = 0x01070019, ID_WB_TEMP = 0x01070018, ID_WB_AB = 0x01070017, ID_WB_GM = 0x01070016,
-            ID_PE = 0x010706f1, ID_EV = 0x010700b8, ID_DRO = 0 /* unknown: preview only */,
+            ID_PE = 0x010706f1, ID_EV = 0x010700b8,
+            ID_DRO = 0x01070104 /* off 0, auto 1, Lv1..5 = 2..6 (verified) */, ID_DRO_LVL = 0x01070775 /* 1 for off/auto, Lv n = n+1 */,
             ID_QFMT = 0x01070013, ID_QJPG = 0x01070014,            // still file format / jpeg quality (verified by menu diff)
             ID_QFMT2 = 0x01070aa9, ID_QJPG2 = 0x01070aaa;          // the camera keeps mirror copies; written too
     // Quality: 0 RAW, 1 RAW+JPEG, 2 JPEG Fine, 3 JPEG Std  — runtime keys storage-fmt / jpeg-quality
@@ -51,7 +52,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private static final int[] Q_FMT_CODE = { 1, 2, 0, 0 }, Q_JPG_CODE = { 1, 1, 1, 0 };   // verified: format raw=1 rawjpeg=2 jpeg=0 · jpeg std=0 fine=1
 
     private static final int R_RECIPE = 0, R_STYLE = 1, R_SAT = 2, R_CON = 3, R_SHARP = 4, R_MTX = 5, R_PE = 6, R_SUB = 7, R_WBMODE = 8, R_KELVIN = 9, R_AB = 10, R_GM = 11, R_EV = 12, R_DRO = 13, R_QUAL = 14;
-    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "EFFECT", "SUB", "WB", "KELVIN", "A-B", "G-M", "EV", "DRO*", "QUALITY" };
+    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "EFFECT", "SUB", "WB", "KELVIN", "A-B", "G-M", "EV", "DRO", "QUALITY" };
     private static final int[] ROW_ID = { 0, ID_STYLE, ID_SAT, ID_CON, ID_SHARP, ID_PP_NO, ID_PE, -1 /* depends on effect */, ID_WB_MODE, ID_WB_TEMP, ID_WB_AB, ID_WB_GM, ID_EV, ID_DRO, -2 /* two slots */ };
     private static final int[] ROW_MIN = { 0, 1, -16, -8, -8, 0, 0, 0, 0, 25, -7, -7, -15, 0, 0 };
     private static final int[] ROW_MAX = { 0, 13, 16, 8, 8, 1, 13, 4, 20, 99, 7, 7, 15, 6, 3 };
@@ -184,7 +185,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         try {
             for (int i = 1; i < N; i++) {
                 int id = ROW_ID[i];
-                if (id == 0) { cur[i] = edit[i] = Recipes.DRO_AUTO; continue; }      // no slot: assume camera default
+                if (id == ID_DRO) { int v = rdu(id); cur[i] = edit[i] = v == 0 ? 0 : v == 1 ? Recipes.DRO_AUTO : Math.min(5, v - 1); continue; }
                 if (id == -1) { int sid = Recipes.subId(cur[R_PE]); cur[i] = edit[i] = sid == 0 ? 0 : rdu(sid); continue; }
                 if (id == -2) { cur[i] = edit[i] = readQuality(); continue; }
                 int v = (id == ID_WB_TEMP || id == ID_WB_MODE || id == ID_STYLE || id == ID_PE) ? rdu(id) : rd(id);
@@ -268,6 +269,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 }
                 int id = slot(i), v = edit[i];
                 if (id == ID_PP_NO) v = (v == 0) ? 0 : 3;
+                if (id == ID_DRO) {
+                    int main = v == 0 ? 0 : v == Recipes.DRO_AUTO ? 1 : v + 1, lvl = (v >= 1 && v <= 5) ? v + 1 : 1;
+                    NativeBackup.writeByte(ID_DRO, main); NativeBackup.writeByte(ID_DRO_LVL, lvl); n++; continue;
+                }
                 NativeBackup.writeByte(id, v);
                 n++;
             }
@@ -434,7 +439,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             m.append("  ·  WB ").append(edit[R_WBMODE] == 14 ? (edit[R_KELVIN] * 100) + "K" : edit[R_WBMODE] == 1 ? "auto" : "mode " + edit[R_WBMODE]);
             if (edit[R_MTX] == 1 && edit[R_PE] == 0) m.append("  ·  PP3 matrix");
             if (edit[R_EV] != 0) m.append("  ·  EV ").append(Recipes.evLabel(edit[R_EV]));
-            if (edit[R_DRO] != Recipes.DRO_AUTO) m.append("  ·  DRO ").append(Recipes.droLabel(edit[R_DRO])).append(" (preview only)");
+            if (edit[R_DRO] != Recipes.DRO_AUTO) m.append("  ·  DRO ").append(Recipes.droLabel(edit[R_DRO]));
             if (qualityChanges()) m.append("  ·  QUALITY → ").append(Q_LABEL[edit[R_QUAL]]).append(" (now ").append(Q_LABEL[cur[R_QUAL]]).append(")");
             if (edit[R_PE] != 0 && qualityIsRaw()) m.append("  ·  RAW is on: effect ignored");
             if (!previewOk) m.append("  ·  no live preview: ").append(previewErr);

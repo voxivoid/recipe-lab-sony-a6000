@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.31 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.32 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -206,7 +206,7 @@ build.cmd                      full Windows build → RecipeLab.apk (+ copy to d
 | Picture Effect | `0x010706f1` | index in `picture-effect-values` (verified: Retro = 4) |
 | Effect sub-setting | `0x010709d8` high-key tint · `0x010706f3` toy tone · `0x010706ee` partial-colour hue · `0x010706ef` posterization | index in the runtime value list (provisional) |
 | Exposure bias | `0x010700b8` | 1/3 EV steps, signed (verified: +0.7 = 2) |
-| DRO | candidates `0x01070104` (mode) + `0x01070b74` (u16 level) | being confirmed; preview only until then |
+| DRO | `0x01070104` (+ level byte `0x01070775`) | Off 0, Auto 1, Lv1–5 = 2–6; level byte 1 for Off/Auto, Lv n = n+1 (verified) |
 | Quality: file format | `0x01070013` (+ mirror `0x01070aa9`) | RAW = 1, RAW+JPEG = 2, JPEG = 0 (verified) |
 | Quality: JPEG level | `0x01070014` (+ mirror `0x01070aaa`) | Std = 0, Fine = 1 (verified) |
 
