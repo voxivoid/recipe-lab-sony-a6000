@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.20 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.21 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -115,7 +115,7 @@ A few extras:
 | | |
 |---|---|
 | **up / down** | selects one of the value chips so you can fine-tune with left/right before storing. Only the chips the recipe uses are shown: a **CS** (Creative Style) recipe shows style / saturation / contrast / sharpness / matrix, a **PE** (Picture Effect) recipe shows the effect and its sub-setting instead; white balance, EV and DRO always |
-| **Fn** | developer tool: snapshot of all settings; press again after changing a menu item to see which slot it lives in |
+| **Fn** | short press: cycle Quality (RAW → RAW+JPEG → JPEG Fine → JPEG Std). Long press (1 s): developer snapshot/diff of all settings |
 | **TRASH** (bin button) | stages the factory look; centre button stores it |
 | **shutter** | takes a picture with whatever you are previewing |
 | **MENU** | leaves the app |
@@ -128,9 +128,11 @@ accepting changes (see [Troubleshooting](#troubleshooting)).
 
 **What it actually does.** Recipe Lab sets the same things you could set by hand in the menus — Creative Style with
 its contrast, saturation and sharpness sliders, white balance and its fine-tune, exposure compensation, Picture
-Effect — plus one hidden switch that turns on a richer colour matrix the camera has but never shows. Eleven
-settings, nothing else. Recipes that use a Picture Effect (Retro, Soft High-key, High Contrast Mono) behave like
-that menu item does: the camera ignores Creative Style while it is on and records JPEG only, no RAW. It does not modify the
+Effect — plus one hidden switch that turns on a richer colour matrix the camera has but never shows. Recipes that
+use a Picture Effect (Retro, Soft High-key, High Contrast Mono) behave like that menu item does: the camera ignores
+Creative Style while it is on, and **it needs Quality = JPEG** — with RAW or RAW+JPEG set, the camera silently drops
+the effect. When you store such a recipe the app asks whether to switch Quality to JPEG Fine or Standard (or keep
+RAW and accept no effect). Fn cycles Quality any time, so RAW is one press away again. It does not modify the
 camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
 Sony used for its own downloadable apps.
 

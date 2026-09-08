@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.20 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.21 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -40,13 +40,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private static final int ID_STYLE = 0x01070175, ID_CON = 0x01070178, ID_SAT = 0x01070187, ID_SHARP = 0x0107018a, ID_PP_NO = 0x0107031c,
             ID_WB_MODE = 0x01070019, ID_WB_TEMP = 0x01070018, ID_WB_AB = 0x01070017, ID_WB_GM = 0x01070016,
-            ID_PE = 0x010706f1, ID_EV = 0x010700b8, ID_DRO = 0 /* unknown: preview only */;
+            ID_PE = 0x010706f1, ID_EV = 0x010700b8, ID_DRO = 0 /* unknown: preview only */,
+            ID_QFMT = 0 /* still file format slot: unknown yet */, ID_QJPG = 0 /* jpeg quality slot: unknown yet */;
+    // Quality: 0 RAW, 1 RAW+JPEG, 2 JPEG Fine, 3 JPEG Std  — runtime keys storage-fmt / jpeg-quality; stored codes provisional
+    private static final String[] Q_LABEL = { "RAW", "RAW+JPG", "JPG Fine", "JPG Std" };
+    private static final String[] Q_FMT = { "raw", "rawjpeg", "jpeg", "jpeg" };
+    private static final String[] Q_JPG = { "50", "50", "50", "25" };
+    private static final int[] Q_FMT_CODE = { 1, 2, 0, 0 }, Q_JPG_CODE = { 1, 1, 1, 2 };   // provisional stored bytes
 
-    private static final int R_RECIPE = 0, R_STYLE = 1, R_SAT = 2, R_CON = 3, R_SHARP = 4, R_MTX = 5, R_PE = 6, R_SUB = 7, R_WBMODE = 8, R_KELVIN = 9, R_AB = 10, R_GM = 11, R_EV = 12, R_DRO = 13;
-    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "EFFECT", "SUB", "WB", "KELVIN", "A-B", "G-M", "EV", "DRO*" };
-    private static final int[] ROW_ID = { 0, ID_STYLE, ID_SAT, ID_CON, ID_SHARP, ID_PP_NO, ID_PE, -1 /* depends on effect */, ID_WB_MODE, ID_WB_TEMP, ID_WB_AB, ID_WB_GM, ID_EV, ID_DRO };
-    private static final int[] ROW_MIN = { 0, 1, -16, -8, -8, 0, 0, 0, 0, 25, -7, -7, -15, 0 };
-    private static final int[] ROW_MAX = { 0, 13, 16, 8, 8, 1, 13, 4, 20, 99, 7, 7, 15, 6 };
+    private static final int R_RECIPE = 0, R_STYLE = 1, R_SAT = 2, R_CON = 3, R_SHARP = 4, R_MTX = 5, R_PE = 6, R_SUB = 7, R_WBMODE = 8, R_KELVIN = 9, R_AB = 10, R_GM = 11, R_EV = 12, R_DRO = 13, R_QUAL = 14;
+    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "EFFECT", "SUB", "WB", "KELVIN", "A-B", "G-M", "EV", "DRO*", "QUALITY*" };
+    private static final int[] ROW_ID = { 0, ID_STYLE, ID_SAT, ID_CON, ID_SHARP, ID_PP_NO, ID_PE, -1 /* depends on effect */, ID_WB_MODE, ID_WB_TEMP, ID_WB_AB, ID_WB_GM, ID_EV, ID_DRO, -2 /* two slots */ };
+    private static final int[] ROW_MIN = { 0, 1, -16, -8, -8, 0, 0, 0, 0, 25, -7, -7, -15, 0, 0 };
+    private static final int[] ROW_MAX = { 0, 13, 16, 8, 8, 1, 13, 4, 20, 99, 7, 7, 15, 6, 3 };
     private static final int N = ROW_ID.length;
     // PP3 colour matrix measured on this body, Q10 fixed point (1.0 = 1024)
     private static final String PP3_MATRIX = "1331,-307,-51,-205,1331,-123,-20,-461,1485";
@@ -57,7 +63,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private PickerView picker;
     private HorizontalScrollView chipScroll;
     private boolean swallowMenuUp = false;
-    private TextView name, badge, tag, count, meta, mini, toast;
+    private TextView name, badge, tag, count, meta, mini, toast, prompt;
+    private int promptSel = 0; private boolean promptOpen = false; private long fnDown = 0;
     private HintBar hints;
     private LinearLayout chips;
     private final TextView[] chipLabel = new TextView[N], chipValue = new TextView[N];
@@ -87,6 +94,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         hints = (HintBar) findViewById(R.id.hints);
         mini = (TextView) findViewById(R.id.mini);
         toast = (TextView) findViewById(R.id.toast);
+        prompt = (TextView) findViewById(R.id.prompt);
         chips = (LinearLayout) findViewById(R.id.chips);
         buildChips();
         SurfaceView sv = (SurfaceView) findViewById(R.id.surface);
@@ -170,6 +178,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 int id = ROW_ID[i];
                 if (id == 0) { cur[i] = edit[i] = Recipes.DRO_AUTO; continue; }      // no slot: assume camera default
                 if (id == -1) { int sid = Recipes.subId(cur[R_PE]); cur[i] = edit[i] = sid == 0 ? 0 : rdu(sid); continue; }
+                if (id == -2) { cur[i] = edit[i] = readQuality(); continue; }
                 int v = (id == ID_WB_TEMP || id == ID_WB_MODE || id == ID_STYLE || id == ID_PE) ? rdu(id) : rd(id);
                 if (id == ID_PP_NO) v = (v == 0) ? 0 : 1;
                 cur[i] = v; edit[i] = v;
@@ -184,12 +193,31 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (r.wbMode != 0) { edit[R_WBMODE] = r.wbMode; if (r.wbMode == 14) edit[R_KELVIN] = r.kelvin / 100; }
         edit[R_AB] = r.ab; edit[R_GM] = r.gm;
         edit[R_PE] = r.pe; edit[R_EV] = r.ev; edit[R_DRO] = r.dro; edit[R_SUB] = r.sub;
+        // quality is the user's, not the recipe's — recipes never change it silently
     }
+
+    /** quality from the two stored bytes; falls back to the runtime value when the slots are not known yet */
+    private int readQuality() {
+        try {
+            if (ID_QFMT != 0) {
+                int f = rdu(ID_QFMT), j = ID_QJPG != 0 ? rdu(ID_QJPG) : Q_JPG_CODE[2];
+                for (int q = 0; q < 4; q++) if (Q_FMT_CODE[q] == f && (q < 2 || Q_JPG_CODE[q] == j)) return q;
+            }
+            if (camera != null) {
+                String fmt = camera.getParameters().get("storage-fmt"), jq = camera.getParameters().get("jpeg-quality");
+                if ("raw".equals(fmt)) return 0; if ("rawjpeg".equals(fmt)) return 1; return "25".equals(jq) ? 3 : 2;
+            }
+        } catch (Throwable t) {}
+        return 2;
+    }
+    private boolean qualityIsRaw() { return edit[R_QUAL] <= 1; }
+    private boolean qualityPersistent() { return ID_QFMT != 0; }
 
     /** stored value of the SUB slot for the staged effect (the slot changes with the effect) */
     private int storedSub() { int sid = Recipes.subId(edit[R_PE]); if (sid == 0) return edit[R_SUB]; try { return rdu(sid); } catch (Throwable t) { return edit[R_SUB]; } }
 
     private boolean rowDirty(int i) {
+        if (i == R_QUAL) return qualityPersistent() && edit[i] != cur[i];
         if (i == R_SUB) return Recipes.subId(edit[R_PE]) != 0 && edit[i] != storedSub();
         return ROW_ID[i] != 0 && edit[i] != cur[i];
     }
@@ -207,12 +235,18 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void writeAll() {
+        if (edit[R_PE] != 0 && qualityIsRaw() && !promptOpen) { openPrompt(); return; }
         if (!dirty()) { showToast("Already stored — nothing to write", 2500); return; }
         String msg;
         try {
             int n = 0;
             for (int i = 1; i < N; i++) {
                 if (!rowDirty(i)) continue;
+                if (i == R_QUAL) {
+                    NativeBackup.writeByte(ID_QFMT, Q_FMT_CODE[edit[i]]);
+                    if (ID_QJPG != 0) NativeBackup.writeByte(ID_QJPG, Q_JPG_CODE[edit[i]]);
+                    n++; continue;
+                }
                 int id = slot(i), v = edit[i];
                 if (id == ID_PP_NO) v = (v == 0) ? 0 : 3;
                 NativeBackup.writeByte(id, v);
@@ -225,7 +259,38 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         showToast(msg, 5000); render();
     }
 
-    // ------------------------------------------------------------ snapshot / diff of the whole settings store (Fn)
+    // ------------------------------------------------------------ RAW vs Picture Effect prompt
+    private static final String[] PROMPT_OPT = { "JPEG Fine", "JPEG Std", "Keep RAW" };
+
+    private void openPrompt() { promptOpen = true; promptSel = 0; renderPrompt(); }
+
+    private void renderPrompt() {
+        StringBuilder sb = new StringBuilder("Picture Effects only work with JPEG.\nQuality is ").append(Q_LABEL[edit[R_QUAL]]).append(" — the effect would be ignored.\n\n");
+        for (int i = 0; i < PROMPT_OPT.length; i++) sb.append(i == promptSel ? "  [ " : "    ").append(PROMPT_OPT[i]).append(i == promptSel ? " ]  " : "    ");
+        sb.append("\n\nLEFT / RIGHT choose  ·  ENTER confirm  ·  MENU cancel");
+        if (!qualityPersistent()) sb.append("\n(quality slot not located yet: choice applies to the live view only)");
+        prompt.setText(sb); prompt.setVisibility(View.VISIBLE);
+    }
+
+    private boolean promptKey(int sc) {
+        switch (sc) {
+            case K_LEFT: case K_WHEEL_CCW: case K_DIAL_CCW: promptSel = (promptSel + 2) % 3; renderPrompt(); return true;
+            case K_RIGHT: case K_WHEEL_CW: case K_DIAL_CW: promptSel = (promptSel + 1) % 3; renderPrompt(); return true;
+            case K_ENTER:
+                prompt.setVisibility(View.GONE);
+                if (promptSel == 0) edit[R_QUAL] = 2; else if (promptSel == 1) edit[R_QUAL] = 3;
+                applyPreview(); writeAll(); promptOpen = false; render(); return true;
+            case K_MENU: case K_SK1: swallowMenuUp = true; prompt.setVisibility(View.GONE); promptOpen = false; render(); return true;
+        }
+        return true;
+    }
+
+    private void cycleQuality() {
+        edit[R_QUAL] = (edit[R_QUAL] + 1) % 4; applyPreview(); render();
+        showToast("Quality: " + Q_LABEL[edit[R_QUAL]] + (qualityPersistent() ? "  — ENTER to store" : "  (live view only until the slot is known)"), 2500);
+    }
+
+    // ------------------------------------------------------------ snapshot / diff of the whole settings store (Fn long-press)
     private File snapFile() { return new File(getFilesDir(), "snapshot.bin"); }
 
     private List<int[]> idList() {
@@ -287,6 +352,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             else if (edit[R_WBMODE] == 1) p.set("whitebalance", "auto");
             p.set("light-balance-for-white-balance", String.valueOf(edit[R_AB]));
             p.set("color-compensation-for-white-balance", String.valueOf(edit[R_GM]));
+            p.set("storage-fmt", Q_FMT[edit[R_QUAL]]); p.set("jpeg-quality", Q_JPG[edit[R_QUAL]]);
             p.set("picture-effect", Recipes.PE_KEYS[edit[R_PE]]);
             String sk = Recipes.subKey(edit[R_PE]); String[] sv = Recipes.subValues(edit[R_PE]);
             if (sk != null && sv != null && edit[R_SUB] >= 0 && edit[R_SUB] < sv.length) p.set(sk, sv[edit[R_SUB]]);
@@ -315,6 +381,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             case R_SUB: { String l = Recipes.subLabel(edit[R_PE], v); return l == null ? "-" : l; }
             case R_EV: return Recipes.evLabel(v);
             case R_DRO: return Recipes.droLabel(v);
+            case R_QUAL: return v >= 0 && v < 4 ? Q_LABEL[v] : "?" + v;
             default: return (v > 0 ? "+" : "") + v;
         }
     }
@@ -349,6 +416,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (edit[R_MTX] == 1 && edit[R_PE] == 0) m.append("  ·  PP3 matrix");
             if (edit[R_EV] != 0) m.append("  ·  EV ").append(Recipes.evLabel(edit[R_EV]));
             if (edit[R_DRO] != Recipes.DRO_AUTO) m.append("  ·  DRO ").append(Recipes.droLabel(edit[R_DRO])).append(" (preview only)");
+            if (edit[R_PE] != 0 && qualityIsRaw()) m.append("  ·  RAW is on: effect ignored — ENTER asks to switch to JPEG");
             if (!previewOk) m.append("  ·  no live preview: ").append(previewErr);
             else if (row == R_DRO || row == R_PE) m.append("  ·  ").append(cinematone);
             meta.setText(m);
@@ -431,6 +499,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e) {
+        if (promptOpen) return promptKey(e.getScanCode());
+        if (e.getScanCode() == K_FN) { if (e.getRepeatCount() == 0) fnDown = e.getEventTime(); return true; }
         if (overlay == 3 && e.getScanCode() != K_PLAY) return browserKey(e.getScanCode());
         switch (e.getScanCode()) {
             case K_LEFT: step(-1); return true;
@@ -443,7 +513,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             case K_DOWN: if (overlay == 0) moveRow(+1); return true;
             case K_AEL: case K_DISP: overlay = (overlay + 1) % 3; render(); return true;
             case K_C1: openBrowser(true); return true;
-            case K_FN: snapshotOrDiff(); return true;
             case K_ENTER: writeAll(); return true;
             case K_DELETE: case K_SK2: stageFactory(); return true;
             case K_S1: try { camera.autoFocus(null); } catch (Throwable t) {} return true;
@@ -456,11 +525,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent e) {
+        if (promptOpen) { if (e.getScanCode() == K_MENU || e.getScanCode() == K_SK1) swallowMenuUp = false; return true; }
         switch (e.getScanCode()) {
+            case K_FN: if (e.getEventTime() - fnDown > 1000) snapshotOrDiff(); else cycleQuality(); return true;
             case K_MENU: case K_SK1: if (swallowMenuUp) { swallowMenuUp = false; return true; } finish(); return true;
             case K_S1: try { camera.cancelAutoFocus(); } catch (Throwable t) {} return true;
             case K_S2: try { cameraEx.getClass().getMethod("cancelTakePicture").invoke(cameraEx); } catch (Throwable t) {} return true;
-            case K_UP: case K_DOWN: case K_LEFT: case K_RIGHT: case K_ENTER: case K_PLAY: case K_DISP: case K_FN:
+            case K_UP: case K_DOWN: case K_LEFT: case K_RIGHT: case K_ENTER: case K_PLAY: case K_DISP:
             case K_DELETE: case K_SK2: case K_C1: case K_AEL: case K_WHEEL_CW: case K_WHEEL_CCW: case K_DIAL_CW: case K_DIAL_CCW: return true;
         }
         return super.onKeyUp(keyCode, e);
