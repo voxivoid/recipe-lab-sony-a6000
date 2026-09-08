@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.39 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.40 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -119,7 +119,7 @@ A few extras:
 
 | | |
 |---|---|
-| **up / down** | selects one of the value chips so you can fine-tune with left/right before storing. Only the chips the recipe uses are shown: a **CS** (Creative Style) recipe shows style / saturation / contrast / sharpness / matrix, a **PE** (Picture Effect) recipe shows the effect and its sub-setting instead; white balance, EV and DRO always |
+| **up / down** | moves between the recipe line and the row of value chips. In the chip row, left / right walks the chips; press the centre button to focus one (it turns amber), then up / down changes its value, centre button again leaves it. Only the chips the recipe uses are shown: a **CS** (Creative Style) recipe shows style / saturation / contrast / sharpness / matrix, a **PE** (Picture Effect) recipe shows the effect and its sub-setting instead; quality, white balance, EV and DRO always. The legend at the bottom changes with each state |
 | **Fn** | short press: cycle Quality (RAW → RAW+JPEG → JPEG Fine → JPEG Std). Long press (1 s): developer snapshot/diff of all settings |
 | **TRASH** (bin button) | stages the factory look; centre button stores it |
 | **shutter** | takes a picture with whatever you are previewing |

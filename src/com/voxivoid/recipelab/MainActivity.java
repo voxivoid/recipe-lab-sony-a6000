@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.39 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.40 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -83,6 +83,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private SurfaceHolder holder;
     private Object cameraEx; private Camera camera; private String origFlat;
     private int row = 0, recipe = 0, overlay = 0;     // overlay: 0 full, 1 pill, 2 hidden, 3 browser
+    private boolean focus = false;                    // a chip is focused: UP/DOWN change its value
+    private int lastChip = 0;                         // chip to return to when leaving the recipe line
     private final int[] cur = new int[N], edit = new int[N];
     private boolean protectedStore = false, previewOk = false;
     private String previewErr = "";
@@ -440,10 +442,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             meta.setText(m);
             for (int i = 1; i < N; i++) {
                 chip[i].setVisibility(rowVisible(i) ? View.VISIBLE : View.GONE);
-                boolean sel = i == row, ch = rowDirty(i);
-                chip[i].setBackgroundResource(sel ? R.drawable.chip_sel : R.drawable.chip);
-                chipLabel[i].setTextColor(sel ? INK : DIM);
-                chipValue[i].setTextColor(sel ? INK : ch ? ACCENT : WHITE);
+                boolean sel = i == row, ch = rowDirty(i), foc = sel && focus;
+                chip[i].setBackgroundResource(foc ? R.drawable.chip_sel : sel ? R.drawable.chip_hi : R.drawable.chip);
+                chipLabel[i].setTextColor(foc ? INK : sel ? ACCENT : DIM);
+                chipValue[i].setTextColor(foc ? INK : ch ? ACCENT : WHITE);
                 chipValue[i].setText(fmt(i, edit[i]));
             }
             if (row == 0) chipScroll.post(new Runnable() { public void run() { chipScroll.smoothScrollTo(0, 0); } });
@@ -454,7 +456,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                     if (l < sx) chipScroll.smoothScrollTo(l - dp(8), 0); else if (rgt > sx + w) chipScroll.smoothScrollTo(rgt - w + dp(8), 0);
                 } });
             }
-            hints.setEditMode(row != 0);
+            hints.setMode(row == 0 ? HintBar.RECIPE : focus ? HintBar.EDIT : HintBar.CHIPS);
         } else if (overlay == 1) {
             panel.setVisibility(View.GONE); mini.setVisibility(View.VISIBLE);
             mini.setText((edit[R_PE] != 0 ? "PE  " : "CS  ") + r.name + "   " + pos + (dirty ? "   · preview" : "   · stored") + (qualityChanges() ? "   · quality → " + Q_LABEL[edit[R_QUAL]] : ""));
@@ -464,9 +466,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     // ------------------------------------------------------------ input
-    private void step(int dir) {              // LEFT/RIGHT or dial on current row
-        if (row == 0 || overlay != 0) { recipe = (recipe + Recipes.ALL.length + dir) % Recipes.ALL.length; stageRecipe(); }
-        else if (row == R_WBMODE) edit[R_WBMODE] = edit[R_WBMODE] == 14 ? 1 : 14;
+    /** change the value of the focused chip */
+    private void stepValue(int dir) {
+        if (row == 0) return;
+        if (row == R_WBMODE) edit[R_WBMODE] = edit[R_WBMODE] == 14 ? 1 : 14;
         else if (row == R_SUB) { String[] sv = Recipes.subValues(edit[R_PE]); int n = sv == null ? 1 : sv.length; edit[R_SUB] = (edit[R_SUB] + n + dir) % n; }
         else {
             if (isChoice(row)) { int n = ROW_MAX[row] - ROW_MIN[row] + 1; edit[row] = ROW_MIN[row] + ((edit[row] - ROW_MIN[row] + n + dir) % n); }   // choices wrap around
@@ -480,17 +483,27 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     /** enumerated rows (names, not numbers) scroll endlessly */
     private static boolean isChoice(int i) { return i == R_STYLE || i == R_MTX || i == R_PE || i == R_SUB || i == R_QUAL || i == R_DRO || i == R_WBMODE; }
 
-    private void moveRow(int dir) {
-        int pos = -1;                                              // -1 = recipe row
+    /** LEFT/RIGHT inside the chip strip: next / previous visible chip, wrapping */
+    private void moveChip(int dir) {
+        int pos = 0;
         for (int k = 0; k < ORDER.length; k++) if (ORDER[k] == row) pos = k;
-        for (int k = 0; k <= ORDER.length; k++) {
-            pos += dir;
-            if (pos < -1) pos = ORDER.length - 1; else if (pos >= ORDER.length) pos = -1;
-            row = pos < 0 ? 0 : ORDER[pos];
-            if (row == 0 || rowVisible(row)) break;
+        for (int k = 0; k < ORDER.length; k++) {
+            pos = (pos + ORDER.length + dir) % ORDER.length;
+            if (rowVisible(ORDER[pos])) break;
         }
+        row = ORDER[pos]; lastChip = row; render();
+    }
+
+    /** UP/DOWN: switch between the recipe line and the chip strip */
+    private void toggleLine() {
+        if (row == 0) {
+            row = lastChip != 0 && rowVisible(lastChip) ? lastChip : 0;
+            if (row == 0) for (int i : ORDER) if (rowVisible(i)) { row = i; break; }
+        } else { lastChip = row; row = 0; }
         render();
     }
+
+    private void setFocus(boolean f) { focus = f && row != 0; render(); }
 
     private void nextRecipe(int dir) { recipe = (recipe + Recipes.ALL.length + dir) % Recipes.ALL.length; stageRecipe(); applyPreview(); render(); }
 
@@ -499,7 +512,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         recipe = Recipes.GROUP_START[g]; stageRecipe(); applyPreview(); render();
     }
 
-    private void openBrowser(boolean open) { overlay = open ? 3 : 0; row = 0; render(); }
+    private void openBrowser(boolean open) { overlay = open ? 3 : 0; row = 0; focus = false; render(); }
 
     private void stageFactory() { recipe = 0; stageRecipe(); applyPreview(); showToast("Factory values staged — ENTER to store", 3000); render(); }
 
@@ -533,21 +546,34 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (e.getScanCode() == K_FN) { if (e.getRepeatCount() == 0) fnDown = e.getEventTime(); return true; }
         if (overlay == 3 && e.getScanCode() != K_PLAY) return browserKey(e.getScanCode());
         switch (e.getScanCode()) {
-            case K_LEFT: step(-1); return true;
-            case K_RIGHT: step(+1); return true;
-            case K_WHEEL_CW: nextRecipe(+1); return true;
-            case K_WHEEL_CCW: nextRecipe(-1); return true;
-            case K_DIAL_CW: step(+1); return true;
-            case K_DIAL_CCW: step(-1); return true;
-            case K_UP: if (overlay == 0) moveRow(-1); return true;
-            case K_DOWN: if (overlay == 0) moveRow(+1); return true;
+            case K_LEFT: case K_RIGHT: {
+                int dir = e.getScanCode() == K_RIGHT ? +1 : -1;
+                if (focus) stepValue(dir); else if (row == 0 || overlay != 0) nextRecipe(dir); else moveChip(dir);
+                return true;
+            }
+            case K_WHEEL_CW: case K_WHEEL_CCW: {
+                int dir = e.getScanCode() == K_WHEEL_CW ? +1 : -1;
+                if (focus) stepValue(dir); else nextRecipe(dir);
+                return true;
+            }
+            case K_DIAL_CW: case K_DIAL_CCW: {
+                int dir = e.getScanCode() == K_DIAL_CW ? +1 : -1;
+                if (focus) stepValue(dir); else if (row == 0 || overlay != 0) nextRecipe(dir); else moveChip(dir);
+                return true;
+            }
+            case K_UP: case K_DOWN: {
+                if (overlay != 0) return true;
+                if (focus) stepValue(e.getScanCode() == K_UP ? +1 : -1); else toggleLine();
+                return true;
+            }
             case K_AEL: case K_DISP: overlay = (overlay + 1) % 3; render(); return true;
             case K_C1: openBrowser(true); return true;
-            case K_ENTER: writeAll(); return true;
+            case K_ENTER: if (row == 0 || overlay != 0) writeAll(); else setFocus(!focus); return true;
             case K_DELETE: case K_SK2: stageFactory(); return true;
             case K_S1: try { camera.autoFocus(null); } catch (Throwable t) {} return true;
             case K_S2: try { camera.takePicture(null, null, null); } catch (Throwable t) {} return true;
-            case K_MENU: case K_SK1: case K_PLAY: return true;
+            case K_MENU: case K_SK1: if (focus) { swallowMenuUp = true; setFocus(false); } return true;
+            case K_PLAY: return true;
         }
         if (keyCode == KeyEvent.KEYCODE_BACK) { finish(); return true; }
         return super.onKeyDown(keyCode, e);
