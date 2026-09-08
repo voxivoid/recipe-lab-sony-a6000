@@ -1,8 +1,8 @@
-package com.voxivoid.ppselect;
+package com.voxivoid.recipelab;
 
-/** JNI binding to the camera settings store (libppsel.so). */
+/** JNI binding to the camera settings store (librecipelab.so). */
 public class NativeBackup {
-    static { System.loadLibrary("ppsel"); }
+    static { System.loadLibrary("recipelab"); }
 
     public static native byte[] read(int id) throws NativeException;
     public static native void write(int id, byte[] data) throws NativeException;

@@ -1,4 +1,4 @@
-package com.voxivoid.ppselect;
+package com.voxivoid.recipelab;
 
 import android.app.Activity;
 import android.graphics.Typeface;
@@ -16,7 +16,7 @@ import android.widget.TextView;
 import java.lang.reflect.Method;
 
 /**
- * Film Simulations 0.12 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.13 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters (exact for colour mode / sat / con / sharp / WB / matrix).
  * ENTER  = write the recipe's stored bytes (Creative Style + WB slots) + sync → power-cycle applies it everywhere.

@@ -15,13 +15,13 @@ extern "C"
 using namespace std;
 
 /*
- * Generic settings-store access for com.voxivoid.ppselect.NativeBackup (same driver path as OpenMemories-Tweak).
+ * Generic settings-store access for com.voxivoid.recipelab.NativeBackup (same driver path as OpenMemories-Tweak).
  * Single settings bytes only; originals are known; firmware is never touched.
  */
 
 static void throw_native(JNIEnv *env, const char *msg)
 {
-    jclass c = env->FindClass("com/voxivoid/ppselect/NativeException");
+    jclass c = env->FindClass("com/voxivoid/recipelab/NativeException");
     if (c) env->ThrowNew(c, msg);
 }
 
@@ -32,7 +32,7 @@ static int prop_size(int id)
     return res;
 }
 
-extern "C" JNIEXPORT jbyteArray Java_com_voxivoid_ppselect_NativeBackup_read(JNIEnv *env, jclass clazz, jint id)
+extern "C" JNIEXPORT jbyteArray Java_com_voxivoid_recipelab_NativeBackup_read(JNIEnv *env, jclass clazz, jint id)
 {
     jbyteArray arr = NULL;
     try {
@@ -48,7 +48,7 @@ extern "C" JNIEXPORT jbyteArray Java_com_voxivoid_ppselect_NativeBackup_read(JNI
     return arr;
 }
 
-extern "C" JNIEXPORT void Java_com_voxivoid_ppselect_NativeBackup_write(JNIEnv *env, jclass clazz, jint id, jbyteArray data)
+extern "C" JNIEXPORT void Java_com_voxivoid_recipelab_NativeBackup_write(JNIEnv *env, jclass clazz, jint id, jbyteArray data)
 {
     try {
         jsize n = env->GetArrayLength(data);
@@ -64,19 +64,19 @@ extern "C" JNIEXPORT void Java_com_voxivoid_ppselect_NativeBackup_write(JNIEnv *
     }
 }
 
-extern "C" JNIEXPORT jint Java_com_voxivoid_ppselect_NativeBackup_attr(JNIEnv *env, jclass clazz, jint id)
+extern "C" JNIEXPORT jint Java_com_voxivoid_recipelab_NativeBackup_attr(JNIEnv *env, jclass clazz, jint id)
 {
     int res = Backup_get_attribute(id);
     if (res < 0) throw_native(env, "Backup_get_attribute failed");
     return (jint) res;
 }
 
-extern "C" JNIEXPORT void Java_com_voxivoid_ppselect_NativeBackup_sync(JNIEnv *env, jclass clazz)
+extern "C" JNIEXPORT void Java_com_voxivoid_recipelab_NativeBackup_sync(JNIEnv *env, jclass clazz)
 {
     Backup_sync_all();
 }
 
-extern "C" JNIEXPORT jboolean Java_com_voxivoid_ppselect_NativeBackup_isProtected(JNIEnv *env, jclass clazz)
+extern "C" JNIEXPORT jboolean Java_com_voxivoid_recipelab_NativeBackup_isProtected(JNIEnv *env, jclass clazz)
 {
     jboolean r = JNI_TRUE;
     try {

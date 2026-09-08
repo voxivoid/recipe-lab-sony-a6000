@@ -77,7 +77,7 @@
                 android:orientation="horizontal" />
         </HorizontalScrollView>
 
-        <com.voxivoid.ppselect.HintBar
+        <com.voxivoid.recipelab.HintBar
             android:id="@+id/hints"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -99,7 +99,7 @@
         android:background="@drawable/pill" />
 
     <!-- brand browser -->
-    <com.voxivoid.ppselect.PickerView
+    <com.voxivoid.recipelab.PickerView
         android:id="@+id/picker"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

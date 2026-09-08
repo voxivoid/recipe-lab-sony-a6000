@@ -1,12 +1,14 @@
-# Film Simulations for the Sony A6000
+# Recipe Lab for the Sony A6000
 
-Version **0.12** · APK: [`dist/FilmSimulations.apk`](dist/FilmSimulations.apk)
+Version **0.13** · APK: [`dist/RecipeLab.apk`](dist/RecipeLab.apk)
 
 ## 0. What it is
 
-A camera app (PlayMemories Camera App) for the **Sony ILCE-6000** that gives it film-simulation-style colour
-recipes. You pick a recipe while watching the live view, press the centre button, power-cycle — the look is now the
-camera's default in **every photo and video mode**, without the app running.
+A camera app (PlayMemories Camera App) for the **Sony ILCE-6000** with a library of colour recipes that replicate
+other cameras' looks (Fuji film simulations, Ricoh GR image controls, Leica / Hasselblad / Canon / Nikon colour,
+Sony's newer Creative Looks) and classic film stocks (Kodak, Fuji, Cinestill, Agfa, Ilford). You pick a recipe while
+watching the live view, press the centre button, power-cycle — the look is now the camera's default in **every photo
+and video mode**, without the app running.
 
 The A6000 has no Picture Profile menu and cannot store gamma curves. Recipes use only what this body stores
 persistently: Creative Style, saturation / contrast / sharpness, white balance (Kelvin, A-B, G-M) and a hidden
@@ -38,18 +40,18 @@ tinted monochromes (selenium, cyanotype).
 
 1. Get [Sony-PMCA-RE](https://github.com/ma1co/Sony-PMCA-RE): `git clone` + `pip install -r requirements.txt`,
    or on Windows download `pmca-gui.exe` from its releases.
-2. Download [`dist/FilmSimulations.apk`](dist/FilmSimulations.apk).
+2. Download [`dist/RecipeLab.apk`](dist/RecipeLab.apk).
 3. Camera: charged battery, memory card inserted, `MENU → Setup → USB Connection → Mass Storage`. Turn on, connect
    USB; the screen shows *USB Mode*.
 4. Run:
 
    ```
-   python pmca-console.py install -f FilmSimulations.apk
+   python pmca-console.py install -f RecipeLab.apk
    ```
 
    (or in `pmca-gui.exe`: *Install app from file*). Expected output ends with `Task completed successfully`. The
    camera switches modes on its own — do not touch it. Linux needs `sudo` or a udev rule.
-5. Unplug. The app is in `MENU → Application → Application List → Film Simulations`.
+5. Unplug. The app is in `MENU → Application → Application List → Recipe Lab`.
 
 ### Use
 
@@ -86,7 +88,7 @@ Creative Style, contrast, saturation, sharpness, Picture Profile flag, WB mode, 
   if a recipe comes back as a different base style after power-cycle, please report it.
 * **The live preview is temporary.** While the app runs it sets runtime camera parameters; those revert when it
   exits. Only stored values persist.
-* **Uninstall**: `MENU → Application → Application Management → Manage and Remove → Film Simulations`.
+* **Uninstall**: `MENU → Application → Application Management → Manage and Remove → Recipe Lab`.
   Uninstalling does not undo stored values; use one of the reverts above first if you want factory colour.
 
 Tested only on ILCE-6000 firmware 3.21. Other bodies of the same generation likely share these settings slots, but
@@ -109,8 +111,8 @@ verify what the chips display against your menus before storing anything.
 Layout:
 
 ```
-AndroidManifest.xml            package com.voxivoid.ppselect (kept from the "PP Select" days so updates replace)
-src/com/voxivoid/ppselect/
+AndroidManifest.xml            package com.voxivoid.recipelab
+src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store/sync
   Recipes.java                 the 72 recipes, brands, GROUP_START / GROUP_COUNT
   PickerView.java              Canvas-drawn brand browser
@@ -119,7 +121,7 @@ src/com/voxivoid/ppselect/
 jni/jni.cpp                    Backup_read / Backup_write / Backup_sync_all via OpenMemories-Platform
 jni/platform/                  git submodule: ma1co/OpenMemories-Platform
 res/                           layout, shape drawables, launcher icon
-build.cmd                      full Windows build → FilmSimulations.apk (+ copy to dist/)
+build.cmd                      full Windows build → RecipeLab.apk (+ copy to dist/)
 ```
 
 Settings slots (found by disassembling the camera app's parameter registration in `libObj.so`):
@@ -144,8 +146,8 @@ Build (Windows): JDK 17, Android SDK build-tools 30.0.3 + platform jar (API 28),
 toolchain this Android 2.3.7 target needs).
 
 ```
-git clone --recursive https://github.com/voxivoid/film-simulations-sony-a6000.git
-cd film-simulations-sony-a6000
+git clone --recursive https://github.com/voxivoid/recipe-lab-sony-a6000.git
+cd recipe-lab-sony-a6000
 set ANDROID_NDK=C:\path\to\android-ndk-r16b      REM optional: JAVA_HOME, ANDROID_SDK, BUILD_TOOLS, PLATFORM_JAR
 build.cmd
 ```

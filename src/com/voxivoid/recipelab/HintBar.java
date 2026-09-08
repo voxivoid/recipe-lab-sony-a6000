@@ -1,4 +1,4 @@
-package com.voxivoid.ppselect;
+package com.voxivoid.recipelab;
 
 import android.content.Context;
 import android.graphics.Canvas;

@@ -4,7 +4,7 @@ MODE = ANDROID
 PLATFORMDIR = platform
 include $(LOCAL_PATH)/$(PLATFORMDIR)/vars.mk
 
-# Compile stub shared libraries which are needed to link libppsel.so. These
+# Compile stub shared libraries which are needed to link librecipelab.so. These
 # files are already present on the camera.
 $(foreach lib, $(LIBS), \
     $(eval include $(CLEAR_VARS)) \
@@ -16,9 +16,9 @@ $(foreach lib, $(LIBS), \
     $(eval include $(BUILD_SHARED_LIBRARY)) \
 )
 
-# Compile libppsel.so (generic settings-store access)
+# Compile librecipelab.so (generic settings-store access)
 include $(CLEAR_VARS)
-LOCAL_MODULE := ppsel
+LOCAL_MODULE := recipelab
 LOCAL_SRC_FILES := jni.cpp $(foreach source, $(SOURCES), $(wildcard $(addprefix $(LOCAL_PATH)/$(source), .c .cpp)))
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(PLATFORMDIR)
 LOCAL_CFLAGS += $(DEFS) $(WFLAGS) -fvisibility=hidden

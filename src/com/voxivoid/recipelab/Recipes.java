@@ -1,4 +1,4 @@
-package com.voxivoid.ppselect;
+package com.voxivoid.recipelab;
 
 /**
  * Film-look approximations built ONLY from settings the A6000 can store persistently. Names follow the popular
