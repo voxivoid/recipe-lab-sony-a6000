@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <SurfaceView
+        android:id="@+id/surface"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="#B0000000"
+        android:textColor="#FFFFFFFF"
+        android:textSize="13sp"
+        android:typeface="monospace"
+        android:padding="6dp" />
+    <TextView
+        android:id="@+id/bar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#90000000"
+        android:textColor="#FFFFFFFF"
+        android:textSize="14sp"
+        android:typeface="monospace"
+        android:padding="4dp" />
+</FrameLayout>
