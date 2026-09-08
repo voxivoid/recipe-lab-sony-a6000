@@ -13,21 +13,27 @@ package com.voxivoid.recipelab;
  * pe      : Picture Effect (persistent; when on, Creative Style is ignored by the camera and RAW is disabled)
  * ev      : exposure bias in 1/3 EV steps (persistent)
  * dro     : DRO 0 off, 1..5, 6 auto (live preview only until its settings slot is located)
+ * sub     : effect sub-parameter — Soft High-key tint 0 blue / 1 pink / 2 green, Toy tone 0..4, Partial hue 0..3, Posterization 0 colour / 1 b&w
  */
 public class Recipes {
     public static class Recipe {
-        public final int group; public final String name; public final int style, sat, con, sharp, matrix, wbMode, kelvin, ab, gm, pe, ev, dro;
+        public final int group; public final String name; public final int style, sat, con, sharp, matrix, wbMode, kelvin, ab, gm, pe, ev, dro, sub;
         Recipe(int group, String name, int style, int sat, int con, int sharp, int matrix, int wbMode, int kelvin, int ab, int gm) {
             this(group, name, style, sat, con, sharp, matrix, wbMode, kelvin, ab, gm, 0, 0, DRO_AUTO);
         }
         Recipe(int group, String name, int style, int sat, int con, int sharp, int matrix, int wbMode, int kelvin, int ab, int gm, int pe, int ev, int dro) {
+            this(group, name, style, sat, con, sharp, matrix, wbMode, kelvin, ab, gm, pe, ev, dro, 0);
+        }
+        Recipe(int group, String name, int style, int sat, int con, int sharp, int matrix, int wbMode, int kelvin, int ab, int gm, int pe, int ev, int dro, int sub) {
+            this.sub = sub;
             this.group = group; this.name = name; this.style = style; this.sat = sat; this.con = con; this.sharp = sharp; this.matrix = matrix;
             this.wbMode = wbMode; this.kelvin = kelvin; this.ab = ab; this.gm = gm; this.pe = pe; this.ev = ev; this.dro = dro;
         }
+        public boolean isEffect() { return pe != 0; }
         /** one-line summary for lists: "Neutral  -4/-1  A1" */
         public String summary() {
             StringBuilder s = new StringBuilder();
-            if (pe != 0) s.append(PE_LABEL[pe]); else s.append(STYLE_LABEL[style]).append("  ").append(sat > 0 ? "+" : "").append(sat).append('/').append(con > 0 ? "+" : "").append(con);
+            if (pe != 0) { s.append(PE_LABEL[pe]); String sl = subLabel(pe, sub); if (sl != null) s.append(' ').append(sl); } else s.append(STYLE_LABEL[style]).append("  ").append(sat > 0 ? "+" : "").append(sat).append('/').append(con > 0 ? "+" : "").append(con);
             if (matrix == 1 && pe == 0) s.append("  MTX");
             if (ev != 0) s.append("  ").append(evLabel(ev));
             if (dro != DRO_AUTO) s.append("  DRO ").append(droLabel(dro));
@@ -49,6 +55,19 @@ public class Recipes {
     public static final String[] PE_KEYS = { "off", "toy-camera", "pop-color", "posterization", "retro-photo", "soft-high-key", "part-color", "rough-mono", "soft-focus", "hdr-art", "richtone-mono", "miniature", "illust", "watercolor" };
     public static final String[] PE_LABEL = { "off", "Toy", "Pop", "Poster", "Retro", "High-key", "Part col", "HC mono", "Soft foc", "HDR art", "Rich mono", "Miniature", "Illust", "Watercol" };
     public static final int PE_OFF = 0, PE_TOY = 1, PE_POP = 2, PE_RETRO = 4, PE_HIGHKEY = 5, PE_HCMONO = 7;
+    /** effect sub-parameter (tint / tone / hue / mode): runtime key, stored slot, value names — index = stored byte (provisional) */
+    public static String subKey(int pe) { switch (pe) { case 5: return "pe-soft-high-key-effect"; case 1: return "pe-toy-camera-effect"; case 6: return "pe-part-color-effect"; case 3: return "pe-posterization-effect"; default: return null; } }
+    public static int subId(int pe) { switch (pe) { case 5: return 0x010709d8; case 1: return 0x010706f3; case 6: return 0x010706ee; case 3: return 0x010706ef; default: return 0; } }
+    public static String[] subValues(int pe) {
+        switch (pe) {
+            case 5: return new String[] { "blue", "pink", "green" };
+            case 1: return new String[] { "normal", "cool", "warm", "green", "magenta" };
+            case 6: return new String[] { "red", "green", "blue", "yellow" };
+            case 3: return new String[] { "posterization-color", "posterization-bw" };
+            default: return null;
+        }
+    }
+    public static String subLabel(int pe, int sub) { String[] v = subValues(pe); return v == null ? null : (sub >= 0 && sub < v.length ? v[sub].replace("posterization-", "") : "?" + sub); }
     /** DRO: 0 off, 1..5 level, 6 auto (runtime preview only until the settings slot is found) */
     public static final int DRO_OFF = 0, DRO_AUTO = 6;
     public static String droLabel(int v) { return v == DRO_AUTO ? "auto" : v == 0 ? "off" : "Lv" + v; }
@@ -92,7 +111,7 @@ public class Recipes {
         new Recipe(FSIM,  "Sepia",                               SEPIA,    0,  0,  0, 0, AUTO, 0,     0,  0),
         // ---- Fujifilm film stocks
         new Recipe(FFILM, "Fuji Pro 400H",                       LIGHT,   -2, -1,  0, 0, AUTO, 0,    -1,  1,  0,  2, 6),
-        new Recipe(FFILM, "Fuji Pro 400H (airy, high-key)",      LIGHT,    0,  0,  0, 0, AUTO, 0,    -1,  1,  5,  2, 6),
+        new Recipe(FFILM, "Fuji Pro 400H (airy, high-key)",      LIGHT,    0,  0,  0, 0, AUTO, 0,    -1,  1,  5,  2, 6, 2),
         new Recipe(FFILM, "Fuji Fortia 50",                      VIVID,    6,  2,  0, 1, AUTO, 0,     0, -1,  0, -1, 6),
         new Recipe(FFILM, "Fuji Superia 400",                    STD,      1,  1,  0, 0, AUTO, 0,     1,  1,  0,  1, 6),
         new Recipe(FFILM, "Fuji C200",                           STD,      0,  0,  0, 0, AUTO, 0,    -1,  1),

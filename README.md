@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.18 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.19 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -114,7 +114,7 @@ A few extras:
 
 | | |
 |---|---|
-| **up / down** | selects one of the value chips (saturation, contrast, effect, EV, …) so you can fine-tune with left/right before storing |
+| **up / down** | selects one of the value chips so you can fine-tune with left/right before storing. Only the chips the recipe uses are shown: a **CS** (Creative Style) recipe shows style / saturation / contrast / sharpness / matrix, a **PE** (Picture Effect) recipe shows the effect and its sub-setting instead; white balance, EV and DRO always |
 | **Fn** | developer tool: snapshot of all settings; press again after changing a menu item to see which slot it lives in |
 | **TRASH** (bin button) | stages the factory look; centre button stores it |
 | **shutter** | takes a picture with whatever you are previewing |
@@ -198,6 +198,7 @@ build.cmd                      full Windows build → RecipeLab.apk (+ copy to d
 | WB Kelvin | `0x01070018` | Kelvin / 100 |
 | WB A-B / G-M | `0x01070017` / `0x01070016` | signed |
 | Picture Effect | `0x010706f1` | assumed = index in `picture-effect-values` (provisional) |
+| Effect sub-setting | `0x010709d8` high-key tint · `0x010706f3` toy tone · `0x010706ee` partial-colour hue · `0x010706ef` posterization | index in the runtime value list (provisional) |
 | Exposure bias | `0x010700b8` | assumed 1/3 EV steps, signed (provisional) |
 | DRO | not located yet | preview only (`dro-mode` / `dro-level`); use the Fn diff tool to find it |
 

@@ -14,7 +14,7 @@ public class PickerView extends View {
 
     private final Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG), edge = new Paint(Paint.ANTI_ALIAS_FLAG), sel = new Paint(Paint.ANTI_ALIAS_FLAG),
             head = new Paint(Paint.ANTI_ALIAS_FLAG), item = new Paint(Paint.ANTI_ALIAS_FLAG), small = new Paint(Paint.ANTI_ALIAS_FLAG), rule = new Paint(),
-            track = new Paint(Paint.ANTI_ALIAS_FLAG), thumb = new Paint(Paint.ANTI_ALIAS_FLAG);
+            track = new Paint(Paint.ANTI_ALIAS_FLAG), thumb = new Paint(Paint.ANTI_ALIAS_FLAG), tagBg = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF r = new RectF();
     private final float d;
     private final Legend legend;
@@ -92,6 +92,14 @@ public class PickerView extends View {
             c.drawText(rc.name, x, y + 13 * d, item);
             small.setColor(on ? 0xAA1A1208 : 0x80FFFFFF);
             c.drawText(rc.summary(), x, y + 22 * d, small);
+            String tag = rc.isEffect() ? "PE" : "CS";
+            float tw = head.measureText(tag) + 8 * d, tx = xr - 4 * d - tw;
+            r.set(tx, y + 5 * d, tx + tw, y + 17 * d);
+            tagBg.setColor(on ? 0x331A1208 : (rc.isEffect() ? 0x55B8741A : 0x33FFFFFF));
+            c.drawRoundRect(r, 2 * d, 2 * d, tagBg);
+            head.setColor(on ? INK : 0xCCFFFFFF);
+            c.drawText(tag, tx + 4 * d, y + 14 * d, head);
+            head.setColor(0x99FFFFFF);
         }
         item.setFakeBoldText(false);
         if (scroll) scrollbar(c, w - pad - sbW, listTop, listH, sbW, first, visible, count);

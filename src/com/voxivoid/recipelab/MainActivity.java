@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.18 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.19 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -42,11 +42,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             ID_WB_MODE = 0x01070019, ID_WB_TEMP = 0x01070018, ID_WB_AB = 0x01070017, ID_WB_GM = 0x01070016,
             ID_PE = 0x010706f1, ID_EV = 0x010700b8, ID_DRO = 0 /* unknown: preview only */;
 
-    private static final int R_RECIPE = 0, R_STYLE = 1, R_SAT = 2, R_CON = 3, R_SHARP = 4, R_MTX = 5, R_WBMODE = 6, R_KELVIN = 7, R_AB = 8, R_GM = 9, R_PE = 10, R_EV = 11, R_DRO = 12;
-    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "WB", "KELVIN", "A-B", "G-M", "EFFECT", "EV", "DRO*" };
-    private static final int[] ROW_ID = { 0, ID_STYLE, ID_SAT, ID_CON, ID_SHARP, ID_PP_NO, ID_WB_MODE, ID_WB_TEMP, ID_WB_AB, ID_WB_GM, ID_PE, ID_EV, ID_DRO };
-    private static final int[] ROW_MIN = { 0, 1, -16, -8, -8, 0, 0, 25, -7, -7, 0, -15, 0 };
-    private static final int[] ROW_MAX = { 0, 13, 16, 8, 8, 1, 20, 99, 7, 7, 13, 15, 6 };
+    private static final int R_RECIPE = 0, R_STYLE = 1, R_SAT = 2, R_CON = 3, R_SHARP = 4, R_MTX = 5, R_PE = 6, R_SUB = 7, R_WBMODE = 8, R_KELVIN = 9, R_AB = 10, R_GM = 11, R_EV = 12, R_DRO = 13;
+    private static final String[] ROW_NAME = { "RECIPE", "STYLE", "SAT", "CON", "SHARP", "MATRIX", "EFFECT", "SUB", "WB", "KELVIN", "A-B", "G-M", "EV", "DRO*" };
+    private static final int[] ROW_ID = { 0, ID_STYLE, ID_SAT, ID_CON, ID_SHARP, ID_PP_NO, ID_PE, -1 /* depends on effect */, ID_WB_MODE, ID_WB_TEMP, ID_WB_AB, ID_WB_GM, ID_EV, ID_DRO };
+    private static final int[] ROW_MIN = { 0, 1, -16, -8, -8, 0, 0, 0, 0, 25, -7, -7, -15, 0 };
+    private static final int[] ROW_MAX = { 0, 13, 16, 8, 8, 1, 13, 4, 20, 99, 7, 7, 15, 6 };
     private static final int N = ROW_ID.length;
     // PP3 colour matrix measured on this body, Q10 fixed point (1.0 = 1024)
     private static final String PP3_MATRIX = "1331,-307,-51,-205,1331,-123,-20,-461,1485";
@@ -57,7 +57,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private PickerView picker;
     private HorizontalScrollView chipScroll;
     private boolean swallowMenuUp = false;
-    private TextView name, badge, count, meta, mini, toast;
+    private TextView name, badge, tag, count, meta, mini, toast;
     private HintBar hints;
     private LinearLayout chips;
     private final TextView[] chipLabel = new TextView[N], chipValue = new TextView[N];
@@ -81,6 +81,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         chipScroll = (HorizontalScrollView) findViewById(R.id.chipscroll);
         name = (TextView) findViewById(R.id.name);
         badge = (TextView) findViewById(R.id.badge);
+        tag = (TextView) findViewById(R.id.tag);
         count = (TextView) findViewById(R.id.count);
         meta = (TextView) findViewById(R.id.meta);
         hints = (HintBar) findViewById(R.id.hints);
@@ -158,6 +159,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     // ------------------------------------------------------------ stored settings
+    /** settings slot for a row; SUB depends on which effect is staged */
+    private int slot(int i) { return i == R_SUB ? Recipes.subId(edit[R_PE]) : ROW_ID[i]; }
     private int rd(int id) throws NativeException { return (byte) NativeBackup.readByte(id); }
     private int rdu(int id) throws NativeException { return NativeBackup.readByte(id) & 0xff; }
 
@@ -166,6 +169,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             for (int i = 1; i < N; i++) {
                 int id = ROW_ID[i];
                 if (id == 0) { cur[i] = edit[i] = Recipes.DRO_AUTO; continue; }      // no slot: assume camera default
+                if (id == -1) { int sid = Recipes.subId(cur[R_PE]); cur[i] = edit[i] = sid == 0 ? 0 : rdu(sid); continue; }
                 int v = (id == ID_WB_TEMP || id == ID_WB_MODE || id == ID_STYLE || id == ID_PE) ? rdu(id) : rd(id);
                 if (id == ID_PP_NO) v = (v == 0) ? 0 : 1;
                 cur[i] = v; edit[i] = v;
@@ -179,10 +183,28 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         edit[R_STYLE] = r.style; edit[R_SAT] = r.sat; edit[R_CON] = r.con; edit[R_SHARP] = r.sharp; edit[R_MTX] = r.matrix;
         if (r.wbMode != 0) { edit[R_WBMODE] = r.wbMode; if (r.wbMode == 14) edit[R_KELVIN] = r.kelvin / 100; }
         edit[R_AB] = r.ab; edit[R_GM] = r.gm;
-        edit[R_PE] = r.pe; edit[R_EV] = r.ev; edit[R_DRO] = r.dro;
+        edit[R_PE] = r.pe; edit[R_EV] = r.ev; edit[R_DRO] = r.dro; edit[R_SUB] = r.sub;
     }
 
-    private boolean dirty() { for (int i = 1; i < N; i++) if (ROW_ID[i] != 0 && edit[i] != cur[i]) return true; return false; }
+    /** stored value of the SUB slot for the staged effect (the slot changes with the effect) */
+    private int storedSub() { int sid = Recipes.subId(edit[R_PE]); if (sid == 0) return edit[R_SUB]; try { return rdu(sid); } catch (Throwable t) { return edit[R_SUB]; } }
+
+    private boolean rowDirty(int i) {
+        if (i == R_SUB) return Recipes.subId(edit[R_PE]) != 0 && edit[i] != storedSub();
+        return ROW_ID[i] != 0 && edit[i] != cur[i];
+    }
+    private boolean dirty() { for (int i = 1; i < N; i++) if (rowDirty(i)) return true; return false; }
+
+    /** which chips make sense for what is staged */
+    private boolean rowVisible(int i) {
+        boolean pe = edit[R_PE] != 0;
+        switch (i) {
+            case R_STYLE: case R_SAT: case R_CON: case R_SHARP: case R_MTX: return !pe;
+            case R_SUB: return pe && Recipes.subId(edit[R_PE]) != 0;
+            case R_KELVIN: return edit[R_WBMODE] == 14;
+            default: return true;
+        }
+    }
 
     private void writeAll() {
         if (!dirty()) { showToast("Already stored — nothing to write", 2500); return; }
@@ -190,10 +212,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         try {
             int n = 0;
             for (int i = 1; i < N; i++) {
-                if (ROW_ID[i] == 0 || edit[i] == cur[i]) continue;
-                int v = edit[i];
-                if (ROW_ID[i] == ID_PP_NO) v = (v == 0) ? 0 : 3;
-                NativeBackup.writeByte(ROW_ID[i], v);
+                if (!rowDirty(i)) continue;
+                int id = slot(i), v = edit[i];
+                if (id == ID_PP_NO) v = (v == 0) ? 0 : 3;
+                NativeBackup.writeByte(id, v);
                 n++;
             }
             NativeBackup.sync();
@@ -266,6 +288,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             p.set("light-balance-for-white-balance", String.valueOf(edit[R_AB]));
             p.set("color-compensation-for-white-balance", String.valueOf(edit[R_GM]));
             p.set("picture-effect", Recipes.PE_KEYS[edit[R_PE]]);
+            String sk = Recipes.subKey(edit[R_PE]); String[] sv = Recipes.subValues(edit[R_PE]);
+            if (sk != null && sv != null && edit[R_SUB] >= 0 && edit[R_SUB] < sv.length) p.set(sk, sv[edit[R_SUB]]);
             p.set("exposure-compensation", String.valueOf(edit[R_EV]));
             int dro = edit[R_DRO];
             if (dro == Recipes.DRO_AUTO) p.set("dro-mode", "auto");
@@ -288,6 +312,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             case R_AB: return v == 0 ? "0" : (v > 0 ? "A" + v : "B" + (-v));
             case R_GM: return v == 0 ? "0" : (v > 0 ? "G" + v : "M" + (-v));
             case R_PE: return v >= 0 && v < Recipes.PE_LABEL.length ? Recipes.PE_LABEL[v] : "?" + v;
+            case R_SUB: { String l = Recipes.subLabel(edit[R_PE], v); return l == null ? "-" : l; }
             case R_EV: return Recipes.evLabel(v);
             case R_DRO: return Recipes.droLabel(v);
             default: return (v > 0 ? "+" : "") + v;
@@ -312,11 +337,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             name.setText(r.name);
             name.setTextColor(row == 0 ? ACCENT : WHITE);
             count.setText(grp + "   " + pos);
+            tag.setText(edit[R_PE] != 0 ? "PE" : "CS");
+            tag.setTextColor(edit[R_PE] != 0 ? ACCENT : 0xDDFFFFFF);
             if (protectedStore) { badge.setText("PROTECTED"); badge.setBackgroundResource(R.drawable.badge_err); }
             else if (dirty) { badge.setText("PREVIEW"); badge.setBackgroundResource(R.drawable.badge_warn); }
             else { badge.setText("STORED"); badge.setBackgroundResource(R.drawable.badge_ok); }
             StringBuilder m = new StringBuilder();
-            if (edit[R_PE] != 0) m.append("Picture Effect ").append(Recipes.PE_LABEL[edit[R_PE]]).append(" (style ignored, JPEG only)");
+            if (edit[R_PE] != 0) { m.append("Picture Effect ").append(Recipes.PE_LABEL[edit[R_PE]]); String sl = Recipes.subLabel(edit[R_PE], edit[R_SUB]); if (sl != null) m.append(' ').append(sl); m.append(" (Creative Style ignored, JPEG only)"); }
             else m.append(styleName(edit[R_STYLE]));
             m.append("  ·  WB ").append(edit[R_WBMODE] == 14 ? (edit[R_KELVIN] * 100) + "K" : edit[R_WBMODE] == 1 ? "auto" : "mode " + edit[R_WBMODE]);
             if (edit[R_MTX] == 1 && edit[R_PE] == 0) m.append("  ·  PP3 matrix");
@@ -326,7 +353,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             else if (row == R_DRO || row == R_PE) m.append("  ·  ").append(cinematone);
             meta.setText(m);
             for (int i = 1; i < N; i++) {
-                boolean sel = i == row, ch = ROW_ID[i] != 0 && edit[i] != cur[i];
+                chip[i].setVisibility(rowVisible(i) ? View.VISIBLE : View.GONE);
+                boolean sel = i == row, ch = rowDirty(i);
                 chip[i].setBackgroundResource(sel ? R.drawable.chip_sel : R.drawable.chip);
                 chipLabel[i].setTextColor(sel ? INK : DIM);
                 chipValue[i].setTextColor(sel ? INK : ch ? ACCENT : WHITE);
@@ -342,7 +370,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             hints.setEditMode(row != 0);
         } else if (overlay == 1) {
             panel.setVisibility(View.GONE); mini.setVisibility(View.VISIBLE);
-            mini.setText(r.name + "   " + pos + (dirty ? "   · preview" : "   · stored"));
+            mini.setText((edit[R_PE] != 0 ? "PE  " : "CS  ") + r.name + "   " + pos + (dirty ? "   · preview" : "   · stored"));
         } else {
             panel.setVisibility(View.GONE); mini.setVisibility(View.GONE);
         }
@@ -352,8 +380,17 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private void step(int dir) {              // LEFT/RIGHT or dial on current row
         if (row == 0 || overlay != 0) { recipe = (recipe + Recipes.ALL.length + dir) % Recipes.ALL.length; stageRecipe(); }
         else if (row == R_WBMODE) edit[R_WBMODE] = edit[R_WBMODE] == 14 ? 1 : 14;
-        else edit[row] = Math.max(ROW_MIN[row], Math.min(ROW_MAX[row], edit[row] + dir));
+        else if (row == R_SUB) { String[] sv = Recipes.subValues(edit[R_PE]); int n = sv == null ? 1 : sv.length; edit[R_SUB] = (edit[R_SUB] + n + dir) % n; }
+        else {
+            edit[row] = Math.max(ROW_MIN[row], Math.min(ROW_MAX[row], edit[row] + dir));
+            if (row == R_PE) edit[R_SUB] = 0;                       // effect changed → sub-parameter starts at its first value
+        }
         applyPreview(); render();
+    }
+
+    private void moveRow(int dir) {
+        for (int k = 0; k < N; k++) { row = (row + N + dir) % N; if (row == 0 || rowVisible(row)) break; }
+        render();
     }
 
     private void nextRecipe(int dir) { recipe = (recipe + Recipes.ALL.length + dir) % Recipes.ALL.length; stageRecipe(); applyPreview(); render(); }
@@ -393,8 +430,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             case K_WHEEL_CCW: nextRecipe(-1); return true;
             case K_DIAL_CW: step(+1); return true;
             case K_DIAL_CCW: step(-1); return true;
-            case K_UP: if (overlay == 0) { row = (row + N - 1) % N; render(); } return true;
-            case K_DOWN: if (overlay == 0) { row = (row + 1) % N; render(); } return true;
+            case K_UP: if (overlay == 0) moveRow(-1); return true;
+            case K_DOWN: if (overlay == 0) moveRow(+1); return true;
             case K_AEL: case K_DISP: overlay = (overlay + 1) % 3; render(); return true;
             case K_C1: openBrowser(true); return true;
             case K_FN: snapshotOrDiff(); return true;
