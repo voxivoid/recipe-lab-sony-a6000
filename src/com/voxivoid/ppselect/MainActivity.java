@@ -16,13 +16,13 @@ import android.widget.TextView;
 import java.lang.reflect.Method;
 
 /**
- * PP Select 0.7 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * PP Select 0.8 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters (exact for colour mode / sat / con / sharp / WB / matrix).
  * ENTER  = write the recipe's stored bytes (Creative Style + WB slots) + sync → power-cycle applies it everywhere.
  *
  * Keys: control wheel / LEFT / RIGHT = recipe (previewed instantly) · UP / DOWN = select parameter · top dial = adjust it
- *       TRASH (also C1 / AEL / DISP / Fn) = overlay: full → pill → hidden · ENTER write+sync · PLAY stage factory
+ *       TRASH (also C1 / DISP / Fn) = overlay: full → pill → hidden · ENTER write+sync · AEL stage factory (PLAY = firmware playback, unusable)
  *       SHUTTER photo (preview look) · MENU exit (runtime look reverts, stored values stay)
  */
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
@@ -274,10 +274,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             case K_DIAL_CCW: step(-1); return true;
             case K_UP: if (overlay == 0) { row = (row + N - 1) % N; render(); } return true;
             case K_DOWN: if (overlay == 0) { row = (row + 1) % N; render(); } return true;
-            case K_DELETE: case K_SK2: case K_C1: case K_AEL: case K_DISP: case K_FN:
+            case K_DELETE: case K_SK2: case K_C1: case K_DISP: case K_FN:
                 overlay = (overlay + 1) % 3; render(); return true;
             case K_ENTER: writeAll(); return true;
-            case K_PLAY: recipe = 0; stageRecipe(); applyPreview(); showToast("Factory values staged — ENTER to store", 3000); render(); return true;
+            case K_AEL: recipe = 0; stageRecipe(); applyPreview(); showToast("Factory values staged — ENTER to store", 3000); render(); return true;
+            case K_PLAY: return true;   // firmware opens playback anyway; nothing bound
             case K_S1: try { camera.autoFocus(null); } catch (Throwable t) {} return true;
             case K_S2: try { camera.takePicture(null, null, null); } catch (Throwable t) {} return true;
             case K_MENU: case K_SK1: return true;

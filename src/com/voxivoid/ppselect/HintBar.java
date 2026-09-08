@@ -10,14 +10,14 @@ import android.view.View;
 
 /** Key legend drawn with Canvas (camera firmware font has no arrow / symbol glyphs). */
 public class HintBar extends View {
-    static final int WHEEL = 0, UPDOWN = 1, LEFTRIGHT = 2, DIAL = 3, ENTER = 4, PLAY = 5, TRASH = 6, MENU = 7;
+    static final int WHEEL = 0, UPDOWN = 1, LEFTRIGHT = 2, DIAL = 3, ENTER = 4, AEL = 5, TRASH = 6, MENU = 7;
 
-    private static final int[] VIEW_ICONS = { WHEEL, UPDOWN, ENTER, PLAY, TRASH, MENU };
+    private static final int[] VIEW_ICONS = { WHEEL, UPDOWN, ENTER, AEL, TRASH, MENU };
     private static final String[] VIEW_TEXT = { "recipe", "parameter", "store", "factory", "hide", "exit" };
-    private static final int[] EDIT_ICONS = { DIAL, UPDOWN, ENTER, PLAY, TRASH, MENU };
+    private static final int[] EDIT_ICONS = { DIAL, UPDOWN, ENTER, AEL, TRASH, MENU };
     private static final String[] EDIT_TEXT = { "adjust", "parameter", "store", "factory", "hide", "exit" };
 
-    private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG), text = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG), text = new Paint(Paint.ANTI_ALIAS_FLAG), keyText = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
     private final RectF rect = new RectF();
     private final float d;
@@ -29,6 +29,7 @@ public class HintBar extends View {
         fill.setColor(0xCCFFFFFF); fill.setStyle(Paint.Style.FILL);
         stroke.setColor(0xCCFFFFFF); stroke.setStyle(Paint.Style.STROKE); stroke.setStrokeWidth(1.2f * d);
         text.setColor(0x99FFFFFF); text.setTextSize(10 * d);
+        keyText.setColor(0xCCFFFFFF); keyText.setTextSize(6.5f * d); keyText.setTextAlign(Paint.Align.CENTER); keyText.setFakeBoldText(true);
     }
 
     public void setEditMode(boolean e) { if (edit != e) { edit = e; invalidate(); } }
@@ -99,12 +100,12 @@ public class HintBar extends View {
                 c.drawCircle(cx, cy, s * 0.4f, fill);
                 return 2 * s;
             }
-            case PLAY: {                                           // rounded key with triangle
-                rect.set(x, cy - s * 0.8f, x + 2 * s, cy + s * 0.8f);
+            case AEL: {                                            // rounded key labelled AEL
+                float w = 2.6f * s;
+                rect.set(x, cy - s * 0.8f, x + w, cy + s * 0.8f);
                 c.drawRoundRect(rect, 2 * d, 2 * d, stroke);
-                float cx = x + s;
-                tri(c, cx - a * 0.6f, cy - a * 0.8f, cx - a * 0.6f, cy + a * 0.8f, cx + a * 0.8f, cy);
-                return 2 * s;
+                c.drawText("AEL", x + w / 2, cy - (keyText.ascent() + keyText.descent()) / 2f, keyText);
+                return w;
             }
             case TRASH: {                                          // bin: lid + body
                 float w = 1.6f * s, cx = x + w / 2, top = cy - s * 0.9f, bot = cy + s * 0.9f;
