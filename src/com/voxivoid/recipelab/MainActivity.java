@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.43 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.44 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -431,7 +431,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             tag.setTextColor(edit[R_PE] != 0 ? ACCENT : 0xDDFFFFFF);
             if (protectedStore) { badge.setText("PROTECTED"); badge.setBackgroundResource(R.drawable.badge_err); }
             else if (dirty) { badge.setText("PREVIEW"); badge.setBackgroundResource(R.drawable.badge_warn); }
-            else { badge.setText("STORED"); badge.setBackgroundResource(R.drawable.badge_ok); }
+            else { badge.setText("ACTIVE"); badge.setBackgroundResource(R.drawable.badge_ok); }
             StringBuilder m = new StringBuilder();
             if (edit[R_PE] != 0) { m.append("Picture Effect ").append(Recipes.PE_LABEL[edit[R_PE]]); String sl = Recipes.subLabel(edit[R_PE], edit[R_SUB]); if (sl != null) m.append(' ').append(sl); m.append(" (Creative Style ignored, JPEG only)"); }
             else m.append(styleName(edit[R_STYLE]));
@@ -462,7 +462,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             hints.setMode(row == 0 ? HintBar.RECIPE : focus ? HintBar.EDIT : HintBar.CHIPS);
         } else if (overlay == 1) {
             panel.setVisibility(View.GONE); mini.setVisibility(View.VISIBLE);
-            mini.setText((edit[R_PE] != 0 ? "PE  " : "CS  ") + r.name + "   " + pos + (dirty ? "   · preview" : "   · stored") + (qualityChanges() ? "   · quality → " + Q_LABEL[edit[R_QUAL]] : ""));
+            mini.setText((edit[R_PE] != 0 ? "PE  " : "CS  ") + r.name + "   " + pos + (dirty ? "   · preview" : "   · active") + (qualityChanges() ? "   · quality → " + Q_LABEL[edit[R_QUAL]] : ""));
         } else {
             panel.setVisibility(View.GONE); mini.setVisibility(View.GONE);
         }

@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.43 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.44 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -126,7 +126,7 @@ A few extras:
 | **shutter** | takes a picture with whatever you are previewing |
 | **MENU** | leaves the app |
 
-The small badge next to the recipe name tells you where you stand: **STORED** — the camera already has these
+The small badge next to the recipe name tells you where you stand: **ACTIVE** — the camera already has these
 values · **PREVIEW** — you are only looking, press the centre button to keep it · **PROTECTED** — the camera is not
 accepting changes (see [Troubleshooting](#troubleshooting)).
 
