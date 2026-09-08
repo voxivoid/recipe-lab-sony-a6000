@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.37 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.38 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -42,7 +42,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private static final int ID_STYLE = 0x01070175, ID_CON = 0x01070178, ID_SAT = 0x01070187, ID_SHARP = 0x0107018a, ID_PP_NO = 0x0107031c,
             ID_WB_MODE = 0x01070019, ID_WB_TEMP = 0x01070018, ID_WB_AB = 0x01070017, ID_WB_GM = 0x01070016,
             ID_WB_AB_AWB = 0x0107067f, ID_WB_GM_AWB = 0x0107067e,   // per-mode (AWB) copies the camera actually applies; G-M stored with inverted sign (G1 = 0xff)
-            ID_PE = 0x010706f1, ID_EV = 0x010700b8,
+            ID_PE = 0x010706f1, ID_EV = 0x010700b8, ID_EV2 = 0x01070c7f /* companion copy the camera applies */,
             ID_DRO = 0x01070104 /* off 0, auto 1, Lv1..5 = 2..6 (verified) */, ID_DRO_LVL = 0x01070775 /* 1 for off/auto, Lv n = n+1 */,
             ID_QFMT = 0x01070013, ID_QJPG = 0x01070014,            // still file format / jpeg quality (verified by menu diff)
             ID_QFMT2 = 0x01070aa9, ID_QJPG2 = 0x01070aaa;          // the camera keeps mirror copies; written too
@@ -260,6 +260,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 }
                 int id = slot(i), v = edit[i];
                 if (id == ID_PP_NO) v = (v == 0) ? 0 : 3;
+                if (id == ID_EV) { NativeBackup.writeByte(ID_EV, v); NativeBackup.writeByte(ID_EV2, v); n++; continue; }
                 if (id == ID_WB_AB) { NativeBackup.writeByte(ID_WB_AB, v); NativeBackup.writeByte(ID_WB_AB_AWB, v); n++; continue; }
                 if (id == ID_WB_GM) { NativeBackup.writeByte(ID_WB_GM, -v); NativeBackup.writeByte(ID_WB_GM_AWB, -v); n++; continue; }
                 if (id == ID_DRO) {
