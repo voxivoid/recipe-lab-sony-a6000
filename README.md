@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.44 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.45 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -208,7 +208,7 @@ build.cmd                      full Windows build → RecipeLab.apk (+ copy to d
 | Picture Profile no. | `0x0107031c` | 0 off, 3 = alternate colour matrix (no gamma on this body) |
 | WB mode | `0x01070019` | 1 auto, 14 colour temperature |
 | WB Kelvin | `0x01070018` | Kelvin / 100 |
-| WB A-B / G-M | `0x01070017` / `0x01070016` + AWB copies `0x0107067f` / `0x0107067e` | signed, magenta positive (menu G1 = 0xff). The camera applies the per-mode copies (verified end-to-end) |
+| WB A-B / G-M | `0x01070017` / `0x01070016` + per-mode copies: AWB `0x0107067f` / `0x0107067e`, colour temp `0x01070683` / `0x01070682` | signed, magenta positive (menu G1 = 0xff). The camera applies the per-mode copy (verified end-to-end) |
 | Picture Effect | `0x010706f1` | index in `picture-effect-values` (verified: Retro = 4) |
 | Effect sub-setting | `0x010709d8` high-key tint · `0x010706f3` toy tone · `0x010706ee` partial-colour hue · `0x010706ef` posterization | index in the runtime value list (provisional) |
 | Exposure bias | `0x010700b8` + copy `0x01070c7f` | 1/3 EV steps, signed (verified: +0.7 = 2); both written |
