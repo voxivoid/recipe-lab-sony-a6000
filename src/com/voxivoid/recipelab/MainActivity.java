@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.27 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.28 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -473,12 +473,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         else if (row == R_WBMODE) edit[R_WBMODE] = edit[R_WBMODE] == 14 ? 1 : 14;
         else if (row == R_SUB) { String[] sv = Recipes.subValues(edit[R_PE]); int n = sv == null ? 1 : sv.length; edit[R_SUB] = (edit[R_SUB] + n + dir) % n; }
         else {
-            edit[row] = Math.max(ROW_MIN[row], Math.min(ROW_MAX[row], edit[row] + dir));
+            if (isChoice(row)) { int n = ROW_MAX[row] - ROW_MIN[row] + 1; edit[row] = ROW_MIN[row] + ((edit[row] - ROW_MIN[row] + n + dir) % n); }   // choices wrap around
+            else edit[row] = Math.max(ROW_MIN[row], Math.min(ROW_MAX[row], edit[row] + dir));                                                 // numbers clamp
             if (row == R_PE) { edit[R_SUB] = 0; edit[R_QUAL] = recipeQuality(Recipes.ALL[recipe]); if (edit[R_PE] != 0 && edit[R_QUAL] <= 1) edit[R_QUAL] = 2; }
             if (row == R_QUAL) qualityChanged();
         }
         applyPreview(); render();
     }
+
+    /** enumerated rows (names, not numbers) scroll endlessly */
+    private static boolean isChoice(int i) { return i == R_STYLE || i == R_MTX || i == R_PE || i == R_SUB || i == R_QUAL || i == R_DRO || i == R_WBMODE; }
 
     private void moveRow(int dir) {
         int pos = -1;                                              // -1 = recipe row
