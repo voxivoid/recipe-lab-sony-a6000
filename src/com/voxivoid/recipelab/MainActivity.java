@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.29 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.30 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -347,7 +347,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 byte[] now; try { now = NativeBackup.read(e[0]); } catch (Throwable t) { now = new byte[0]; }
                 if (!java.util.Arrays.equals(old, now)) {
                     changed++;
-                    if (changed <= 8) sb.append(String.format("%08x:", e[0])).append(hex(old)).append(">").append(hex(now)).append("  ");
+                    if (changed <= 14) sb.append(String.format("%08x:", e[0])).append(hex(old)).append(">").append(hex(now)).append("  ");
                 }
             }
             in.close(); f.delete();

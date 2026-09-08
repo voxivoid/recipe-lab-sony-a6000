@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.29 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.30 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -203,10 +203,11 @@ build.cmd                      full Windows build → RecipeLab.apk (+ copy to d
 | WB mode | `0x01070019` | 1 auto, 14 colour temperature |
 | WB Kelvin | `0x01070018` | Kelvin / 100 |
 | WB A-B / G-M | `0x01070017` / `0x01070016` | signed |
-| Picture Effect | `0x010706f1` | assumed = index in `picture-effect-values` (provisional) |
+| Picture Effect | `0x010706f1` | index in `picture-effect-values` (verified: Retro = 4) |
 | Effect sub-setting | `0x010709d8` high-key tint · `0x010706f3` toy tone · `0x010706ee` partial-colour hue · `0x010706ef` posterization | index in the runtime value list (provisional) |
-| Exposure bias | `0x010700b8` | assumed 1/3 EV steps, signed (provisional) |
-| DRO | not located yet | preview only (`dro-mode` / `dro-level`); use the Fn diff tool to find it |
+| Exposure bias | `0x010700b8` | 1/3 EV steps, signed (verified: +0.7 = 2) |
+| DRO | candidates `0x01070104` (mode) + `0x01070b74` (u16 level) | being confirmed; preview only until then |
+| Quality | candidates `0x01070013` / `0x01070aa9` (RAW+JPG = 2, JPEG = 0) | being confirmed; preview only until then |
 
 **Live preview** goes through `Camera.Parameters`: `color-mode`, `saturation`, `contrast`, `sharpness`,
 `whitebalance`, `color-temperture-white-balance`, `light-balance-for-white-balance`,
