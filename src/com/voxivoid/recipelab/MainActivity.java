@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.32 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.33 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -171,7 +171,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             Method mk = cameraEx.getClass().getMethod("createParametersModifier", Camera.Parameters.class);
             Object pm = mk.invoke(cameraEx, camera.getParameters());
             Object list = pm.getClass().getMethod("getSupportedCinemaTones").invoke(pm);
-            cinematone = list == null ? "cinematone: null" : "cinematone: " + list;
+            StringBuilder sb = new StringBuilder("cinematone: supported=").append(list);
+            // blind attempt: set CINEMA1 on a scratch copy and read what the HAL kept
+            for (String v : new String[] { "CINEMA1", "cinema1", "on" }) {
+                try {
+                    Camera.Parameters p = camera.getParameters();
+                    Object pm2 = mk.invoke(cameraEx, p);
+                    pm2.getClass().getMethod("setCinemaTone", String.class).invoke(pm2, v);
+                    camera.setParameters(p);
+                    Object back = mk.invoke(cameraEx, camera.getParameters());
+                    Object got = back.getClass().getMethod("getCinemaTone").invoke(back);
+                    sb.append("  set(").append(v).append(")->").append(got).append(" key=").append(camera.getParameters().get("cinema-tone"));
+                } catch (Throwable t) { sb.append("  set(").append(v).append(") ").append(t.getCause() != null ? t.getCause().getClass().getSimpleName() : t.getClass().getSimpleName()); }
+            }
+            cinematone = sb.toString();
         } catch (Throwable t) { cinematone = "cinematone: n/a (" + t.getClass().getSimpleName() + ")"; }
     }
 
