@@ -1,6 +1,7 @@
 package com.voxivoid.recipelab;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.26 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.27 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -67,7 +68,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private boolean swallowMenuUp = false;
     private TextView name, badge, tag, count, meta, mini, toast;
     private PromptView prompt;
-    private int promptSel = 0, promptMode = 0; private boolean promptOpen = false; private long fnDown = 0;   // promptMode 1 raw-vs-effect, 2 quality change
+    private int promptSel = 0; private boolean promptOpen = false; private long fnDown = 0;
+    private SharedPreferences prefs;
     private HintBar hints;
     private LinearLayout chips;
     private final TextView[] chipLabel = new TextView[N], chipValue = new TextView[N];
@@ -86,6 +88,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.main);
+        prefs = getPreferences(MODE_PRIVATE);
+        recipe = Math.max(0, Math.min(Recipes.ALL.length - 1, prefs.getInt("recipe", 0)));
         panel = findViewById(R.id.panel);
         picker = (PickerView) findViewById(R.id.picker);
         chipScroll = (HorizontalScrollView) findViewById(R.id.chipscroll);
@@ -196,7 +200,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (r.wbMode != 0) { edit[R_WBMODE] = r.wbMode; if (r.wbMode == 14) edit[R_KELVIN] = r.kelvin / 100; }
         edit[R_AB] = r.ab; edit[R_GM] = r.gm;
         edit[R_PE] = r.pe; edit[R_EV] = r.ev; edit[R_DRO] = r.dro; edit[R_SUB] = r.sub;
-        edit[R_QUAL] = r.isEffect() ? 2 : 1;                     // Picture Effect recipes → JPEG Fine, everything else → RAW+JPEG
+        edit[R_QUAL] = recipeQuality(r);
+        prefs.edit().putInt("recipe", recipe).commit();          // reopen on the last selected recipe
     }
 
     /** quality from the two stored bytes; falls back to the runtime value when the slots are not known yet */
@@ -214,6 +219,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         return 2;
     }
     private boolean qualityIsRaw() { return edit[R_QUAL] <= 1; }
+
+    /** the Factory recipe's quality: the camera's current one until the user changes it in the app, then remembered */
+    private int baseQuality() { int b = prefs.getInt("baseQuality", -1); return b >= 0 && b < 4 ? b : cur[R_QUAL]; }
+    private int recipeQuality(Recipes.Recipe r) { int b = baseQuality(); return r.isEffect() ? (b >= 2 ? b : 2) : b; }
+    /** user changed quality on the current recipe: CS recipes and JPEG choices on PE recipes redefine the Factory quality */
+    private void qualityChanged() {
+        if (!Recipes.ALL[recipe].isEffect() || edit[R_QUAL] >= 2) prefs.edit().putInt("baseQuality", edit[R_QUAL]).commit();
+    }
     private boolean qualityPersistent() { return ID_QFMT != 0; }
 
     /** stored value of the SUB slot for the staged effect (the slot changes with the effect) */
@@ -242,8 +255,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private void writeAll() { writeAll(false); }
 
     private void writeAll(boolean confirmed) {
-        if (!confirmed && qualityChanges()) { openPrompt(2); return; }
-        if (!confirmed && edit[R_PE] != 0 && qualityIsRaw()) { openPrompt(1); return; }
+        if (!confirmed && qualityChanges()) { openPrompt(); return; }
         if (!dirty()) { showToast("Already stored — nothing to write", 2500); return; }
         String msg;
         try {
@@ -269,23 +281,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     // ------------------------------------------------------------ RAW vs Picture Effect prompt
-    /** the four quality choices as pills; the recipe's suggestion preselected, the current one marked */
-    private String[] promptOpts() {
-        String[] o = new String[4];
-        for (int i = 0; i < 4; i++) o[i] = Q_LABEL[i] + (i == cur[R_QUAL] ? " (now)" : "");
-        return o;
-    }
+    private static final String[] PROMPT_OPTS = { "Accept", "Cancel" };
 
-    private void openPrompt(int mode) { promptMode = mode; promptOpen = true; promptSel = edit[R_QUAL]; renderPrompt(); }
+    private void openPrompt() { promptOpen = true; promptSel = 0; renderPrompt(); }
 
     private void renderPrompt() {
-        String t = "Store with which Quality?";
-        String b = edit[R_PE] != 0
-                ? "Picture Effect recipe: the camera drops the effect when RAW is on — JPEG needed."
-                : "Creative Style recipe: RAW+JPEG keeps a RAW you can still edit; the look lands on the JPEG.";
-        String n = edit[R_PE] != 0 && promptSel <= 1 ? "with this choice the effect will NOT be applied" : null;
-        if (!qualityPersistent()) n = (n == null ? "" : n + "  ·  ") + "quality slot not located yet — live view only";
-        prompt.set(t, b, promptOpts(), promptSel, n);
+        String t = "Quality: " + Q_LABEL[cur[R_QUAL]] + "  →  " + Q_LABEL[edit[R_QUAL]];
+        String b = edit[R_PE] != 0 ? "JPEG is needed to apply this recipe." : "Creative Style recipes use the Factory recipe's quality.";
+        prompt.set(t, b, PROMPT_OPTS, promptSel, qualityPersistent() ? null : "quality slot not located yet — live view only");
         prompt.setVisibility(View.VISIBLE);
     }
 
@@ -293,11 +296,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private boolean promptKey(int sc) {
         switch (sc) {
-            case K_LEFT: case K_WHEEL_CCW: case K_DIAL_CCW: promptSel = (promptSel + 3) % 4; renderPrompt(); return true;
-            case K_RIGHT: case K_WHEEL_CW: case K_DIAL_CW: promptSel = (promptSel + 1) % 4; renderPrompt(); return true;
+            case K_LEFT: case K_WHEEL_CCW: case K_DIAL_CCW: case K_RIGHT: case K_WHEEL_CW: case K_DIAL_CW: promptSel ^= 1; renderPrompt(); return true;
             case K_ENTER:
                 closePrompt();
-                edit[R_QUAL] = promptSel; applyPreview(); writeAll(true);
+                if (promptSel == 0) writeAll(true); else showToast("Not stored", 2000);   // cancel: recipe stays previewed only
                 render(); return true;
             case K_MENU: case K_SK1: swallowMenuUp = true; closePrompt(); render(); return true;
         }
@@ -305,7 +307,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void cycleQuality() {
-        edit[R_QUAL] = (edit[R_QUAL] + 1) % 4; applyPreview(); render();
+        edit[R_QUAL] = (edit[R_QUAL] + 1) % 4; qualityChanged(); applyPreview(); render();
         showToast("Quality: " + Q_LABEL[edit[R_QUAL]] + (qualityPersistent() ? "  — ENTER to store" : "  (live view only until the slot is known)"), 2500);
     }
 
@@ -436,7 +438,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             if (edit[R_EV] != 0) m.append("  ·  EV ").append(Recipes.evLabel(edit[R_EV]));
             if (edit[R_DRO] != Recipes.DRO_AUTO) m.append("  ·  DRO ").append(Recipes.droLabel(edit[R_DRO])).append(" (preview only)");
             if (qualityChanges()) m.append("  ·  QUALITY → ").append(Q_LABEL[edit[R_QUAL]]).append(" (now ").append(Q_LABEL[cur[R_QUAL]]).append(")");
-            if (edit[R_PE] != 0 && qualityIsRaw()) m.append("  ·  RAW is on: effect ignored — ENTER asks to switch to JPEG");
+            if (edit[R_PE] != 0 && qualityIsRaw()) m.append("  ·  RAW is on: effect ignored");
             if (!previewOk) m.append("  ·  no live preview: ").append(previewErr);
             else if (row == R_DRO || row == R_PE) m.append("  ·  ").append(cinematone);
             meta.setText(m);
@@ -472,7 +474,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         else if (row == R_SUB) { String[] sv = Recipes.subValues(edit[R_PE]); int n = sv == null ? 1 : sv.length; edit[R_SUB] = (edit[R_SUB] + n + dir) % n; }
         else {
             edit[row] = Math.max(ROW_MIN[row], Math.min(ROW_MAX[row], edit[row] + dir));
-            if (row == R_PE) edit[R_SUB] = 0;                       // effect changed → sub-parameter starts at its first value
+            if (row == R_PE) { edit[R_SUB] = 0; edit[R_QUAL] = recipeQuality(Recipes.ALL[recipe]); if (edit[R_PE] != 0 && edit[R_QUAL] <= 1) edit[R_QUAL] = 2; }
+            if (row == R_QUAL) qualityChanged();
         }
         applyPreview(); render();
     }

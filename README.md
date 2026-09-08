@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.26 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.27 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -131,11 +131,12 @@ its contrast, saturation and sharpness sliders, white balance and its fine-tune,
 Effect — plus one hidden switch that turns on a richer colour matrix the camera has but never shows. Recipes that
 use a Picture Effect (Retro, Soft High-key, High Contrast Mono) behave like that menu item does: the camera ignores
 Creative Style while it is on, and **it needs Quality = JPEG** — with RAW or RAW+JPEG set, the camera silently drops
-the effect. So every recipe also carries a Quality: Picture Effect recipes stage **JPEG Fine**, all others stage
-**RAW+JPEG**. Whenever the selected recipe would change your current Quality the panel says so (`QUALITY → JPG Fine
-(now RAW+JPG)`), and ENTER first shows the four Quality choices as chips — RAW, RAW+JPEG, JPEG Fine, JPEG Std — with
-the recipe's suggestion preselected and your current one marked; pick one, ENTER stores. Fn cycles Quality (RAW →
-RAW+JPEG → JPEG Fine → JPEG Std) any time; the QUALITY chip does the same. It does not modify the
+the effect. Quality is therefore handled like this: the **Factory recipe carries your Quality** — it starts as
+whatever the camera is set to, and if you change it there (QUALITY chip or Fn) the app remembers it. Every Creative
+Style recipe uses that same Quality. Picture Effect recipes use it too when it is a JPEG setting, otherwise they use
+JPEG Fine. Whenever storing a recipe would change the camera's Quality the app asks first (`Quality: RAW+JPG → JPG
+Fine — JPEG is needed to apply this recipe`, *Accept* / *Cancel*); Cancel stores nothing. Fn cycles Quality (RAW →
+RAW+JPEG → JPEG Fine → JPEG Std) any time. The app also reopens on the recipe you last selected. It does not modify the
 camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
 Sony used for its own downloadable apps.
 
