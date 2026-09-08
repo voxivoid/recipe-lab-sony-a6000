@@ -16,12 +16,13 @@ import android.widget.TextView;
 import java.lang.reflect.Method;
 
 /**
- * PP Select 0.9 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * PP Select 0.10 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters (exact for colour mode / sat / con / sharp / WB / matrix).
  * ENTER  = write the recipe's stored bytes (Creative Style + WB slots) + sync → power-cycle applies it everywhere.
  *
  * Keys: control wheel / LEFT / RIGHT = recipe (previewed instantly) · UP / DOWN = select parameter · top dial = adjust it
+ *       C1 = brand browser (two columns, every move previews live; ENTER picks)
  *       AEL (also C1 / DISP / Fn) = overlay: full → pill → hidden · ENTER write+sync · TRASH stage factory (PLAY = firmware playback, unusable)
  *       SHUTTER photo (preview look) · MENU exit (runtime look reverts, stored values stay)
  */
@@ -45,6 +46,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     private static final int ACCENT = 0xFFF2B85C, INK = 0xFF1A1208, WHITE = 0xFFFFFFFF, DIM = 0x99FFFFFF;
 
     private View panel;
+    private PickerView picker;
+    private boolean swallowMenuUp = false;
     private TextView name, badge, count, meta, mini, toast;
     private HintBar hints;
     private LinearLayout chips;
@@ -55,7 +58,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private SurfaceHolder holder;
     private Object cameraEx; private Camera camera; private String origFlat;
-    private int row = 0, recipe = 0, overlay = 0;     // overlay: 0 full, 1 pill, 2 hidden
+    private int row = 0, recipe = 0, overlay = 0;     // overlay: 0 full, 1 pill, 2 hidden, 3 browser
     private final int[] cur = new int[N], edit = new int[N];
     private boolean protectedStore = false, previewOk = false;
     private String previewErr = "";
@@ -65,6 +68,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         super.onCreate(b);
         setContentView(R.layout.main);
         panel = findViewById(R.id.panel);
+        picker = (PickerView) findViewById(R.id.picker);
         name = (TextView) findViewById(R.id.name);
         badge = (TextView) findViewById(R.id.badge);
         count = (TextView) findViewById(R.id.count);
@@ -224,11 +228,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         Recipes.Recipe r = Recipes.ALL[recipe];
         boolean dirty = dirty();
         String pos = (recipe + 1) + " / " + Recipes.ALL.length;
+        String grp = Recipes.GROUPS[r.group].toUpperCase();
+        picker.setVisibility(overlay == 3 ? View.VISIBLE : View.GONE);
+        if (overlay == 3) { panel.setVisibility(View.GONE); mini.setVisibility(View.GONE); picker.setSelected(recipe); return; }
         if (overlay == 0) {
             panel.setVisibility(View.VISIBLE); mini.setVisibility(View.GONE);
             name.setText(r.name);
             name.setTextColor(row == 0 ? ACCENT : WHITE);
-            count.setText(pos);
+            count.setText(grp + "   " + pos);
             if (protectedStore) { badge.setText("PROTECTED"); badge.setBackgroundResource(R.drawable.badge_err); }
             else if (dirty) { badge.setText("PREVIEW"); badge.setBackgroundResource(R.drawable.badge_warn); }
             else { badge.setText("STORED"); badge.setBackgroundResource(R.drawable.badge_ok); }
@@ -263,8 +270,32 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private void nextRecipe(int dir) { recipe = (recipe + Recipes.ALL.length + dir) % Recipes.ALL.length; stageRecipe(); applyPreview(); render(); }
 
+    private void nextGroup(int dir) {
+        int g = (Recipes.ALL[recipe].group + Recipes.GROUPS.length + dir) % Recipes.GROUPS.length;
+        recipe = Recipes.GROUP_START[g]; stageRecipe(); applyPreview(); render();
+    }
+
+    private void openBrowser(boolean open) { overlay = open ? 3 : 0; row = 0; render(); }
+
+    private boolean browserKey(int sc) {
+        switch (sc) {
+            case K_UP: case K_WHEEL_CCW: case K_DIAL_CCW: nextRecipe(-1); return true;
+            case K_DOWN: case K_WHEEL_CW: case K_DIAL_CW: nextRecipe(+1); return true;
+            case K_LEFT: nextGroup(-1); return true;
+            case K_RIGHT: nextGroup(+1); return true;
+            case K_ENTER: openBrowser(false); showToast(Recipes.ALL[recipe].name + " previewed — ENTER to store", 3000); return true;
+            case K_MENU: case K_SK1: swallowMenuUp = true; openBrowser(false); return true;
+            case K_C1: case K_AEL: case K_DISP: case K_FN: openBrowser(false); return true;
+            case K_DELETE: case K_SK2: recipe = 0; stageRecipe(); applyPreview(); render(); return true;
+            case K_S1: try { camera.autoFocus(null); } catch (Throwable t) {} return true;
+            case K_S2: try { camera.takePicture(null, null, null); } catch (Throwable t) {} return true;
+        }
+        return true;
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e) {
+        if (overlay == 3 && e.getScanCode() != K_PLAY) return browserKey(e.getScanCode());
         switch (e.getScanCode()) {
             case K_LEFT: step(-1); return true;
             case K_RIGHT: step(+1); return true;
@@ -274,8 +305,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
             case K_DIAL_CCW: step(-1); return true;
             case K_UP: if (overlay == 0) { row = (row + N - 1) % N; render(); } return true;
             case K_DOWN: if (overlay == 0) { row = (row + 1) % N; render(); } return true;
-            case K_AEL: case K_C1: case K_DISP: case K_FN:
+            case K_AEL: case K_DISP: case K_FN:
                 overlay = (overlay + 1) % 3; render(); return true;
+            case K_C1: openBrowser(true); return true;
             case K_ENTER: writeAll(); return true;
             case K_DELETE: case K_SK2: recipe = 0; stageRecipe(); applyPreview(); showToast("Factory values staged — ENTER to store", 3000); render(); return true;
             case K_PLAY: return true;   // firmware opens playback anyway; nothing bound
@@ -290,7 +322,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent e) {
         switch (e.getScanCode()) {
-            case K_MENU: case K_SK1: finish(); return true;
+            case K_MENU: case K_SK1: if (swallowMenuUp) { swallowMenuUp = false; return true; } finish(); return true;
             case K_S1: try { camera.cancelAutoFocus(); } catch (Throwable t) {} return true;
             case K_S2: try { cameraEx.getClass().getMethod("cancelTakePicture").invoke(cameraEx); } catch (Throwable t) {} return true;
             case K_UP: case K_DOWN: case K_LEFT: case K_RIGHT: case K_ENTER: case K_PLAY: case K_DISP: case K_FN:

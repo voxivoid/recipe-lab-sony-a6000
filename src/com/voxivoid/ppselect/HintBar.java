@@ -10,16 +10,17 @@ import android.view.View;
 
 /** Key legend drawn with Canvas (camera firmware font has no arrow / symbol glyphs). */
 public class HintBar extends View {
-    static final int WHEEL = 0, UPDOWN = 1, LEFTRIGHT = 2, DIAL = 3, ENTER = 4, AEL = 5, TRASH = 6, MENU = 7;
+    static final int WHEEL = 0, UPDOWN = 1, LEFTRIGHT = 2, DIAL = 3, ENTER = 4, AEL = 5, TRASH = 6, MENU = 7, C1 = 8;
 
-    private static final int[] VIEW_ICONS = { WHEEL, UPDOWN, ENTER, TRASH, AEL, MENU };
-    private static final String[] VIEW_TEXT = { "recipe", "parameter", "store", "factory", "hide", "exit" };
-    private static final int[] EDIT_ICONS = { DIAL, UPDOWN, ENTER, TRASH, AEL, MENU };
-    private static final String[] EDIT_TEXT = { "adjust", "parameter", "store", "factory", "hide", "exit" };
+    private static final int[] VIEW_ICONS = { WHEEL, UPDOWN, C1, ENTER, TRASH, AEL, MENU };
+    private static final String[] VIEW_TEXT = { "recipe", "param", "browse", "store", "factory", "hide", "exit" };
+    private static final int[] EDIT_ICONS = { DIAL, UPDOWN, C1, ENTER, TRASH, AEL, MENU };
+    private static final String[] EDIT_TEXT = { "adjust", "param", "browse", "store", "factory", "hide", "exit" };
 
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG), text = new Paint(Paint.ANTI_ALIAS_FLAG), keyText = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
     private final RectF rect = new RectF();
+    private final Canvas measureCanvas = new Canvas();   // draws nowhere; used to measure
     private final float d;
     private boolean edit;
 
@@ -43,21 +44,28 @@ public class HintBar extends View {
         String[] labels = edit ? EDIT_TEXT : VIEW_TEXT;
         float x = 0, cy = getHeight() / 2f, s = 6 * d;            // s = icon half-size
         float ty = cy - (text.ascent() + text.descent()) / 2f;
+        // measure first: shrink the inter-item gap if the legend would overflow
+        float need = 0;
+        for (int i = 0; i < icons.length; i++) need += drawIcon(null, icons[i], 0, cy, s) + 4 * d + text.measureText(labels[i]);
+        float gap = Math.max(5 * d, (getWidth() - need) / (icons.length - 1));
+        gap = Math.min(gap, 14 * d);
         for (int i = 0; i < icons.length; i++) {
             float w = drawIcon(c, icons[i], x, cy, s);
             x += w + 4 * d;
             c.drawText(labels[i], x, ty, text);
-            x += text.measureText(labels[i]) + 14 * d;
+            x += text.measureText(labels[i]) + gap;
         }
     }
 
     private void tri(Canvas c, float x1, float y1, float x2, float y2, float x3, float y3) {
+        if (c == null) return;
         path.reset(); path.moveTo(x1, y1); path.lineTo(x2, y2); path.lineTo(x3, y3); path.close(); c.drawPath(path, fill);
     }
 
     /** draws icon with left edge at x, vertically centred on cy; returns width */
     private float drawIcon(Canvas c, int icon, float x, float cy, float s) {
         float a = s * 0.55f;                                       // arrow size
+        if (c == null) c = measureCanvas;
         switch (icon) {
             case WHEEL: {                                          // ring + left/right arrows outside
                 float cx = x + a + s + 1.5f * d;
@@ -114,6 +122,13 @@ public class HintBar extends View {
                 rect.set(x + 2 * d, top + 2 * d, x + w - 2 * d, bot);
                 c.drawRoundRect(rect, 1.5f * d, 1.5f * d, stroke);
                 c.drawLine(cx, top + 5 * d, cx, bot - 3 * d, stroke);
+                return w;
+            }
+            case C1: {                                             // rounded key labelled C1
+                float w = 2.0f * s;
+                rect.set(x, cy - s * 0.8f, x + w, cy + s * 0.8f);
+                c.drawRoundRect(rect, 2 * d, 2 * d, stroke);
+                c.drawText("C1", x + w / 2, cy - (keyText.ascent() + keyText.descent()) / 2f, keyText);
                 return w;
             }
             case MENU: {                                           // rounded key with three lines

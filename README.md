@@ -11,7 +11,7 @@ done — the look is now the camera's default in P/A/S/M, movie, everything.
 > the hidden alternate colour matrix that `PP_NO=3` switches on (~+45 % chroma). They are approximations of film
 > looks, not clones of anyone's Picture-Profile recipes.
 
-Current version: **0.9**
+Current version: **0.10**
 
 ## Screen
 
@@ -20,11 +20,11 @@ Current version: **0.9**
 │                                                               │
 │                      live view (full frame)                   │
 │                                                               │
-│ Kodak Portra 400  PREVIEW                            12 / 31 │
+│ Kodak Portra 400  PREVIEW                   KODAK   31 / 72 │
 │ Portrait  ·  WB auto                                          │
 │ [STYLE  ][SAT ][CON ][SHARP][MATRIX][WB  ][KELVIN][A-B][G-M]  │
 │  Portrait  -1    0     0     off    auto    -     A2   G1     │
-│ ◎ recipe  ▲▼ parameter  ● store  🗑 factory  AEL hide  ▤ exit │
+│ ◎ recipe ▲▼ param C1 browse ● store 🗑 factory AEL hide ▤ exit│
 └───────────────────────────────────────────────────────────────┘
 ```
 
@@ -36,6 +36,7 @@ Current version: **0.9**
 * **Parameter chips** — the nine stored values. Amber chip = selected for editing; amber value = differs from what is
   stored. Kelvin shows `-` unless WB is in colour-temperature mode.
 * **Legend** — drawn with Canvas (the camera font has no symbol glyphs); switches to "adjust" when a chip is selected.
+* **Browser** — C1 opens the brand picker (see Recipes).
 * **Pill / hidden** — press AEL to shrink the overlay to a small pill (recipe name + index) or hide it completely.
   Recipe scrolling keeps working in both states so you can compare looks on a clean frame.
 * **Toast** — status messages (stored, protected, errors) appear top-centre and fade.
@@ -46,8 +47,9 @@ Current version: **0.9**
 |---|---|
 | control wheel, LEFT / RIGHT | previous / next recipe — applied to the live view immediately |
 | UP / DOWN | select a parameter chip; LEFT / RIGHT or the top dial then adjust it |
+| C1 | open / close the brand browser (see Recipes) |
 | centre button (ENTER) | **store** the staged values in the settings store + sync |
-| AEL (also C1, DISP, Fn) | overlay: full panel → small pill → hidden |
+| AEL (also DISP, Fn) | overlay: full panel → small pill → hidden |
 | TRASH | stage factory values (Standard, 0 / 0 / 0, matrix off, WB auto) — press ENTER to store them |
 | shutter | take a photo with the previewed look (half-press = AF) |
 | MENU | exit (live preview reverts; stored values stay) |
@@ -57,15 +59,33 @@ Changes stored with ENTER take effect after a **power-cycle**.
 
 ## Recipes
 
-31 entries in `Recipes.java`. Only looks that map credibly onto this body's controls were kept; each has a base
-Creative Style, saturation / contrast / sharpness, optional PP3 colour matrix and a white-balance setting.
+72 entries in `Recipes.java`, grouped by brand. Only looks that map credibly onto this body's controls were kept:
+colour negatives, slides, in-camera "looks" and monochromes. Log profiles (S-Log, V-Log, Blackmagic Film, Cinelike D)
+need a tone curve this body cannot store, and tinted monochromes (selenium, cyanotype) are impossible because Sony's
+B&W ignores WB tint — none of those are included.
 
-| colour | black & white |
+| brand | recipes |
 |---|---|
-| FACTORY, Fuji 400H, Ektar 100, Kodak Portra 800, Kodak Gold, Blue Velvet (Cinestill 50D), Cinestill 800T, Fuji Eterna, Classic Chrome, Kodachrome 64, Kodak Ultra Max 400, Kodak Portra 400, Astia, Classic Negative, Fuji Fortia 50, Kodak Portra 160, Ektachrome, Velvia Pro, Provia RX, Classic Cinema, Kodak Color Plus 200, Nostalgic Neg, Asteroid City (Vision 200T) | Delta 3200, T-Max, Kodak Tri-X 400, Acros X, Acros XY / XR / XG (filter looks via WB shift), Ilford HP5 |
+| Sony | FACTORY (ST), PT, NT, VV, VV2, FL, IN, SH |
+| Fuji Sim | Provia, Velvia, Astia, Classic Chrome, Classic Negative, Nostalgic Neg, Reala Ace, Pro Neg Std / Hi, Eterna, Eterna Bleach Bypass, Acros, Acros +Ye / +R / +G, Sepia |
+| Fuji Film | Pro 400H, Fortia 50, Superia 400, C200, Natura 1600 |
+| Kodak | Portra 160 / 400 / 800, Gold 200, Ultra Max 400, Color Plus 200, Ektar 100, Ektachrome E100, Kodachrome 64, Vision3 500T, Vision 200T (Asteroid City), Tri-X 400, T-Max |
+| Cine | Cinestill 50D, Cinestill 800T, Classic Cinema, Rec709 Video |
+| Ricoh GR | Positive Film, Negative Film, Bleach Bypass, Retro, Cross Process, Hi-Contrast B&W, Hard Monotone, Soft Monotone |
+| Leica | Contemporary, Classic, Eternal, Monochrom |
+| Hasselblad | HNCS Natural |
+| Canon / Nikon | Canon Standard / Portrait / Faithful, Nikon Flat / Vivid |
+| Pana / Olympus | L.Monochrome D, L.ClassicNeo, Pop Art, Pale & Light |
+| Other Stocks | Agfa Vista 200, Agfa Ultra 100, Polaroid / Instax |
+| Ilford | HP5, FP4, Delta 100, Delta 3200, Pan F 50 |
+
+**Browser (C1):** a two-column picker — brands on the left, that brand's recipes on the right with a one-line summary
+(base style, sat/con, matrix, WB). Wheel / UP / DOWN walk through recipes (crossing into the next brand at the end),
+LEFT / RIGHT jump brands, every move is previewed live on the frame behind, ENTER picks and returns to the panel,
+C1 or MENU close. In the main panel the wheel still scrolls the whole list linearly; the counter shows the brand.
 
 Editing a recipe: pick it, UP/DOWN to a chip, dial or LEFT/RIGHT, ENTER. The live view is always what will be stored.
-Adding a recipe: one line in `Recipes.java`, rebuild.
+Adding a recipe: one line in `Recipes.java` (keep it inside its brand block), rebuild.
 
 ## How it works
 
