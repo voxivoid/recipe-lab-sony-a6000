@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.22 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.23 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -131,8 +131,9 @@ its contrast, saturation and sharpness sliders, white balance and its fine-tune,
 Effect — plus one hidden switch that turns on a richer colour matrix the camera has but never shows. Recipes that
 use a Picture Effect (Retro, Soft High-key, High Contrast Mono) behave like that menu item does: the camera ignores
 Creative Style while it is on, and **it needs Quality = JPEG** — with RAW or RAW+JPEG set, the camera silently drops
-the effect. When you store such a recipe the app asks whether to switch Quality to JPEG Fine or Standard (or keep
-RAW and accept no effect). Fn cycles Quality any time, so RAW is one press away again. It does not modify the
+the effect. So every recipe also carries a Quality: Picture Effect recipes stage **JPEG Fine**, all others stage
+**RAW+JPEG**. Change it before storing with Fn (cycles RAW → RAW+JPEG → JPEG Fine → JPEG Std) or on the QUALITY chip;
+if you insist on RAW with an effect recipe the app asks once before storing. It does not modify the
 camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
 Sony used for its own downloadable apps.
 

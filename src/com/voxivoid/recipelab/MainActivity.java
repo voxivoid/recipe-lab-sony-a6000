@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.22 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.23 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
@@ -195,7 +195,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         if (r.wbMode != 0) { edit[R_WBMODE] = r.wbMode; if (r.wbMode == 14) edit[R_KELVIN] = r.kelvin / 100; }
         edit[R_AB] = r.ab; edit[R_GM] = r.gm;
         edit[R_PE] = r.pe; edit[R_EV] = r.ev; edit[R_DRO] = r.dro; edit[R_SUB] = r.sub;
-        // quality is the user's, not the recipe's — recipes never change it silently
+        edit[R_QUAL] = r.isEffect() ? 2 : 1;                     // Picture Effect recipes → JPEG Fine, everything else → RAW+JPEG
     }
 
     /** quality from the two stored bytes; falls back to the runtime value when the slots are not known yet */
