@@ -25,12 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recipe Lab 0.45 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
+ * Recipe Lab 0.46 — film recipes with LIVE PREVIEW, then persistent write (photo + video, survives power-cycle).
  *
  * Preview = runtime camera parameters. ENTER = write the recipe's stored bytes + sync → power-cycle applies it everywhere.
  *
- * Keys: wheel / LEFT / RIGHT recipe · UP / DOWN parameter · top dial adjust · C1 brand browser · ENTER store
- *       AEL / DISP overlay: full → pill → hidden · TRASH stage factory · Fn settings snapshot / diff (finds storage slots)
+ * Keys: wheel / LEFT / RIGHT recipe · UP / DOWN parameter · top dial adjust · Fn brand browser · ENTER store
+ *       AEL / DISP overlay: full → pill → hidden · TRASH stage factory · C1 settings snapshot / diff (finds storage slots)
  *       SHUTTER photo · MENU exit
  */
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
@@ -536,7 +536,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 if (browserCol == 0) { browserCol = 1; render(); return true; }
                 openBrowser(false); showToast(Recipes.ALL[recipe].name + " previewed — ENTER to store", 3000); return true;
             case K_MENU: case K_SK1: swallowMenuUp = true; openBrowser(false); return true;
-            case K_C1: case K_AEL: case K_DISP: openBrowser(false); return true;
+            case K_FN: case K_AEL: case K_DISP: openBrowser(false); return true;
+            case K_C1: snapshotOrDiff(); return true;
             case K_DELETE: case K_SK2: stageFactory(); return true;
             case K_S1: try { camera.autoFocus(null); } catch (Throwable t) {} return true;
             case K_S2: try { camera.takePicture(null, null, null); } catch (Throwable t) {} return true;
@@ -555,7 +556,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e) {
         if (promptOpen) return promptKey(e.getScanCode());
-        if (e.getScanCode() == K_FN) { if (e.getRepeatCount() == 0) fnDown = e.getEventTime(); return true; }
         if (overlay == 3 && e.getScanCode() != K_PLAY) return browserKey(e.getScanCode());
         switch (e.getScanCode()) {
             case K_LEFT: case K_RIGHT: {
@@ -579,7 +579,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 return true;
             }
             case K_AEL: case K_DISP: overlay = (overlay + 1) % 3; render(); return true;
-            case K_C1: openBrowser(true); return true;
+            case K_FN: openBrowser(true); return true;
+            case K_C1: snapshotOrDiff(); return true;
             case K_ENTER: if (row == 0 || overlay != 0) writeAll(); else setFocus(!focus); return true;
             case K_DELETE: case K_SK2: stageFactory(); return true;
             case K_S1: try { camera.autoFocus(null); } catch (Throwable t) {} return true;
@@ -595,7 +596,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     public boolean onKeyUp(int keyCode, KeyEvent e) {
         if (promptOpen) { if (e.getScanCode() == K_MENU || e.getScanCode() == K_SK1) swallowMenuUp = false; return true; }
         switch (e.getScanCode()) {
-            case K_FN: if (e.getEventTime() - fnDown > 1000) snapshotOrDiff(); else cycleQuality(); return true;
+            case K_FN: return true;
             case K_MENU: case K_SK1: if (swallowMenuUp) { swallowMenuUp = false; return true; } finish(); return true;
             case K_S1: try { camera.cancelAutoFocus(); } catch (Throwable t) {} return true;
             case K_S2: try { cameraEx.getClass().getMethod("cancelTakePicture").invoke(cameraEx); } catch (Throwable t) {} return true;

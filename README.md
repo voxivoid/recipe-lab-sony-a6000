@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.45 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 0.46 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -106,7 +106,7 @@ shooting screen.
 1. Open **Recipe Lab** from the Application List. You see the live image with a panel at the bottom.
 2. **Turn the control wheel** (the ring on the back). Every click is a different recipe and the live image changes
    immediately — this is exactly how your photos and videos will look.
-3. To jump between brands press **C1** (the small button next to the shutter). A list opens: brands on the left,
+3. To jump between brands press **Fn**. A list opens: brands on the left,
    recipes on the right. Left/right picks which column you are scrolling (the active one is amber), up/down or the
    wheel scrolls it, the image keeps following. Centre button on a brand jumps into its recipes; centre button on a
    recipe picks it and closes the list.
@@ -121,7 +121,7 @@ A few extras:
 | | |
 |---|---|
 | **up / down** | moves between the recipe line and the row of value chips. In the chip row, left / right walks the chips; press the centre button to focus one (it turns amber), then up / down changes its value, centre button again leaves it. Only the chips the recipe uses are shown: a **CS** (Creative Style) recipe shows style / saturation / contrast / sharpness / matrix, a **PE** (Picture Effect) recipe shows the effect and its sub-setting instead; quality, white balance, EV and DRO always. The legend at the bottom changes with each state |
-| **Fn** | short press: cycle Quality (RAW → RAW+JPEG → JPEG Fine → JPEG Std). Long press (1 s): developer snapshot/diff of all settings |
+| **C1** | developer tool: snapshot of all settings; press again after changing a menu item to see which slot it lives in |
 | **TRASH** (bin button) | stages the factory look; centre button stores it |
 | **shutter** | takes a picture with whatever you are previewing |
 | **MENU** | leaves the app |
@@ -141,8 +141,8 @@ the effect. Quality is therefore handled like this: the **Factory recipe carries
 whatever the camera is set to, and if you change it there (QUALITY chip or Fn) the app remembers it. Every Creative
 Style recipe uses that same Quality. Picture Effect recipes use it too when it is a JPEG setting, otherwise they use
 JPEG Fine. Whenever storing a recipe would change the camera's Quality the app asks first (`Quality: RAW+JPG → JPG
-Fine — JPEG is needed to apply this recipe`, *Accept* / *Cancel*); Cancel stores nothing. Fn cycles Quality (RAW →
-RAW+JPEG → JPEG Fine → JPEG Std) any time. The app also reopens on the recipe you last selected. It does not modify the
+Fine — JPEG is needed to apply this recipe`, *Accept* / *Cancel*); Cancel stores nothing. The QUALITY chip changes it
+any time. The app also reopens on the recipe you last selected. It does not modify the
 camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
 Sony used for its own downloadable apps.
 
@@ -224,7 +224,7 @@ otherwise a freshly stored recipe would be undone the moment the app closes.
 `whitebalance`, `color-temperture-white-balance`, `light-balance-for-white-balance`,
 `color-compensation-for-white-balance`, `rgb-matrix` (Q10, 1.0 = 1024) + `rgb-matrix-mode`, `picture-effect`,
 `exposure-compensation` (1/3 EV steps), `dro-mode` + `dro-level`.
-**Key scan codes:** wheel 522 / 523, top dial 525 / 526, AEL 532, C1 622, trash 595, centre 232, MENU 514.
+**Key scan codes:** wheel 522 / 523, top dial 525 / 526, AEL 532, C1 622, Fn 520, trash 595, centre 232, MENU 514.
 
 **Build** (Windows): JDK 17, Android SDK build-tools 30.0.3 with a platform jar (API 28), and **NDK r16b** — the last
 one with the GCC toolchain this Android 2.3.7 target needs.

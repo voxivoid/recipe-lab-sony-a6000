@@ -10,7 +10,7 @@ import android.graphics.RectF;
  * Fits the available width: first squeezes the gaps between items, then scales icons and text down.
  */
 public class Legend {
-    public static final int WHEEL = 0, UPDOWN = 1, LEFTRIGHT = 2, DIAL = 3, ENTER = 4, AEL = 5, TRASH = 6, MENU = 7, C1 = 8;
+    public static final int WHEEL = 0, UPDOWN = 1, LEFTRIGHT = 2, DIAL = 3, ENTER = 4, AEL = 5, TRASH = 6, MENU = 7, C1 = 8, FN = 9;
 
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG),
             text = new Paint(Paint.ANTI_ALIAS_FLAG), keyText = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -119,6 +119,7 @@ public class Legend {
             }
             case AEL: return keyLabel(c, x, cy, s, 2.6f * s, "AEL");
             case C1: return keyLabel(c, x, cy, s, 2.0f * s, "C1");
+            case FN: return keyLabel(c, x, cy, s, 2.0f * s, "Fn");
             case TRASH: {                                          // bin: lid + body
                 float w = 1.6f * s, cx = x + w / 2, top = cy - s * 0.9f, bot = cy + s * 0.9f, u = d * k;
                 c.drawLine(x, top + 2 * u, x + w, top + 2 * u, stroke);
