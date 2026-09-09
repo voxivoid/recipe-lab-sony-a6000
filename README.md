@@ -259,6 +259,8 @@ engineering Sony's PlayMemories camera platform:
 He figured out how these cameras work, documented it openly and licensed it permissively — this project just stands
 on that.
 
-Recipe names follow the popular film-simulation lists; the values are original approximations for this body.
+**Thanks also to [Veres Deni Alex](https://www.veresdenialex.com/).** His Sony film-simulation recipes and the side-by-side
+reference frames on his site were the inspiration and the benchmark for many of the looks here (Kodak, Fuji, Cinestill,
+Ilford, Cinema…). The values in this app are re-derived for what the A6000 can store and are not his recipes.
 
 License: MIT (this repository). OpenMemories-Platform: MIT, © 2017 ma1co.
