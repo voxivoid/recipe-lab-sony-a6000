@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 0.46 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 1.0 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
@@ -158,9 +158,6 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 - Some recipes push saturation further than the menu slider goes (the menu allows ±3, the camera accepts more). The
   menu then shows the nearest value it can; if you touch that slider it snaps back to the normal range and the
   recipe loses that extra punch. Re-store from the app if that happens.
-- For base styles other than *Standard*, the stored style number is our best current mapping. If, after restarting,
-  the menu shows a different Creative Style than the recipe named, please [open an issue](../../issues) — it helps
-  confirm the mapping.
 - The preview inside the app is temporary; closing the app removes it. Only what you *stored* stays.
 - Uninstalling the app does **not** put the colour settings back. Undo first (any of the three ways above), then
   remove it via `MENU → Application → Application Management → Manage and Remove → Recipe Lab`.
@@ -175,7 +172,6 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 | Stuck at `Waiting for camera to switch...` | Unplug, turn the camera off and on, reconnect, run again |
 | Badge says **PROTECTED** | The camera's settings store is write-protected. Install [OpenMemories-Tweak](https://github.com/ma1co/OpenMemories-Tweak), turn off *Backup protection*, try again |
 | Look not applied after storing | Turn the camera off and on |
-| Different Creative Style after restart | See "Worth knowing" above — please report it |
 | `no live preview: ...` in the panel | Something else is holding the camera; close and reopen the app |
 | Text shows `Â·` | Old build; install the APK from `dist/` |
 
@@ -201,7 +197,7 @@ build.cmd                      full Windows build → RecipeLab.apk (+ copy to d
 
 | setting | id | notes |
 |---|---|---|
-| Creative Style | `0x01070175` | `1 = standard` verified; others provisional |
+| Creative Style | `0x01070175` | index in the runtime `color-mode-values` list (1 standard, 2 vivid, 3 neutral … 6 mono; verified) |
 | Contrast | `0x01070178` | signed byte |
 | Saturation | `0x01070187` | signed byte, core accepts ±16 |
 | Sharpness | `0x0107018a` | signed byte |

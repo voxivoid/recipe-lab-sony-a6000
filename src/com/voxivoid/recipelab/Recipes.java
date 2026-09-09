@@ -5,7 +5,7 @@ package com.voxivoid.recipelab;
  * film-simulation lists; values are original. No gamma / per-hue colour depth / split-toning exists on this body,
  * so log profiles (S-Log, V-Log, Blackmagic Film) and tinted monochromes (selenium, cyanotype) are not included.
  *
- * style   : Creative Style (runtime name is exact; stored enum: 1=standard confirmed, others provisional)
+ * style   : Creative Style (stored enum verified: 1 standard, 2 vivid, 3 neutral, 6 mono; order follows the runtime list)
  * sat/con/sharp : Creative Style adjustments (menu range -3..+3; beyond = experimental, camera core accepts sat ±16)
  * matrix  : 1 = PP3 alternate colour matrix (~+45% chroma, blue/green cross-talk)
  * wbMode  : 0 = leave WB as is · 1 = auto · 14 = colour temperature (kelvin)
@@ -45,17 +45,17 @@ public class Recipes {
     }
 
     public static final int STD = 1, VIVID = 2, NEUTRAL = 3, PORTRAIT = 4, LANDSCAPE = 5, MONO = 6, CLEAR = 7, DEEP = 8, LIGHT = 9, SUNSET = 10, NIGHT = 11, AUTUMN = 12, SEPIA = 13;
-    /** index = stored enum guess; value = runtime color-mode name (API) */
+    /** index = stored enum; value = runtime color-mode name (API) */
     public static final String[] STYLE_NAMES = { "?", "standard", "vivid", "neutral", "portrait", "landscape", "mono", "clear", "deep", "light", "sunset", "night", "red-leaves", "sepia" };
     public static final String[] STYLE_LABEL = { "?", "Standard", "Vivid", "Neutral", "Portrait", "Landscape", "B&W", "Clear", "Deep", "Light", "Sunset", "Night", "Autumn", "Sepia" };
 
     private static final int AUTO = 1, K = 14;
 
-    /** Picture Effect: stored byte assumed = index in the runtime list (provisional, verify against the menu) */
+    /** Picture Effect: stored byte = index in the runtime list (verified) */
     public static final String[] PE_KEYS = { "off", "toy-camera", "pop-color", "posterization", "retro-photo", "soft-high-key", "part-color", "rough-mono", "soft-focus", "hdr-art", "richtone-mono", "miniature", "illust", "watercolor" };
     public static final String[] PE_LABEL = { "off", "Toy", "Pop", "Poster", "Retro", "High-key", "Part col", "HC mono", "Soft foc", "HDR art", "Rich mono", "Miniature", "Illust", "Watercol" };
     public static final int PE_OFF = 0, PE_TOY = 1, PE_POP = 2, PE_RETRO = 4, PE_HIGHKEY = 5, PE_HCMONO = 7;
-    /** effect sub-parameter (tint / tone / hue / mode): runtime key, stored slot, value names — index = stored byte (provisional) */
+    /** effect sub-parameter (tint / tone / hue / mode): runtime key, stored slot, value names — index = stored byte */
     public static String subKey(int pe) { switch (pe) { case 5: return "pe-soft-high-key-effect"; case 1: return "pe-toy-camera-effect"; case 6: return "pe-part-color-effect"; case 3: return "pe-posterization-effect"; default: return null; } }
     public static int subId(int pe) { switch (pe) { case 5: return 0x010709d8; case 1: return 0x010706f3; case 6: return 0x010706ee; case 3: return 0x010706ef; default: return 0; } }
     public static String[] subValues(int pe) {
