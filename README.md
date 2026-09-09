@@ -6,7 +6,7 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 1.0 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>Version 1.0.0 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
 </p>
 
 ---
