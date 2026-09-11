@@ -2,6 +2,7 @@ out/
 node_modules/
 *.apk
 *.apk.sha256
+dev-notes.md
 debug.keystore
 *.keystore
 jni/platform/errno.h.updater_only

@@ -80,13 +80,20 @@ jobs:
           cp RecipeLab.apk "RecipeLab-$VERSION_NAME.apk"
           cp RecipeLab.apk RecipeLab-dev.apk
           sha256sum RecipeLab-dev.apk > RecipeLab-dev.apk.sha256
+
+          # The notes come from the same generator and preset as a real release, so a dev
+          # build says what is in it in the same shape people read on the Releases page.
+          {
+            printf 'Automatic build of `development` @ `%s`.\n\n' "${SHA::7}"
+            printf 'Not a release — see [Releases](https://github.com/%s/releases) for stable builds.\n' "$GITHUB_REPOSITORY"
+            printf '`RecipeLab-dev.apk` always points at the newest development build.\n\n'
+            node tools/dev-notes.js "$VERSION_NAME"
+          } > dev-notes.md
+
           gh release delete dev --yes --cleanup-tag || true
           gh release create dev \
             --prerelease \
             --target "$SHA" \
             --title "v$VERSION_NAME" \
-            --notes "Automatic build of \`development\` @ \`${SHA::7}\`.
-
-          Not a release — see [Releases](https://github.com/${GITHUB_REPOSITORY}/releases) for stable builds.
-          \`RecipeLab-dev.apk\` always points at the newest development build." \
+            --notes-file dev-notes.md \
             "RecipeLab-$VERSION_NAME.apk" RecipeLab-dev.apk RecipeLab-dev.apk.sha256
