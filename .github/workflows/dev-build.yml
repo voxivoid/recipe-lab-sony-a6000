@@ -3,7 +3,7 @@ name: dev-build
 on:
   push:
     branches: [development]
-  # cut-release calls this after it bumps development. A push made with GITHUB_TOKEN
+  # create-release calls this after it bumps development. A push made with GITHUB_TOKEN
   # does not start a workflow run, so the trigger above never fires for it.
   workflow_call:
   workflow_dispatch:

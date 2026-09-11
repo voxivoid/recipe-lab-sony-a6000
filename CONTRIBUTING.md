@@ -31,11 +31,11 @@ Naming — the prefix is the commit type, so the branch says what kind of change
 feat/<issue>-<slug>        feat/123-brand-jump-top-dial
 fix/<issue>-<slug>         fix/131-wb-finetune-sign
 docs/ refactor/ chore/ build/ ci/ perf/ test/   same shape
-release/<x.y.z>            cut from development → PR to main
-hotfix/<x.y.z>             cut from main → PR to main → back-merged to development
+hotfix/<x.y.z>             branched off main → PR to main → back-merged to development
 ```
 
-Every branch except `release/*` and `hotfix/*` carries its issue number.
+Every branch except `hotfix/*` carries its issue number. There is no `release/*` branch:
+**create-release** merges `development` into `main` itself.
 
 ## Commits
 
@@ -110,7 +110,7 @@ Never commit an APK or a keystore. Both are gitignored; releases carry the binar
 
 ## Releases
 
-**Actions → cut-release → Run workflow** (`-f dry_run=true` to just see what would ship). semantic-release
+**Actions → create-release → Run workflow** (`-f dry_run=true` to just see what would ship). semantic-release
 reads the commits, decides the version, builds, tags and publishes; the workflow merges `development` into
 `main` around it and fast-forwards back. Nobody picks a version number.
 Details: **[docs/RELEASING.md](docs/RELEASING.md)**.

@@ -1,10 +1,12 @@
-name: cut-release
+name: create-release
 
-# The whole release runbook as one button: merge development into main, tag it,
-# publish the release, fast-forward development back, and optionally open the next
-# version cycle.
+# The whole release runbook as one button: merge development into main, let
+# semantic-release decide the version and publish it, then fast-forward development back
+# and rebuild the rolling dev prerelease.
 #
-# Run it from the Actions tab, or:  gh workflow run cut-release.yml -f next_version=1.2.0
+# Run it from the Actions tab, or:
+#   gh workflow run create-release.yml                  release
+#   gh workflow run create-release.yml -f dry_run=true  report only, change nothing
 
 on:
   workflow_dispatch:
@@ -25,7 +27,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: cut-release
+  group: create-release
   cancel-in-progress: false
 
 jobs:

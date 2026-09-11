@@ -5,11 +5,11 @@ The version is not a decision any more — it is computed from the commit messag
 
 ## The button
 
-**Actions → cut-release → Run workflow**, or:
+**Actions → create-release → Run workflow**, or:
 
 ```bash
-gh workflow run cut-release.yml                    # release
-gh workflow run cut-release.yml -f dry_run=true    # just report what would ship
+gh workflow run create-release.yml                    # release
+gh workflow run create-release.yml -f dry_run=true    # just report what would ship
 ```
 
 | input | meaning |

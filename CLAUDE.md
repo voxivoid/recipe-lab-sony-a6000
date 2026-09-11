@@ -12,7 +12,8 @@ The rules below are the ones that break things when ignored.
 - Branch off `development`: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`, also
   `docs/ refactor/ chore/ build/ ci/ perf/ test/`.
 - There must be a GitHub issue first; its number goes in the branch name.
-- `release/<x.y.z>` off `development`, `hotfix/<x.y.z>` off `main`.
+- `hotfix/<x.y.z>` off `main`. There is no `release/*` branch — **create-release** merges `development`
+  into `main` itself.
 
 ## Commits
 
@@ -63,6 +64,6 @@ never stored. Say so plainly rather than implying a green build means the change
 
 ## Releasing
 
-Run the **cut-release** workflow (`gh workflow run cut-release.yml`, or `-f dry_run=true` to preview). Do not merge
+Run the **create-release** workflow (`gh workflow run create-release.yml`, or `-f dry_run=true` to preview). Do not merge
 `development` into `main` by hand unless that workflow is broken — and never squash it if you do.
 Full runbook in [docs/RELEASING.md](docs/RELEASING.md).
