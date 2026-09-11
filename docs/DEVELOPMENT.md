@@ -61,6 +61,22 @@ Found by disassembling the camera app's parameter registration in `libObj.so`):
 | Quality: file format | `0x01070013` (+ mirror `0x01070aa9`) | RAW = 1, RAW+JPEG = 2, JPEG = 0 (verified) |
 | Quality: JPEG level | `0x01070014` (+ mirror `0x01070aaa`) | Std = 0, Fine = 1 (verified) |
 
+## Snapshot / diff tool (C1)
+
+How the slots above were found, and how to find the next one. **C1** in the app runs `snapshotOrDiff()`, over every
+id in `res/raw/ids.txt` (each settings entry of 16 bytes or less):
+
+1. **First press** writes `snapshot.bin` into `getFilesDir()` — the current value of every id.
+2. Leave the app, change **one** thing in the camera menus, reopen.
+3. **Second press** re-reads every id, diffs it against the snapshot, shows the changed ones as
+   `id:old>new` (first 14 on screen), appends the same line to `diff.txt` in `getFilesDir()`, and deletes
+   `snapshot.bin` — so the next press starts a fresh snapshot.
+
+Whatever shows up is the slot for the menu item you changed. Change one thing at a time or the diff is useless:
+the camera rewrites unrelated entries on its own, so a second change means guessing which id belongs to what.
+
+Note the toast still says "press Fn again" — the handler is on `K_C1`. The string is wrong, not the binding.
+
 ## Exit rule
 
 The camera writes some live parameters (exposure bias, WB fine-tune) straight back into the settings

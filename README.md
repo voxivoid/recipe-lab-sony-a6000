@@ -194,7 +194,6 @@ Open **Recipe Lab** from the Application List. You get the live image with a pan
 | **up / down** | move between the recipe line and the row of value chips |
 | **TRASH** | stage the factory look, then **centre** to store it |
 | **shutter** | take a picture of what you are previewing |
-| **C1** | developer tool: snapshot every setting, press again after a menu change to find which slot it lives in |
 | **MENU** | leave the app |
 
 Then **turn the camera off and on**. The look is now the camera's default in every mode — P, A, S, M, movie — with
