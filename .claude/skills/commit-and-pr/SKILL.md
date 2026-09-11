@@ -209,7 +209,7 @@ gh issue edit <issue> --add-label "needs-on-camera-verification"
 ```
 
 The install path for a PR build is the workflow artifact, or `RecipeLab-dev.apk` from the
-rolling [`dev` prerelease](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/tag/dev)
+rolling [`dev` prerelease](https://github.com/voxivoid/recipe-lab-sony-pmca/releases/tag/dev)
 once the change is on `development`.
 
 ### 10. Check CI

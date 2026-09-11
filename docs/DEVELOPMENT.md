@@ -27,7 +27,7 @@ AndroidManifest.xml            package com.voxivoid.recipelab
 src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
   Recipes.java                 the 77 recipes, brands, GROUP_START / GROUP_COUNT
-  res/raw/ids.txt              every settings entry of 16 bytes or less, used by the Fn snapshot/diff tool
+  res/raw/ids.txt              every settings entry of 16 bytes or less, used by the C1 snapshot/diff tool
   PickerView.java              Canvas-drawn brand browser
   Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
   HintBar.java                 legend view under the panel (uses Legend)
@@ -60,6 +60,22 @@ Found by disassembling the camera app's parameter registration in `libObj.so`):
 | DRO | `0x01070104` (+ level byte `0x01070775`) | Off 0, Auto 1, Lv1–5 = 2–6; level byte 1 for Off/Auto, Lv n = n+1 (verified) |
 | Quality: file format | `0x01070013` (+ mirror `0x01070aa9`) | RAW = 1, RAW+JPEG = 2, JPEG = 0 (verified) |
 | Quality: JPEG level | `0x01070014` (+ mirror `0x01070aaa`) | Std = 0, Fine = 1 (verified) |
+
+## Snapshot / diff tool (C1)
+
+How the slots above were found, and how to find the next one. **C1** in the app runs `snapshotOrDiff()`, over every
+id in `res/raw/ids.txt` (each settings entry of 16 bytes or less):
+
+1. **First press** writes `snapshot.bin` into `getFilesDir()` — the current value of every id.
+2. Leave the app, change **one** thing in the camera menus, reopen.
+3. **Second press** re-reads every id, diffs it against the snapshot, shows the changed ones as
+   `id:old>new` (first 14 on screen), appends the same line to `diff.txt` in `getFilesDir()`, and deletes
+   `snapshot.bin` — so the next press starts a fresh snapshot.
+
+Whatever shows up is the slot for the menu item you changed. Change one thing at a time or the diff is useless:
+the camera rewrites unrelated entries on its own, so a second change means guessing which id belongs to what.
+
+Note the toast still says "press Fn again" — the handler is on `K_C1`. The string is wrong, not the binding.
 
 ## Exit rule
 
@@ -140,8 +156,8 @@ Toolchain, both platforms: **JDK 17**, Android SDK **build-tools 30.0.3** with a
 that combination is what rules out every later NDK.
 
 ```
-git clone --recursive https://github.com/voxivoid/recipe-lab-sony-a6000.git
-cd recipe-lab-sony-a6000
+git clone --recursive https://github.com/voxivoid/recipe-lab-sony-pmca.git
+cd recipe-lab-sony-pmca
 ```
 
 **Linux / WSL / macOS** — `build.sh`. This is what CI runs and the supported way to build:

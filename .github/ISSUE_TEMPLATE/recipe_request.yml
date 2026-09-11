@@ -5,10 +5,12 @@ body:
   - type: markdown
     attributes:
       value: |
-        The A6000 has no Picture Profile menu and **cannot store tone curves**. Every recipe is built only
-        from what this body can keep: Creative Style, saturation, contrast, sharpness, white balance,
+        These cameras have no Picture Profile menu and **cannot store tone curves**. Every recipe is built
+        only from what they can keep: Creative Style, saturation, contrast, sharpness, white balance,
         exposure bias, Picture Effect and one hidden colour setting. Recipes here are approximations of a
         look, never copies of another maker's colour science.
+
+        Values are derived on an **A6000**, which is the body the recipes are judged on.
   - type: input
     id: look
     attributes:
@@ -31,5 +33,5 @@ body:
     attributes:
       label: Acknowledgement
       options:
-        - label: I understand this body cannot store tone curves, so the result will be an approximation.
+        - label: I understand these cameras cannot store tone curves, so the result will be an approximation.
           required: true

@@ -7,8 +7,8 @@
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
   <sub>
-    <img src="https://img.shields.io/github/v/release/voxivoid/recipe-lab-sony-a6000?label=version" alt="version"> ·
-    <a href="https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk">Download the app</a>
+    <img src="https://img.shields.io/github/v/release/voxivoid/recipe-lab-sony-pmca?label=version" alt="version"> ·
+    <a href="https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk">Download the app</a>
   </sub>
 </p>
 
@@ -18,10 +18,13 @@
 
 - [What it is](#what-it-is)
 - [The recipes](#the-recipes)
+- [Compatibility](#compatibility)
 - [Installing](#installing)
 - [Using it](#using-it)
-- [What it changes — and how to undo it](#what-it-changes--and-how-to-undo-it)
+- [What it changes](#what-it-changes)
+- [Uninstalling](#uninstalling)
 - [Troubleshooting](#troubleshooting)
+- [FAQ](docs/FAQ.md)
 - [For developers](#for-developers)
 - [Credits](#credits)
 
@@ -65,6 +68,73 @@ Not included, because the camera simply cannot do them: log profiles (S-Log, V-L
 tinted black & white (selenium, cyanotype). Sony's camcorder *Cinematone* gamma exists in the firmware but the A6000's
 camera layer neither lists nor accepts it, so that door is closed too.
 
+## Compatibility
+
+Recipe Lab has no model check in it, and every Sony body that runs PlayMemories apps has the same settings store — so
+it should install and work beyond the A6000.
+
+The catch: the setting IDs were found on an A6000 and may sit elsewhere on another body, so a recipe could land in the
+wrong place. A camera gets a ✅ only once someone has stored a recipe on it and power-cycled the camera.
+
+Tried one? File a
+[compatibility report](https://github.com/voxivoid/recipe-lab-sony-pmca/issues/new?template=compatibility_report.yml).
+Failures are as useful as successes.
+
+### Cameras that run PlayMemories apps
+
+✅ someone has run it on that body · ❔ app-capable, nobody has reported back yet
+
+| camera | model code | status | comment |
+|---|---|---|---|
+| **A6000** | ILCE-6000 | ✅ | built and tested on it, firmware 3.21 |
+| **A6500** | ILCE-6500 | ✅ | installs, stores, survives a power cycle — but the badge reads **PROTECTED** where the A6000 says ACTIVE |
+| **A5100** | ILCE-5100 | ✅ | works, and the wheel scrolls every recipe — but the body has no **Fn** or **AEL** button, so the brand list and the clean-preview toggle are out of reach |
+| **A7 II** | ILCE-7M2 | ✅ | reported working |
+| A6300 | ILCE-6300 | ❔ | same generation as the A6000; the most likely of these to behave identically |
+| A5000 | ILCE-5000 | ❔ | as with the A5100, expect no **Fn** or **AEL** button |
+| A7 | ILCE-7 | ❔ |  |
+| A7R | ILCE-7R | ❔ |  |
+| A7S | ILCE-7S | ❔ |  |
+| A7R II | ILCE-7RM2 | ❔ |  |
+| A7S II | ILCE-7SM2 | ❔ |  |
+| NEX-5R | NEX-5R | ❔ | oldest app-capable generation |
+| NEX-5T | NEX-5T | ❔ | oldest app-capable generation |
+| NEX-6 | NEX-6 | ❔ | menus differ a lot from the A6000 generation, so the settings are the least likely to sit in the same place |
+| A68 | ILCA-68 | ❔ | A-mount; not in the installer's device table either, so even the install is untested |
+| A77 II | ILCA-77M2 | ❔ | A-mount |
+| A99 II | ILCA-99M2 | ❔ | A-mount |
+| RX100 III | DSC-RX100M3 | ❔ |  |
+| RX100 IV | DSC-RX100M4 | ❔ |  |
+| RX100 V | DSC-RX100M5 | ❔ |  |
+| RX1R II | DSC-RX1RM2 | ❔ |  |
+| RX10 II | DSC-RX10M2 | ❔ |  |
+| RX10 III | DSC-RX10M3 | ❔ |  |
+| HX60 / HX60V | DSC-HX60 | ❔ | compact; no control wheel of the kind the app is driven with |
+| HX90 / HX90V | DSC-HX90 | ❔ | compact; no control wheel of the kind the app is driven with |
+| HX400 / HX400V | DSC-HX400 | ❔ | compact; no control wheel of the kind the app is driven with |
+| WX500 | DSC-WX500 | ❔ | compact; no control wheel of the kind the app is driven with |
+
+Two more are unclear: the **RX100 II** and the original **RX10** had Sony's app store, but are missing from the
+installer's device table, so even the install is untested.
+
+App-capable but pointless: the QX lens cameras (ILCE-QX1, DSC-QX10/QX30/QX100), with no screen or wheel to drive the
+app, and the Handycams and action cams, with no Creative Style to write.
+
+### Cameras that cannot run camera apps
+
+Sony's last app-capable bodies are the ones above, from late 2016 — the A6500 and the A99 II. Everything since has
+signed firmware and no `MENU → Application`, so nothing can be installed on it: not this app, not Sony's own store,
+which closed in 2021.
+
+| | |
+|---|---|
+| **E-mount, APS-C** | A6100, A6400, A6600, A6700, ZV-E10, ZV-E10 II, FX30 |
+| **E-mount, full frame** | A7 III, A7R III, A7R IV / IVA, A7R V, A7S III, A7C, A7C II, A7CR, A9, A9 II, A9 III, A1, A1 II, ZV-E1, FX3 |
+| **Cyber-shot** | RX100 VA, RX100 VI, RX100 VII, RX10 IV, RX0, RX0 II, HX99, ZV-1, ZV-1F, ZV-1 II |
+
+…and everything released since. The menu is the test: no `MENU → Application` on your camera, no app — so reports of
+Recipe Lab running on an A6400 or similar are mistaken.
+
 ## Installing
 
 Takes about ten minutes, once. You need the camera, its USB cable, a memory card and a computer (Windows, Mac or
@@ -73,9 +143,11 @@ Linux).
 **1. Get the installer tool.** It is called *Sony-PMCA-RE*, made by ma1co. It puts apps on Sony cameras the same way
 Sony's own app store did before it closed.
 
-- *Windows, easiest:* download `pmca-gui.exe` from the
+- *Windows:* download `pmca-gui.exe` from the
   [releases page](https://github.com/ma1co/Sony-PMCA-RE/releases). Nothing to install, just run it.
-- *Mac, Linux, or Windows without the GUI:* install Python 3, then in a terminal:
+- *macOS:* the same page has a macOS build, less tested than the Windows one. Close anything that holds USB devices —
+  Photos, Dropbox, Google Drive — or it takes the camera first.
+- *Linux, or if the binary misbehaves:* Python 3 and libusb, then in a terminal:
 
   ```
   git clone https://github.com/ma1co/Sony-PMCA-RE.git
@@ -83,9 +155,9 @@ Sony's own app store did before it closed.
   pip install -r requirements.txt
   ```
 
-**2. Download the app:** [`RecipeLab.apk`](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk)
+**2. Download the app:** [`RecipeLab.apk`](https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk)
 — that link always serves the newest release, so it is the one to use. The
-[releases page](https://github.com/voxivoid/recipe-lab-sony-a6000/releases) has older versions and the
+[releases page](https://github.com/voxivoid/recipe-lab-sony-pmca/releases) has older versions and the
 version-stamped copies.
 
 **3. Prepare the camera.** Battery charged, memory card inside. In the camera menu go to
@@ -102,55 +174,64 @@ The camera screen should say *USB Mode*.
   ```
 
 The camera will flicker, go black and switch modes a couple of times on its own. That is normal — do not press
-anything. After about a minute the computer prints `Task completed successfully` and the camera is back on its
-shooting screen.
+anything. After about a minute the computer prints `Task completed successfully`. **Go by the computer.** The camera
+is usually left on its own `Application Download / Connecting via USB...` screen, which looks stuck and is not.
 
-**5. Unplug.** The app now lives under `MENU → Application → Application List → Recipe Lab`.
+**5. Unplug, then turn the camera off and on.** The app now lives under
+`MENU → Application → Application List → Recipe Lab`.
 
 ## Using it
 
-1. Open **Recipe Lab** from the Application List. You see the live image with a panel at the bottom.
-2. **Turn the control wheel** (the ring on the back). Every click is a different recipe and the live image changes
-   immediately — this is exactly how your photos and videos will look.
-3. To jump between brands press **Fn**. A list opens: brands on the left,
-   recipes on the right. Left/right picks which column you are scrolling (the active one is amber), up/down or the
-   wheel scrolls it, the image keeps following. Centre button on a brand jumps into its recipes; centre button on a
-   recipe picks it and closes the list.
-4. To see the image without any text press **AEL**: once for a tiny label, twice for nothing at all. The wheel still
-   works. Press again to bring the panel back.
-5. Like it? Press the **centre button**. A message confirms it was stored.
-6. **Turn the camera off and on.** Done. The look is now the camera's default in every mode — P, A, S, M, movie —
-   with the app closed.
+Open **Recipe Lab** from the Application List. You get the live image with a panel at the bottom, then:
 
-A few extras:
-
-| | |
+| key | what it does |
 |---|---|
-| **up / down** | moves between the recipe line and the row of value chips. In the chip row, left / right walks the chips; press the centre button to focus one (it turns amber), then up / down changes its value, centre button again leaves it. Only the chips the recipe uses are shown: a **CS** (Creative Style) recipe shows style / saturation / contrast / sharpness / matrix, a **PE** (Picture Effect) recipe shows the effect and its sub-setting instead; quality, white balance, EV and DRO always. The legend at the bottom changes with each state |
-| **C1** | developer tool: snapshot of all settings; press again after changing a menu item to see which slot it lives in |
-| **TRASH** (bin button) | stages the factory look; centre button stores it |
-| **shutter** | takes a picture with whatever you are previewing |
-| **MENU** | leaves the app |
+| **wheel** | scroll recipes, from anywhere — the live image changes at once, and that is what the camera will write |
+| **left / right**, **top dial** | scroll recipes too, but only on the recipe line; on the chip row they walk the chips |
+| **Fn** | open the brand list. Brands left, recipes right; left / right switches column (the active one is amber), wheel or up / down scrolls, centre picks |
+| **centre** | store the recipe you are looking at. A message confirms it |
+| **AEL** | hide the panel — once for a small label, twice for nothing. The wheel still works |
+| **up / down** | move between the recipe line and the row of value chips |
+| **TRASH** | stage the factory look, then **centre** to store it |
+| **shutter** | take a picture of what you are previewing |
+| **MENU** | leave the app |
 
-The small badge next to the recipe name tells you where you stand: **ACTIVE** — the camera already has these
-values · **PREVIEW** — you are only looking, press the centre button to keep it · **PROTECTED** — the camera is not
-accepting changes (see [Troubleshooting](#troubleshooting)).
+Then **turn the camera off and on**. The look is now the camera's default in every mode — P, A, S, M, movie — with
+the app closed, and the app reopens on that recipe.
 
-## What it changes — and how to undo it
+**The chips.** In the chip row, **left / right** walks the chips, **centre** focuses one (it turns amber),
+**up / down** changes its value, **centre** leaves it. The wheel keeps changing recipes throughout. A recipe only shows the chips it uses: **CS** recipes show style,
+saturation, contrast, sharpness and matrix; **PE** recipes show the effect and its sub-setting. Quality, white
+balance, EV and DRO are always there. The legend at the bottom of the screen follows whatever you are doing.
 
-**What it actually does.** Recipe Lab sets the same things you could set by hand in the menus — Creative Style with
-its contrast, saturation and sharpness sliders, white balance and its fine-tune, exposure compensation, Picture
-Effect — plus one hidden switch that turns on a richer colour matrix the camera has but never shows. Recipes that
-use a Picture Effect (Retro, Soft High-key, High Contrast Mono) behave like that menu item does: the camera ignores
-Creative Style while it is on, and **it needs Quality = JPEG** — with RAW or RAW+JPEG set, the camera silently drops
-the effect. Quality is therefore handled like this: the **Factory recipe carries your Quality** — it starts as
-whatever the camera is set to, and if you change it there (QUALITY chip or Fn) the app remembers it. Every Creative
-Style recipe uses that same Quality. Picture Effect recipes use it too when it is a JPEG setting, otherwise they use
-JPEG Fine. Whenever storing a recipe would change the camera's Quality the app asks first (`Quality: RAW+JPG → JPG
-Fine — JPEG is needed to apply this recipe`, *Accept* / *Cancel*); Cancel stores nothing. The QUALITY chip changes it
-any time. The app also reopens on the recipe you last selected. It does not modify the
-camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
-Sony used for its own downloadable apps.
+**The badge** next to the recipe name says where you stand:
+
+| badge | meaning |
+|---|---|
+| **ACTIVE** | the camera already has these values |
+| **PREVIEW** | you are only looking; press **centre** to keep it |
+| **PROTECTED** | the camera is not accepting changes — see [Troubleshooting](#troubleshooting) |
+
+## What it changes
+
+Only camera settings you could set by hand: Creative Style and its saturation, contrast and sharpness sliders, white
+balance and its fine-tune, exposure compensation, DRO, Picture Effect — plus one hidden switch for a richer colour
+matrix the camera has but never shows. No firmware is touched, nothing is unlocked.
+
+**Picture Effect recipes** (marked **PE**) behave like the menu item does: the camera ignores Creative Style while one
+is on, and it only works with **Quality = JPEG** — set to RAW or RAW+JPEG, the camera drops the effect silently.
+
+**Quality** therefore follows you rather than being dictated by a recipe. The Factory recipe starts as whatever the
+camera is set to, and every Creative Style recipe uses that. Change it any time with the `QUALITY` chip. Only when a
+recipe needs JPEG and you are on RAW does the app ask:
+
+```
+Quality: RAW+JPG → JPG Fine — JPEG is needed to apply this recipe
+```
+
+*Cancel* stores nothing.
+
+## Uninstalling
 
 **Is it permanent?** The look stays until you change it — on purpose, that is what makes it work in every mode
 without the app. It is not permanent in the sense of damage. Undo it any time, three ways:
@@ -159,18 +240,21 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 - In the menus: set Creative Style back to *Standard* 0 / 0 / 0 and White Balance to *Auto*.
 - Or use the camera's own `Setup → Setting Reset → Camera Settings Reset`.
 
+**Removing the app.** `MENU → Application → Application Management → Manage and Remove → Recipe Lab`. This does
+**not** put the colour settings back, so undo the look first and remove the app after.
+
 **Worth knowing:**
 
 - Some recipes push saturation further than the menu slider goes (the menu allows ±3, the camera accepts more). The
   menu then shows the nearest value it can; if you touch that slider it snaps back to the normal range and the
   recipe loses that extra punch. Re-store from the app if that happens.
 - The preview inside the app is temporary; closing the app removes it. Only what you *stored* stays.
-- Uninstalling the app does **not** put the colour settings back. Undo first (any of the three ways above), then
-  remove it via `MENU → Application → Application Management → Manage and Remove → Recipe Lab`.
 - Built and tested on the A6000 with firmware 3.21. Other Sony bodies of the same generation probably keep these
   settings in the same place, but nobody has checked — compare what the chips show with your menus before storing.
 
 ## Troubleshooting
+
+The common questions — RAW files, damage, LUTs, newer bodies — are in the **[FAQ](docs/FAQ.md)**.
 
 | what you see | what to do |
 |---|---|
@@ -179,7 +263,7 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 | Badge says **PROTECTED** | The camera's settings store is write-protected. Install [OpenMemories-Tweak](https://github.com/ma1co/OpenMemories-Tweak), turn off *Backup protection*, try again |
 | Look not applied after storing | Turn the camera off and on |
 | `no live preview: ...` in the panel | Something else is holding the camera; close and reopen the app |
-| Text shows `Â·` | Old build; install the APK from the [latest release](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest) |
+| Text shows `Â·` | Old build; install the APK from the [latest release](https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest) |
 
 ## For developers
 
