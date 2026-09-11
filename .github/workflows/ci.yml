@@ -1,8 +1,13 @@
 name: ci
 
-# Pull requests only. A push trigger would double every job for any branch that has
-# an open PR, since both events match the same commit.
+# Every push to a work branch is checked, so a branch is known-good before a PR exists.
+#
+# Both events fire for a branch that has an open PR, which would double every job. The
+# guard on each job below keeps the real work on the push event and lets the
+# pull_request event through only for forks, whose pushes never reach this repo.
 on:
+  push:
+    branches-ignore: [development, main]
   pull_request:
     branches: [development, main]
 
@@ -14,29 +19,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The PR title becomes the commit message on a squash merge, so it is linted on the
+  # PR itself -- there is no title to check at push time.
+  pr-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: ./tools/check-commit-msg.sh "$PR_TITLE"
+
   commit-lint:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      # The PR title is what becomes the commit on a squash merge, so it is the thing that matters.
-      - name: Check PR title
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: ./tools/check-commit-msg.sh "$PR_TITLE"
       - name: Check commit subjects
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: ./tools/check-commit-msg.sh --range "$BASE_SHA..HEAD"
+        run: |
+          git fetch --no-tags origin development
+          BASE="$(git merge-base FETCH_HEAD HEAD)"
+          ./tools/check-commit-msg.sh --range "$BASE..HEAD"
 
   version-consistency:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: ./tools/check-version.sh
 
   build:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
