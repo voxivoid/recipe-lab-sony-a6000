@@ -75,8 +75,10 @@ since issues and PRs share a number space.
 
 ## Pull requests
 
-**The PR title becomes the commit message.** It must be a valid Conventional Commit subject — `commit-lint`
-checks the title, not just the commits on the branch.
+**The PR title becomes the commit message — and the release.** A squash merge leaves only the title, so it
+is the string semantic-release reads to decide the next version. A PR titled `chore:` releases nothing
+however large its diff; `fix:` makes a patch, `feat:` a minor, `!` a major. The `pr-title` check exists for
+exactly this reason.
 
 - work branch → `development`: **squash merge**. One commit per issue; your WIP never surfaces.
 - `development` → `main`: **merge commit**, never squash. Squashing would put a commit on `main` that is not
@@ -108,10 +110,10 @@ Never commit an APK or a keystore. Both are gitignored; releases carry the binar
 
 ## Releases
 
-**Actions → cut-release → Run workflow.** It merges `development` into `main` as a merge commit, tags
-`vX.Y.Z`, publishes the release, fast-forwards `development` back and can open the next cycle. The version
-comes from `AndroidManifest.xml`, so bump that on `development` first if the target changed.
-Details and the by-hand fallback: **[docs/RELEASING.md](docs/RELEASING.md)**.
+**Actions → cut-release → Run workflow** (`-f dry_run=true` to just see what would ship). semantic-release
+reads the commits, decides the version, builds, tags and publishes; the workflow merges `development` into
+`main` around it and fast-forwards back. Nobody picks a version number.
+Details: **[docs/RELEASING.md](docs/RELEASING.md)**.
 
 Handy aliases:
 

@@ -9,14 +9,11 @@ name: cut-release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Expected release version, e.g. 1.1.0 (optional — must match AndroidManifest.xml)'
+      dry_run:
+        description: 'Report the version that would be released, change nothing'
         required: false
-        type: string
-      next_version:
-        description: 'Version to open on development afterwards, e.g. 1.2.0 (optional)'
-        required: false
-        type: string
+        type: boolean
+        default: false
       allow_failing_checks:
         description: 'Release even if the last development build failed'
         required: false
@@ -32,56 +29,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  cut:
+  # What would ship, and is development in a state worth shipping? Nothing is pushed here.
+  preview:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.plan.outputs.tag }}
-      version: ${{ steps.plan.outputs.version }}
+      version: ${{ steps.next.outputs.version }}
+      releasable: ${{ steps.next.outputs.releasable }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: development
           fetch-depth: 0
           fetch-tags: true
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
 
-      - name: Work out what is being released
-        id: plan
-        env:
-          WANT: ${{ inputs.version }}
+      - name: Is development ahead of main?
         run: |
-          VERSION="$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' AndroidManifest.xml)"
-          ./tools/check-version.sh
-
-          # The input is a confirmation, not a source of truth — the manifest decides.
-          if [ -n "$WANT" ] && [ "$WANT" != "$VERSION" ]; then
-            echo "::error::asked for $WANT but AndroidManifest.xml says $VERSION. Run tools/bump-version.sh on development first."
-            exit 1
-          fi
-
-          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
-            echo "::error::tag v$VERSION already exists. Bump the version on development first."
-            exit 1
-          fi
-
-          git fetch origin main:refs/remotes/origin/main
-          if [ -z "$(git log origin/main..HEAD --oneline)" ]; then
+          git fetch --no-tags origin main
+          if [ -z "$(git log FETCH_HEAD..HEAD --oneline)" ]; then
             echo "::error::development has nothing that main does not. Nothing to release."
             exit 1
           fi
 
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION"    >> "$GITHUB_OUTPUT"
-          {
-            echo "## Releasing $VERSION"
-            echo
-            echo "Commits going to main:"
-            echo
-            git log origin/main..HEAD --no-merges --pretty='- %s'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # A green build is the point of the gate, but nothing about recipes or the settings
-      # store can be proven by CI — that still needs a camera.
-      - name: Check the last development build passed
+      # A green build is the gate CI can give. Nothing about recipes or the settings store
+      # can be proven without a camera.
+      - name: Did the last development build pass?
         if: ${{ !inputs.allow_failing_checks }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -94,59 +70,96 @@ jobs:
             *)       echo "::error::last development build concluded '$C'. Re-run it, or dispatch again with allow_failing_checks."; exit 1 ;;
           esac
 
-      - name: Merge development into main and tag
+      - name: What would semantic-release publish?
+        id: next
         env:
-          VERSION: ${{ steps.plan.outputs.version }}
-          TAG: ${{ steps.plan.outputs.tag }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          OUT="$(npx semantic-release --dry-run --no-ci --branches development 2>&1 || true)"
+          echo "$OUT" | grep -viE 'Loaded plugin' | tail -40
+          V="$(printf '%s' "$OUT" | sed -n 's/.*next release version is \([0-9][0-9.]*\).*/\1/p' | tail -1)"
+          if [ -n "$V" ]; then
+            echo "version=$V"     >> "$GITHUB_OUTPUT"
+            echo "releasable=true" >> "$GITHUB_OUTPUT"
+            echo "## Would release $V" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "releasable=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Nothing to release"
+              echo
+              echo "No commit since the last tag carries a releasable type. Remember that a"
+              echo "squash merge leaves only the PR title, so a PR titled \`chore:\` contributes"
+              echo "nothing releasable even if its diff does."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-          # A merge commit, never a squash: main stays a strict superset of development.
-          git checkout -B main origin/main
-          git merge --no-ff development -m "chore(release): $VERSION"
-          git tag -a "$TAG" -m "Recipe Lab $VERSION"
-          git push origin main
-          git push origin "$TAG"
-
-          # The tag sits on the merge commit, a descendant of development's tip. Without
-          # this fast-forward, git describe on development would never see the new tag and
-          # the -dev.N counter would not reset.
-          git checkout development
-          git merge --ff-only main
-          git push origin development
-
+  # Merge, then let semantic-release decide the version, build, tag and publish.
   release:
-    needs: cut
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{ needs.cut.outputs.tag }}
-    secrets: inherit
-
-  open-next-cycle:
-    needs: [cut, release]
-    if: ${{ inputs.next_version != '' }}
+    needs: preview
+    if: ${{ !inputs.dry_run && needs.preview.outputs.releasable == 'true' }}
     runs-on: ubuntu-latest
+    environment: release
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: development
+          ref: main
+          submodules: true
           fetch-depth: 0
-      - name: Bump development to the next version
-        env:
-          NEXT: ${{ inputs.next_version }}
+          fetch-tags: true
+          persist-credentials: true
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install the SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || SDKMANAGER="$(command -v sdkmanager)"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
+
+      - name: Merge development into main
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          ./tools/bump-version.sh "$NEXT"
-          git commit -am "chore(release): open $NEXT development cycle"
+          git fetch --no-tags origin development
+          # A merge commit, never a squash: main stays a strict superset of development.
+          git merge --no-ff FETCH_HEAD -m "chore(release): merge development"
+          git push origin main
+
+      # Decides the version from the commits, writes the manifest via tools/bump-version.sh,
+      # builds the APK, tags, publishes the release and commits the manifest back to main.
+      - name: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          export ANDROID_SDK="$ANDROID_SDK_ROOT"
+          export ANDROID_NDK="$ANDROID_SDK_ROOT/ndk/16.1.4479499"
+          npx semantic-release
+
+      # The tag sits on main, which is now ahead of development by the release commit.
+      # Without this, git describe on development would not see the tag and the -dev.N
+      # counter would not reset.
+      - name: Fast-forward development onto main
+        run: |
+          git fetch --no-tags origin main
+          git checkout -B development origin/development
+          git merge --ff-only FETCH_HEAD
           git push origin development
 
-  # The pushes above were made with GITHUB_TOKEN, which does not start a workflow run,
-  # so dev-build's push trigger never fires for them. Call it directly, or the rolling
-  # `dev` prerelease would sit on the pre-release build until the next human push.
+  # The pushes above use GITHUB_TOKEN, which does not start a workflow run, so dev-build's
+  # push trigger never fires for them. Call it, or the rolling `dev` prerelease keeps
+  # serving the pre-release build.
   refresh-dev-prerelease:
-    needs: [cut, release, open-next-cycle]
-    if: ${{ always() && needs.cut.result == 'success' && needs.release.result == 'success' && needs.open-next-cycle.result != 'failure' }}
+    needs: release
     uses: ./.github/workflows/dev-build.yml
     secrets: inherit

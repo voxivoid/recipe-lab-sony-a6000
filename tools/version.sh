@@ -14,7 +14,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="$ROOT/AndroidManifest.xml"
 
-VERSION_BASE="$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' "$MANIFEST")"
+# DEV_BASE_VERSION lets a dev build label itself with the version semantic-release would
+# publish next (see tools/next-version.sh), instead of the one already released.
+VERSION_BASE="${DEV_BASE_VERSION:-$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' "$MANIFEST")}"
 [ -n "$VERSION_BASE" ] || { echo "version.sh: no android:versionName in $MANIFEST" >&2; exit 1; }
 
 case "$VERSION_BASE" in

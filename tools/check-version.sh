@@ -32,6 +32,24 @@ if [ "$FAIL" -eq 0 ]; then
   fi
 fi
 
+# The manifest must never fall behind the last published release. Once semantic-release
+# owns the version this catches a hand-edit or a release commit that failed to land;
+# ahead is legal, because the manifest leads the next release until the tag exists.
+LAST_TAG="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+if [ "$FAIL" -eq 0 ] && [ -n "$LAST_TAG" ]; then
+  TAG_NAME="${LAST_TAG#v}"
+  case "$TAG_NAME" in
+    [0-9]*.[0-9]*.[0-9]*)
+      IFS=. read -r TM TN TP <<<"$TAG_NAME"
+      TAG_CODE=$(( TM * 10000000 + TN * 100000 + TP * 1000 + 999 ))
+      if [ "$CODE" -lt "$TAG_CODE" ]; then
+        echo "FAIL: manifest $NAME ($CODE) is behind the last release $LAST_TAG ($TAG_CODE)" >&2
+        FAIL=1
+      fi
+      ;;
+  esac
+fi
+
 # A bare X.Y.Z anywhere in these files means someone reintroduced a mirror.
 for f in README.md src/com/voxivoid/recipelab/MainActivity.java; do
   if grep -nE '(Version|Recipe Lab) [0-9]+\.[0-9]+\.[0-9]+' "$f" >/dev/null 2>&1; then

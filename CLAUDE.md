@@ -27,12 +27,15 @@ Closes #123
 - **Do not write the issue number in the subject.** It goes in the `Closes #N` footer and the branch name;
   GitHub appends the PR number to the subject itself on squash merge.
 - Subject ≤ 72 chars, imperative, no trailing period.
+- **The PR title decides the release.** A squash merge leaves only the title, so it is what semantic-release
+  reads: `fix:` → patch, `feat:` → minor, `!` → major, `chore:`/`docs:` → no release at all.
 
 ## Versions
 
 - `AndroidManifest.xml` `android:versionName` is the **only** version in the tree, and holds the *next target
   release* (`X.Y.Z`, never a `-dev` suffix).
-- **Never hand-edit a version.** Run `tools/bump-version.sh <x.y.z>`.
+- **Never hand-edit a version, and never pick one.** semantic-release derives it from the commits and calls
+  `tools/bump-version.sh` itself.
 - Never add a version string to `README.md`, `MainActivity.java` or anywhere else —
   `tools/check-version.sh` fails the build if one reappears.
 - `versionCode = MAJOR*10_000_000 + MINOR*100_000 + PATCH*1_000 + P`, `P=999` for a release, `P=N` for a
@@ -60,6 +63,6 @@ never stored. Say so plainly rather than implying a green build means the change
 
 ## Releasing
 
-Run the **cut-release** workflow (`gh workflow run cut-release.yml -f next_version=X.Y.Z`). Do not merge
+Run the **cut-release** workflow (`gh workflow run cut-release.yml`, or `-f dry_run=true` to preview). Do not merge
 `development` into `main` by hand unless that workflow is broken — and never squash it if you do.
 Full runbook in [docs/RELEASING.md](docs/RELEASING.md).

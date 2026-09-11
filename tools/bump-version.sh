@@ -22,8 +22,10 @@ CODE=$(( MAJOR * 10000000 + MINOR * 100000 + PATCH * 1000 + 999 ))
 OLD="$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' "$MANIFEST")"
 OLD_CODE="$(sed -n 's/.*android:versionCode="\([^"]*\)".*/\1/p' "$MANIFEST")"
 
-if [ "$CODE" -le "$OLD_CODE" ]; then
-  echo "bump-version.sh: $NEW (code $CODE) does not increase on $OLD (code $OLD_CODE). versionCode must never go backwards." >&2
+# Equal is fine: semantic-release calls this with the version the manifest may already
+# hold. Going backwards is not.
+if [ "$CODE" -lt "$OLD_CODE" ]; then
+  echo "bump-version.sh: $NEW (code $CODE) is behind $OLD (code $OLD_CODE). versionCode must never go backwards." >&2
   exit 1
 fi
 
