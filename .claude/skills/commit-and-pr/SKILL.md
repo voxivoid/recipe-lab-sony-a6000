@@ -66,6 +66,13 @@ These are the same checks CI runs, and they take a second locally:
 ./tools/check-commit-msg.sh "<subject>"        # the message you are about to use
 ```
 
+After committing, check the whole branch — this also warns about any commit that does not
+reference the branch's issue:
+
+```bash
+./tools/check-commit-msg.sh --range origin/development..HEAD
+```
+
 If you touched a workflow, validate it too:
 
 ```bash
@@ -82,13 +89,24 @@ Why the change was needed, if it is not obvious from the subject.
 Closes #<issue>
 ```
 
+**Every commit must reference its issue.** Get the number from the branch name — it is the
+number between the type prefix and the slug:
+
+```bash
+git branch --show-current | sed -nE 's|^[a-z]+/([0-9]+)-.*|\1|p'
+```
+
+Use `Closes #N` when the commit finishes the issue, `Refs #N` when it is one step of several.
+On a branch with many commits, the last one closes and the rest reference. If the branch name
+carries no number, the change has no issue — go back to step 2 and create one.
+
 - **Types:** `feat` `fix` `docs` `refactor` `perf` `test` `build` `ci` `chore` `revert`
 - **Scopes** (optional): `ui` `input` `browser` `recipes` `tools` `build` `ci` `docs` `deps` `release`
 - **Subject:** ≤ 72 characters, imperative, lowercase, no trailing period
 - **Breaking change:** `!` after the scope plus a `BREAKING CHANGE:` footer
-- **Do not put the issue number in the subject.** It goes in the `Closes #N` footer; GitHub
-  appends the PR number to the subject itself on squash merge, and two bare `#N` in one
-  subject is ambiguous.
+- **Do not put the issue number in the subject.** It goes in the `Closes #N` / `Refs #N`
+  footer; GitHub appends the PR number to the subject itself on squash merge, and two bare
+  `#N` in one subject is ambiguous.
 - Always end with: `Co-Authored-By: Claude <noreply@anthropic.com>`
 
 If the user passed an argument, use it as guidance for the message: $ARGUMENTS

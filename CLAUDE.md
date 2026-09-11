@@ -25,6 +25,9 @@ type(scope): subject
 Closes #123
 ```
 
+- **Every commit references its issue**, in a footer: `Closes #N` when it finishes the issue, `Refs #N`
+  when it is one step of several. The number is in the branch name.
+
 - Types: `feat fix docs refactor perf test build ci chore revert`.
 - Scopes: `ui input browser recipes tools build ci docs deps release`. Optional.
 - **Do not write the issue number in the subject.** It goes in the `Closes #N` footer and the branch name;

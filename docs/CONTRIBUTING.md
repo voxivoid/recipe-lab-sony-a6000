@@ -67,11 +67,23 @@ A breaking change takes `!` after the scope and a `BREAKING CHANGE:` footer.
 | `deps` | the `jni/platform` submodule |
 | `release` | `chore(release): x.y.z` only |
 
-**Issue linkage.** Do not hand-write the issue number in the subject. Put `Closes #123` in the body — it
-closes the issue on merge — and let the branch name carry it too. GitHub appends the **PR** number to the
-subject automatically when the PR is squash-merged, so the commit on `development` ends up reading
-`feat(browser): jump to a brand with the top dial (#45)`. Two bare `#N` in one subject would be ambiguous,
-since issues and PRs share a number space.
+**Issue linkage — every commit carries its issue.** Put it in a footer, never in the subject:
+
+- `Closes #123` when the commit finishes the issue. On a branch with several commits, the last one closes.
+- `Refs #123` when it is one step of several.
+
+The number lives in the branch name, so you never have to look it up:
+
+```bash
+git branch --show-current | sed -nE 's|^[a-z]+/([0-9]+)-.*|\1|p'
+```
+
+`commit-lint` warns (it does not fail) about any commit on the branch that omits the reference — release
+commits and back-merges legitimately have none.
+
+Keep it out of the subject: GitHub appends the **PR** number there automatically on squash merge, so the
+commit on `development` reads `feat(browser): jump to a brand with the top dial (#45)`. Two bare `#N` in one
+subject would be ambiguous, since issues and PRs share a number space.
 
 ## Pull requests
 
