@@ -1,6 +1,8 @@
 out/
 *.apk
-!dist/*.apk
+*.apk.sha256
 debug.keystore
 *.keystore
 jni/platform/errno.h.updater_only
+.idea/
+*.iml

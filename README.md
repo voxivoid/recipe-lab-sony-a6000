@@ -6,7 +6,10 @@
 
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
-  <sub>Version 1.0.0 · <a href="dist/RecipeLab.apk">Download the app</a></sub>
+  <sub>
+    <img src="https://img.shields.io/github/v/release/voxivoid/recipe-lab-sony-a6000?label=version" alt="version"> ·
+    <a href="https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk">Download the app</a>
+  </sub>
 </p>
 
 ---
@@ -80,7 +83,8 @@ Sony's own app store did before it closed.
   pip install -r requirements.txt
   ```
 
-**2. Download the app:** [`RecipeLab.apk`](dist/RecipeLab.apk) — click, then *Download raw file*.
+**2. Download the app:** [`RecipeLab.apk`](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk)
+from the latest release.
 
 **3. Prepare the camera.** Battery charged, memory card inside. In the camera menu go to
 `Setup (toolbox icon) → USB Connection` and choose **Mass Storage**. Turn the camera on and plug it into the computer.
@@ -173,71 +177,15 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 | Badge says **PROTECTED** | The camera's settings store is write-protected. Install [OpenMemories-Tweak](https://github.com/ma1co/OpenMemories-Tweak), turn off *Backup protection*, try again |
 | Look not applied after storing | Turn the camera off and on |
 | `no live preview: ...` in the panel | Something else is holding the camera; close and reopen the app |
-| Text shows `Â·` | Old build; install the APK from `dist/` |
+| Text shows `Â·` | Old build; install the APK from the [latest release](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest) |
 
 ## For developers
 
-```
-AndroidManifest.xml            package com.voxivoid.recipelab
-src/com/voxivoid/recipelab/
-  MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
-  Recipes.java                 the 77 recipes, brands, GROUP_START / GROUP_COUNT
-  res/raw/ids.txt              every settings entry of 16 bytes or less, used by the Fn snapshot/diff tool
-  PickerView.java              Canvas-drawn brand browser
-  Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
-  HintBar.java                 legend view under the panel (uses Legend)
-  NativeBackup.java            JNI: read / write / attr / sync / isProtected
-jni/jni.cpp                    Backup_read / Backup_write / Backup_sync_all via OpenMemories-Platform
-jni/platform/                  git submodule: ma1co/OpenMemories-Platform
-res/                           layout, shape drawables, launcher icon
-build.cmd                      full Windows build → RecipeLab.apk (+ copy to dist/)
-```
+The reverse-engineering notes — source layout, the settings-store ID map, the exit rule, live-preview
+parameters, key scan codes and how to build — live in **[DEVELOPMENT.md](DEVELOPMENT.md)**.
 
-**Settings slots** (found by disassembling the camera app's parameter registration in `libObj.so`):
-
-| setting | id | notes |
-|---|---|---|
-| Creative Style | `0x01070175` | index in the runtime `color-mode-values` list (1 standard, 2 vivid, 3 neutral … 6 mono; verified) |
-| Contrast | `0x01070178` | signed byte |
-| Saturation | `0x01070187` | signed byte, core accepts ±16 |
-| Sharpness | `0x0107018a` | signed byte |
-| Picture Profile no. | `0x0107031c` | 0 off, 3 = alternate colour matrix (no gamma on this body) |
-| WB mode | `0x01070019` | 1 auto, 14 colour temperature |
-| WB Kelvin | `0x01070018` | Kelvin / 100 |
-| WB A-B / G-M | `0x01070017` / `0x01070016` + per-mode copies: AWB `0x0107067f` / `0x0107067e`, colour temp `0x01070683` / `0x01070682` | signed, magenta positive (menu G1 = 0xff). The camera applies the per-mode copy (verified end-to-end) |
-| Picture Effect | `0x010706f1` | index in `picture-effect-values` (verified: Retro = 4) |
-| Effect sub-setting | `0x010709d8` high-key tint · `0x010706f3` toy tone · `0x010706ee` partial-colour hue · `0x010706ef` posterization | index in the runtime value list (high-key tint verified) |
-| Exposure bias | `0x010700b8` + copy `0x01070c7f` | 1/3 EV steps, signed (verified: +0.7 = 2); both written |
-| DRO | `0x01070104` (+ level byte `0x01070775`) | Off 0, Auto 1, Lv1–5 = 2–6; level byte 1 for Off/Auto, Lv n = n+1 (verified) |
-| Quality: file format | `0x01070013` (+ mirror `0x01070aa9`) | RAW = 1, RAW+JPEG = 2, JPEG = 0 (verified) |
-| Quality: JPEG level | `0x01070014` (+ mirror `0x01070aaa`) | Std = 0, Fine = 1 (verified) |
-
-**Exit rule:** the camera writes some live parameters (exposure bias, WB fine-tune) straight back into the settings
-store, so on exit the app sets the live parameters to the *stored* values rather than to its launch snapshot —
-otherwise a freshly stored recipe would be undone the moment the app closes.
-
-**Live preview** goes through `Camera.Parameters`: `color-mode`, `saturation`, `contrast`, `sharpness`,
-`whitebalance`, `color-temperture-white-balance`, `light-balance-for-white-balance`,
-`color-compensation-for-white-balance`, `rgb-matrix` (Q10, 1.0 = 1024) + `rgb-matrix-mode`, `picture-effect`,
-`exposure-compensation` (1/3 EV steps), `dro-mode` + `dro-level`.
-**Key scan codes:** wheel 522 / 523, top dial 525 / 526, AEL 532, C1 622, Fn 520, trash 595, centre 232, MENU 514.
-
-**Build** (Windows): JDK 17, Android SDK build-tools 30.0.3 with a platform jar (API 28), and **NDK r16b** — the last
-one with the GCC toolchain this Android 2.3.7 target needs.
-
-```
-git clone --recursive https://github.com/voxivoid/recipe-lab-sony-a6000.git
-cd recipe-lab-sony-a6000
-set ANDROID_NDK=C:\path\to\android-ndk-r16b      REM optional: JAVA_HOME, ANDROID_SDK, BUILD_TOOLS, PLATFORM_JAR
-build.cmd
-```
-
-`build.cmd` parks the platform's `errno.h` shim (updater-only, shadows the NDK header), runs ndk-build, aapt, javac
-(`-encoding UTF-8`), d8 (as `java -cp d8.jar`, because `d8.bat` uses whatever Java is on PATH), zipalign and
-apksigner (v1 only, throw-away keystore generated on first run).
-
-Adding a recipe is one line in `Recipes.java` inside its brand block. Adding a brand is a new entry in `GROUPS` plus
-a block of recipes.
+To contribute, read **[CONTRIBUTING.md](CONTRIBUTING.md)** first: branch naming, commit format and the
+release flow are all enforced by CI.
 
 ## Credits
 
