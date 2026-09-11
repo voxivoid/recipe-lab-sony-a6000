@@ -3,7 +3,7 @@
 A PlayMemories (PMCA) camera app for the Sony A6000: 77 film-look recipes written straight into the
 camera's settings store. Native lib (ndk-build, NDK r16b) + Java, no Gradle.
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and [DEVELOPMENT.md](DEVELOPMENT.md) before changing anything.
+Read [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) before changing anything.
 The rules below are the ones that break things when ignored.
 
 ## Branching
@@ -12,6 +12,8 @@ The rules below are the ones that break things when ignored.
 - Branch off `development`: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`, also
   `docs/ refactor/ chore/ build/ ci/ perf/ test/`.
 - There must be a GitHub issue first; its number goes in the branch name.
+- **Never merge a PR yourself.** Every PR needs an approving review from a code owner; open it
+  and leave the merge to a human.
 - `hotfix/<x.y.z>` off `main`. There is no `release/*` branch — **create-release** merges `development`
   into `main` itself.
 

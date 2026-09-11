@@ -184,9 +184,9 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 ## For developers
 
 The reverse-engineering notes — source layout, the settings-store ID map, the exit rule, live-preview
-parameters, key scan codes and how to build — live in **[DEVELOPMENT.md](DEVELOPMENT.md)**.
+parameters, key scan codes and how to build — live in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**.
 
-To contribute, read **[CONTRIBUTING.md](CONTRIBUTING.md)** first: branch naming, commit format and the
+To contribute, read **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** first: branch naming, commit format and the
 release flow are all enforced by CI.
 
 ## Credits

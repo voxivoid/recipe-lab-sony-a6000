@@ -84,7 +84,14 @@ exactly this reason.
 - `development` → `main`: **merge commit**, never squash. Squashing would put a commit on `main` that is not
   on `development` and the branches would diverge permanently.
 
-Required checks: `build`, `version-consistency`, `commit-lint`.
+**Every PR needs an approving review from a code owner** ([.github/CODEOWNERS](../.github/CODEOWNERS))
+before it can merge, and review threads must be resolved.
+
+Required checks: `build`, `version-consistency`, `commit-lint`, `pr-title`.
+
+> GitHub does not let you approve your own pull request. While `@voxivoid` is the only code
+> owner, their own PRs cannot be approved by anyone else and have to be merged using the
+> repository-admin bypass. Adding a second code owner is what makes the rule bite.
 
 ## Issues and milestones
 
@@ -113,7 +120,7 @@ Never commit an APK or a keystore. Both are gitignored; releases carry the binar
 **Actions → create-release → Run workflow** (`-f dry_run=true` to just see what would ship). semantic-release
 reads the commits, decides the version, builds, tags and publishes; the workflow merges `development` into
 `main` around it and fast-forwards back. Nobody picks a version number.
-Details: **[docs/RELEASING.md](docs/RELEASING.md)**.
+Details: **[RELEASING.md](RELEASING.md)**.
 
 Handy aliases:
 

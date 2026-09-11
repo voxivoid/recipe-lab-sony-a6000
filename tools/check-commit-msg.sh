@@ -44,7 +44,7 @@ Expected:  type(scope): subject
   scope  $SCOPES  (optional)
   subject  <= 72 chars, imperative, no trailing period
 
-Link the issue with a "Closes #123" footer, not in the subject. See CONTRIBUTING.md.
+Link the issue with a "Closes #123" footer, not in the subject. See docs/CONTRIBUTING.md.
 MSG
 fi
 exit "$fail"
