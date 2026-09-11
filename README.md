@@ -186,7 +186,8 @@ Open **Recipe Lab** from the Application List. You get the live image with a pan
 
 | key | what it does |
 |---|---|
-| **wheel** | scroll recipes. The live image changes at once — that is what the camera will write |
+| **wheel** | scroll recipes, from anywhere — the live image changes at once, and that is what the camera will write |
+| **left / right**, **top dial** | scroll recipes too, but only on the recipe line; on the chip row they walk the chips |
 | **Fn** | open the brand list. Brands left, recipes right; left / right switches column (the active one is amber), wheel or up / down scrolls, centre picks |
 | **centre** | store the recipe you are looking at. A message confirms it |
 | **AEL** | hide the panel — once for a small label, twice for nothing. The wheel still works |
@@ -199,8 +200,8 @@ Open **Recipe Lab** from the Application List. You get the live image with a pan
 Then **turn the camera off and on**. The look is now the camera's default in every mode — P, A, S, M, movie — with
 the app closed, and the app reopens on that recipe.
 
-**The chips.** In the chip row, left / right walks the chips, **centre** focuses one (it turns amber), up / down
-changes its value, **centre** leaves it. A recipe only shows the chips it uses: **CS** recipes show style,
+**The chips.** In the chip row, **left / right** walks the chips, **centre** focuses one (it turns amber),
+**up / down** changes its value, **centre** leaves it. The wheel keeps changing recipes throughout. A recipe only shows the chips it uses: **CS** recipes show style,
 saturation, contrast, sharpness and matrix; **PE** recipes show the effect and its sub-setting. Quality, white
 balance, EV and DRO are always there. The legend at the bottom of the screen follows whatever you are doing.
 
