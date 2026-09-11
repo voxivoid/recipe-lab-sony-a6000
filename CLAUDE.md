@@ -14,6 +14,9 @@ The rules below are the ones that break things when ignored.
 - There must be a GitHub issue first; its number goes in the branch name.
 - **Never merge a PR yourself.** Every PR needs an approving review from a code owner; open it
   and leave the merge to a human.
+- **Rebase onto `development` before asking for a merge.** Required checks are strict: a PR whose base
+  has moved on is not mergeable until its checks have run against the tip. `git fetch origin && git rebase
+  origin/development`, then `git push --force-with-lease`.
 - `hotfix/<x.y.z>` off `main`. There is no `release/*` branch — **create-release** merges `development`
   into `main` itself.
 

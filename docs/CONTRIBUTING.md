@@ -102,7 +102,19 @@ exactly this reason.
 **Every PR needs an approving review from a code owner** ([.github/CODEOWNERS](../.github/CODEOWNERS))
 before it can merge, and review threads must be resolved.
 
-Required checks: `build`, `version-consistency`, `commit-lint`, `pr-title`.
+Required checks: `build`, `version-consistency`, `commit-lint`, `pr-title`. They are **strict**: the checks
+have to have run with `development` at its current tip, so a PR that has fallen behind cannot merge until it
+is brought up to date. Rebase it — that keeps the branch a clean series on top of `development` and keeps the
+squashed commit honest:
+
+```sh
+git fetch origin
+git rebase origin/development
+git push --force-with-lease
+```
+
+GitHub's **Update branch** button does the same job by merging `development` in; it is fine when a rebase
+would be painful, since the merge only ever squashes down to one commit anyway.
 
 > GitHub does not let you approve your own pull request. While `@voxivoid` is the only code
 > owner, their own PRs cannot be approved by anyone else and have to be merged using the
