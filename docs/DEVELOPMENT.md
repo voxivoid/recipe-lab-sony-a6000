@@ -27,7 +27,7 @@ AndroidManifest.xml            package com.voxivoid.recipelab
 src/com/voxivoid/recipelab/
   MainActivity.java            UI state, key handling, live preview (CameraEx via reflection), store + sync
   Recipes.java                 the 77 recipes, brands, GROUP_START / GROUP_COUNT
-  res/raw/ids.txt              every settings entry of 16 bytes or less, used by the Fn snapshot/diff tool
+  res/raw/ids.txt              every settings entry of 16 bytes or less, used by the C1 snapshot/diff tool
   PickerView.java              Canvas-drawn brand browser
   Legend.java                  Canvas-drawn key icons, fit-to-width (camera font has no symbol glyphs)
   HintBar.java                 legend view under the panel (uses Legend)

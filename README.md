@@ -182,32 +182,35 @@ is usually left on its own `Application Download / Connecting via USB...` screen
 
 ## Using it
 
-1. Open **Recipe Lab** from the Application List. You see the live image with a panel at the bottom.
-2. **Turn the control wheel** (the ring on the back). Every click is a different recipe and the live image changes
-   immediately — this is exactly how your photos and videos will look.
-3. To jump between brands press **Fn**. A list opens: brands on the left,
-   recipes on the right. Left/right picks which column you are scrolling (the active one is amber), up/down or the
-   wheel scrolls it, the image keeps following. Centre button on a brand jumps into its recipes; centre button on a
-   recipe picks it and closes the list.
-4. To see the image without any text press **AEL**: once for a tiny label, twice for nothing at all. The wheel still
-   works. Press again to bring the panel back.
-5. Like it? Press the **centre button**. A message confirms it was stored.
-6. **Turn the camera off and on.** Done. The look is now the camera's default in every mode — P, A, S, M, movie —
-   with the app closed. Next time you open the app it starts on that recipe.
+Open **Recipe Lab** from the Application List. You get the live image with a panel at the bottom, then:
 
-A few extras:
-
-| | |
+| key | what it does |
 |---|---|
-| **up / down** | moves between the recipe line and the row of value chips. In the chip row, left / right walks the chips; press the centre button to focus one (it turns amber), then up / down changes its value, centre button again leaves it. Only the chips the recipe uses are shown: a **CS** (Creative Style) recipe shows style / saturation / contrast / sharpness / matrix, a **PE** (Picture Effect) recipe shows the effect and its sub-setting instead; quality, white balance, EV and DRO always. The legend at the bottom changes with each state |
-| **C1** | developer tool: snapshot of all settings; press again after changing a menu item to see which slot it lives in |
-| **TRASH** (bin button) | stages the factory look; centre button stores it |
-| **shutter** | takes a picture with whatever you are previewing |
-| **MENU** | leaves the app |
+| **wheel** | scroll recipes. The live image changes at once — that is what the camera will write |
+| **Fn** | open the brand list. Brands left, recipes right; left / right switches column (the active one is amber), wheel or up / down scrolls, centre picks |
+| **centre** | store the recipe you are looking at. A message confirms it |
+| **AEL** | hide the panel — once for a small label, twice for nothing. The wheel still works |
+| **up / down** | move between the recipe line and the row of value chips |
+| **TRASH** | stage the factory look, then **centre** to store it |
+| **shutter** | take a picture of what you are previewing |
+| **C1** | developer tool: snapshot every setting, press again after a menu change to find which slot it lives in |
+| **MENU** | leave the app |
 
-The small badge next to the recipe name tells you where you stand: **ACTIVE** — the camera already has these
-values · **PREVIEW** — you are only looking, press the centre button to keep it · **PROTECTED** — the camera is not
-accepting changes (see [Troubleshooting](#troubleshooting)).
+Then **turn the camera off and on**. The look is now the camera's default in every mode — P, A, S, M, movie — with
+the app closed, and the app reopens on that recipe.
+
+**The chips.** In the chip row, left / right walks the chips, **centre** focuses one (it turns amber), up / down
+changes its value, **centre** leaves it. A recipe only shows the chips it uses: **CS** recipes show style,
+saturation, contrast, sharpness and matrix; **PE** recipes show the effect and its sub-setting. Quality, white
+balance, EV and DRO are always there. The legend at the bottom of the screen follows whatever you are doing.
+
+**The badge** next to the recipe name says where you stand:
+
+| badge | meaning |
+|---|---|
+| **ACTIVE** | the camera already has these values |
+| **PREVIEW** | you are only looking; press **centre** to keep it |
+| **PROTECTED** | the camera is not accepting changes — see [Troubleshooting](#troubleshooting) |
 
 ## What it changes
 
