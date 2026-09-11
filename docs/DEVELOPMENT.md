@@ -12,7 +12,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Settings slots](#settings-slots)
 - [Exit rule](#exit-rule)
 - [Live preview](#live-preview)
+- [Developing on WSL](#developing-on-wsl)
 - [Building](#building)
+- [Installing on the camera](#installing-on-the-camera)
 - [Versioning](#versioning)
 - [Adding recipes](#adding-recipes)
 
@@ -72,6 +74,63 @@ Goes through `Camera.Parameters`: `color-mode`, `saturation`, `contrast`, `sharp
 `color-compensation-for-white-balance`, `rgb-matrix` (Q10, 1.0 = 1024) + `rgb-matrix-mode`, `picture-effect`,
 `exposure-compensation` (1/3 EV steps), `dro-mode` + `dro-level`.
 **Key scan codes:** wheel 522 / 523, top dial 525 / 526, AEL 532, C1 622, Fn 520, trash 595, centre 232, MENU 514.
+
+## Developing on WSL
+
+This is how the machine is set up: everything except talking to the camera happens inside WSL.
+
+**Keep the repository on the Linux filesystem** — `~/code/...`, never `/mnt/c/...`. Windows
+drives are reached over the 9p protocol, where each file operation costs milliseconds instead
+of microseconds. A build does thousands of them, so the difference is seconds versus minutes,
+and every git command crawls.
+
+Where things live:
+
+| | |
+|---|---|
+| `~/toolchains/jdk17` | JDK 17 (Temurin) |
+| `~/Android/Sdk` | build-tools 30.0.3, platform-28, NDK r16b |
+| `~/.keys/recipelab-release.keystore` | the signing key, `chmod 600` |
+| `~/code/sony-pmca-re` | Sony-PMCA-RE — dumps, the updater shell, installing |
+| `~/code/a6000-dumps` | firmware and settings-store dumps |
+| `~/code/pmca-scripts` | camera helper scripts |
+
+Worth putting in `~/.bashrc`:
+
+```bash
+export JAVA_HOME=$HOME/toolchains/jdk17
+export ANDROID_SDK=$HOME/Android/Sdk
+export ANDROID_NDK=$ANDROID_SDK/ndk/16.1.4479499
+export PATH="$HOME/.local/bin:$PATH"      # gh lives here
+export BROWSER=wsl-browser                # so `gh auth login` opens Windows Firefox
+```
+
+To build with the project key instead of a throwaway one:
+
+```bash
+export ANDROID_KEYSTORE_B64="$(base64 -w0 ~/.keys/recipelab-release.keystore)"
+export ANDROID_KEYSTORE_PASSWORD=android
+export ANDROID_KEY_ALIAS=probe
+export ANDROID_KEY_PASSWORD=android
+```
+
+An APK signed with a different key **cannot be installed over an existing Recipe Lab** — the
+app has to be removed first — so use these whenever you are updating a camera that already
+has it.
+
+`npm ci` is only needed for the release tooling (semantic-release, `tools/next-version.sh`).
+No JavaScript ships in the APK.
+
+### Things that bite
+
+- **`apksigner` and `keytool` exec `java` from `PATH`**, so `JAVA_HOME` on its own is not
+  enough; `build.sh` prepends `$JAVA_HOME/bin` for exactly this. Without it, step 6 fails with
+  `exec: java: not found`.
+- **`BROWSER` is word-split**, so a path containing spaces cannot be used directly.
+  `~/.local/bin/wsl-browser` is a two-line wrapper that quotes the Windows Firefox path.
+- **`sudo` prompts for a password**, so anything needing root — usbip tools, udev rules —
+  cannot be scripted unattended.
+- **The camera is invisible from WSL.** See [Installing on the camera](#installing-on-the-camera).
 
 ## Building
 

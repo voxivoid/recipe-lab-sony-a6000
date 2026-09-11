@@ -1,5 +1,6 @@
 out/
 node_modules/
+.claude/worktrees/
 *.apk
 *.apk.sha256
 dev-notes.md
