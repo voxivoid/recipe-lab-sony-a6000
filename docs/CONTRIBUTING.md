@@ -14,7 +14,7 @@ How work moves through this repo. CI enforces most of it, so reading this saves 
 | Branch | Role |
 |---|---|
 | `main` | **Releases only.** Every commit on it is a release, tagged `vX.Y.Z`. Never commit here directly. |
-| `development` | Default branch. Integration. Every push builds a `-dev.N` APK attached to the rolling [`dev` prerelease](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/tag/dev). |
+| `development` | Default branch. Integration. Every push builds a `-dev.N` APK attached to the rolling [`dev` prerelease](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/tag/dev), whose notes list every change since the last release. |
 | work branches | One per issue, cut from `development`, merged back into it. |
 
 ```

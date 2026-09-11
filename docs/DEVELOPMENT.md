@@ -230,6 +230,7 @@ instead of being refused as a downgrade.
 | `tools/version.sh` | computes `VERSION_NAME` / `VERSION_CODE` for a build; sourced by `build.sh` |
 | `tools/bump-version.sh <x.y.z>` | opens the next cycle — the only way a version is ever typed |
 | `tools/check-version.sh` | CI gate: manifest is consistent and no version mirror has crept back in |
+| `tools/dev-notes.js <version>` | prints the notes for a dev build from the commits since the last `v*` tag, using the same semantic-release generator and preset as a release |
 
 A build never mutates the checked-in manifest; it writes `out/AndroidManifest.xml` and points `aapt` there.
 
