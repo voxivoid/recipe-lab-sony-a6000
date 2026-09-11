@@ -70,18 +70,15 @@ camera layer neither lists nor accepts it, so that door is closed too.
 
 ## Compatibility
 
-Recipe Lab has no model check in it. It reaches the camera's settings store through ma1co's OpenMemories backup
-driver, and **every Sony body that accepts PlayMemories camera apps has that same store** — so the app should install
-and run on all of them, not only the A6000.
+Recipe Lab has no model check in it, and every Sony body that runs PlayMemories apps has the same settings store — so
+it should install and work beyond the A6000.
 
-What nobody can promise from a build is that the *setting IDs* are the same on another body. A recipe could land in a
-different slot, or in none. So a camera only gets a ✅ here once someone has run the app on it, stored a recipe and
-**power-cycled** the camera — a look that disappears after a power cycle was never stored.
+The catch: the setting IDs were found on an A6000 and may sit elsewhere on another body, so a recipe could land in the
+wrong place. A camera gets a ✅ only once someone has stored a recipe on it and power-cycled the camera.
 
-The ✅ rows below come from people who installed it and said what happened. **Tried it on any body?** Please file a
-[compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml)
-— model, firmware, whether the look survived a power cycle — and the table gets updated. Reports that it *failed* are
-just as useful as reports that it worked.
+Tried one? File a
+[compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml).
+Failures are as useful as successes.
 
 ### Cameras that run PlayMemories apps
 
@@ -117,18 +114,17 @@ just as useful as reports that it worked.
 | HX400 / HX400V | DSC-HX400 | ❔ | compact; no control wheel of the kind the app is driven with |
 | WX500 | DSC-WX500 | ❔ | compact; no control wheel of the kind the app is driven with |
 
-Two more with an asterisk: the **RX100 II** (DSC-RX100M2) and the original **RX10** were sold with Sony's app store,
-but neither appears in the installer's device table, so whether `Sony-PMCA-RE` can put an app on them is untested.
+Two more are unclear: the **RX100 II** and the original **RX10** had Sony's app store, but are missing from the
+installer's device table, so even the install is untested.
 
-App-capable, but **not** Recipe Lab targets: the QX lens-style cameras (ILCE-QX1, DSC-QX10/QX30/QX100) have no screen
-or control wheel to drive the app with, and the Handycam camcorders (FDR-AX…, HDR-CX/PJ…) and action cams
-(FDR-X…, HDR-AS…) have no Creative Style to write. The app may install; there is nothing useful behind it.
+App-capable but pointless: the QX lens cameras (ILCE-QX1, DSC-QX10/QX30/QX100), with no screen or wheel to drive the
+app, and the Handycams and action cams, with no Creative Style to write.
 
-### Cameras that cannot run camera apps at all
+### Cameras that cannot run camera apps
 
-Everything Sony has released since the A6500 (late 2016). Their firmware is cryptographically signed, so no app can be
-installed on them by any means — not this one, not Sony's own store, which closed in 2021. There is no workaround and
-none is coming.
+Sony's last app-capable bodies are the ones above, from late 2016 — the A6500 and the A99 II. Everything since has
+signed firmware and no `MENU → Application`, so nothing can be installed on it: not this app, not Sony's own store,
+which closed in 2021.
 
 | | |
 |---|---|
@@ -136,10 +132,8 @@ none is coming.
 | **E-mount, full frame** | A7 III, A7R III, A7R IV / IVA, A7R V, A7S III, A7C, A7C II, A7CR, A9, A9 II, A9 III, A1, A1 II, ZV-E1, FX3 |
 | **Cyber-shot** | RX100 VA, RX100 VI, RX100 VII, RX10 IV, RX0, RX0 II, HX99, ZV-1, ZV-1F, ZV-1 II |
 
-…and every model launched after those. If your camera is newer than an A6500, it cannot run Recipe Lab.
-
-You may come across a report that it runs on one of these anyway. It cannot: these bodies have no `MENU →
-Application` at all. If that menu is missing on your camera, nothing can be installed on it.
+…and everything released since. The menu is the test: no `MENU → Application` on your camera, no app — so reports of
+Recipe Lab running on an A6400 or similar are mistaken.
 
 ## Installing
 
@@ -151,11 +145,9 @@ Sony's own app store did before it closed.
 
 - *Windows:* download `pmca-gui.exe` from the
   [releases page](https://github.com/ma1co/Sony-PMCA-RE/releases). Nothing to install, just run it.
-- *macOS:* the same releases page has a macOS build of the GUI. It is less tested than the Windows one, so if it
-  misbehaves use the Python route below. Sony's own camera driver has to be present, and anything that grabs USB
-  devices in the background — Photos, Dropbox, Google Drive — has to be closed, or it will take the camera before the
-  installer can.
-- *Linux, or any platform without the binary:* Python 3 and libusb, then in a terminal:
+- *macOS:* the same page has a macOS build, less tested than the Windows one. Close anything that holds USB devices —
+  Photos, Dropbox, Google Drive — or it takes the camera first.
+- *Linux, or if the binary misbehaves:* Python 3 and libusb, then in a terminal:
 
   ```
   git clone https://github.com/ma1co/Sony-PMCA-RE.git
@@ -182,19 +174,8 @@ The camera screen should say *USB Mode*.
   ```
 
 The camera will flicker, go black and switch modes a couple of times on its own. That is normal — do not press
-anything. After about a minute the computer prints `Task completed successfully`.
-
-**Go by the computer, not by the camera.** When the installer is done the camera is usually left sitting on its own
-USB screen:
-
-```
-Application Download
-Connecting via USB...
-To change the USB connection mode, disconnect the USB cable from the computer and reconnect.
-```
-
-That looks stuck, and it is not — it is simply where the install leaves the camera. If the computer said
-`Task completed successfully`, the app is on.
+anything. After about a minute the computer prints `Task completed successfully`. **Go by the computer.** The camera
+is usually left on its own `Application Download / Connecting via USB...` screen, which looks stuck and is not.
 
 **5. Unplug, then turn the camera off and on.** The app now lives under
 `MENU → Application → Application List → Recipe Lab`.
@@ -253,9 +234,8 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 - In the menus: set Creative Style back to *Standard* 0 / 0 / 0 and White Balance to *Auto*.
 - Or use the camera's own `Setup → Setting Reset → Camera Settings Reset`.
 
-**Removing the app.** `MENU → Application → Application Management → Manage and Remove → Recipe Lab`. Uninstalling
-does **not** put the colour settings back — the app only ever wrote what the menus can write, and those values stay
-where they are. So undo the look first, by any of the three ways above, and remove the app after.
+**Removing the app.** `MENU → Application → Application Management → Manage and Remove → Recipe Lab`. This does
+**not** put the colour settings back, so undo the look first and remove the app after.
 
 **Worth knowing:**
 
@@ -268,8 +248,7 @@ where they are. So undo the look first, by any of the three ways above, and remo
 
 ## Troubleshooting
 
-Answers to the questions people ask most — RAW safety, whether this can damage the camera, LUTs, newer bodies — live
-in the **[FAQ](docs/FAQ.md)**.
+The common questions — RAW files, damage, LUTs, newer bodies — are in the **[FAQ](docs/FAQ.md)**.
 
 | what you see | what to do |
 |---|---|
