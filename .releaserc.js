@@ -39,16 +39,30 @@ export default {
       '@semantic-release/exec',
       {
         // Writes versionName + versionCode, then builds the APK that gets published.
+        // The versioned copy is what people keep; RecipeLab.apk keeps the stable
+        // releases/latest/download URL the README points at working.
         prepareCmd:
-          './tools/bump-version.sh ${nextRelease.version} && RELEASE=1 RELEASE_TAG=v${nextRelease.version} ./build.sh',
+          './tools/bump-version.sh ${nextRelease.version}' +
+          ' && RELEASE=1 RELEASE_TAG=v${nextRelease.version} ./build.sh' +
+          ' && cp RecipeLab.apk RecipeLab-${nextRelease.version}.apk',
       },
     ],
     [
       '@semantic-release/github',
       {
         assets: [
-          { path: 'RecipeLab.apk', label: 'RecipeLab-${nextRelease.version}.apk' },
-          { path: 'RecipeLab.apk.sha256', label: 'RecipeLab-${nextRelease.version}.apk.sha256' },
+          {
+            path: 'RecipeLab-${nextRelease.version}.apk',
+            label: 'RecipeLab ${nextRelease.version} (APK)',
+          },
+          {
+            path: 'RecipeLab.apk',
+            label: 'RecipeLab.apk — stable link, always the latest release',
+          },
+          {
+            path: 'RecipeLab.apk.sha256',
+            label: 'RecipeLab ${nextRelease.version} (SHA-256)',
+          },
         ],
         successComment: false,
         failComment: false,

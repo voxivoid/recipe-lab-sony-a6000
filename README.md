@@ -84,7 +84,9 @@ Sony's own app store did before it closed.
   ```
 
 **2. Download the app:** [`RecipeLab.apk`](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk)
-from the latest release.
+— that link always serves the newest release, so it is the one to use. The
+[releases page](https://github.com/voxivoid/recipe-lab-sony-a6000/releases) has older versions and the
+version-stamped copies.
 
 **3. Prepare the camera.** Battery charged, memory card inside. In the camera menu go to
 `Setup (toolbox icon) → USB Connection` and choose **Mass Storage**. Turn the camera on and plug it into the computer.
