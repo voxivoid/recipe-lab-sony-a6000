@@ -1,0 +1,62 @@
+name: dev-build
+
+on:
+  push:
+    branches: [development]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dev-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install the SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
+      - name: Build
+        env:
+          ANDROID_SDK: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/16.1.4479499
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./build.sh
+      - name: Working tree must be clean
+        run: git diff --exit-code
+
+      # A rolling prerelease on the `dev` tag: one stable URL that always has the newest
+      # development build, without committing a binary to the branch.
+      - name: Publish the rolling dev prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . tools/version.sh
+          cp RecipeLab.apk "RecipeLab-$VERSION_NAME.apk"
+          cp RecipeLab.apk RecipeLab-dev.apk
+          sha256sum RecipeLab-dev.apk > RecipeLab-dev.apk.sha256
+          gh release delete dev --yes --cleanup-tag || true
+          gh release create dev \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "development ($VERSION_NAME)" \
+            --notes "Automatic build of \`development\` @ \`${GITHUB_SHA::7}\`.
+
+          Not a release — see [Releases](https://github.com/${GITHUB_REPOSITORY}/releases) for stable builds.
+          \`RecipeLab-dev.apk\` always points at the newest development build." \
+            "RecipeLab-$VERSION_NAME.apk" RecipeLab-dev.apk RecipeLab-dev.apk.sha256

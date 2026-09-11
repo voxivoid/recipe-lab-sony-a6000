@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: The installer will not connect to my camera
+    url: https://github.com/ma1co/Sony-PMCA-RE/issues
+    about: Install and USB problems belong to Sony-PMCA-RE, which is what puts apps on the camera — not to Recipe Lab.
+  - name: Questions and recipe discussion
+    url: https://github.com/voxivoid/recipe-lab-sony-a6000/discussions
+    about: Ask anything that is not a bug report.

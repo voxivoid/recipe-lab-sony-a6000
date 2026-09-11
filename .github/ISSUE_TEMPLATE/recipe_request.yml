@@ -1,0 +1,35 @@
+name: Recipe request
+description: Suggest a film stock or camera look to add
+labels: ["type: feat", "scope: recipes", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The A6000 has no Picture Profile menu and **cannot store tone curves**. Every recipe is built only
+        from what this body can keep: Creative Style, saturation, contrast, sharpness, white balance,
+        exposure bias, Picture Effect and one hidden colour setting. Recipes here are approximations of a
+        look, never copies of another maker's colour science.
+  - type: input
+    id: look
+    attributes:
+      label: Film stock or camera look
+      placeholder: "Fuji Eterna 250D"
+    validations: { required: true }
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference frames
+      description: Links or attached images showing the look you are after. Scans, or straight-out-of-camera frames from the body that produces it.
+    validations: { required: true }
+  - type: textarea
+    id: basis
+    attributes:
+      label: What do you think it is built on?
+      description: Optional. Which Creative Style or Picture Effect is the closest starting point, and roughly which way the WB and saturation go.
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I understand this body cannot store tone curves, so the result will be an approximation.
+          required: true

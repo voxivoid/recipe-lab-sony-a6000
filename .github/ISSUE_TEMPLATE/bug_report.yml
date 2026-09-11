@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in the app misbehaves on the camera
+labels: ["type: fix", "status: needs-triage"]
+body:
+  - type: input
+    id: camera
+    attributes:
+      label: Camera body
+      description: The app is built for the A6000, but other PMCA bodies turn up.
+      value: Sony A6000
+    validations: { required: true }
+  - type: input
+    id: firmware
+    attributes:
+      label: Camera firmware version
+      description: MENU → Setup → Version
+      placeholder: "3.21"
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Recipe Lab version
+      description: Shown on the release you installed, or `dev` for a development build.
+      placeholder: "1.1.0 / dev"
+    validations: { required: true }
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options:
+        - PMCA-GUI
+        - Sony-PMCA-RE command line (pmca-console.py)
+        - Other
+    validations: { required: true }
+  - type: input
+    id: recipe
+    attributes:
+      label: Which recipe was selected?
+      placeholder: "Kodak Portra 400"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: Include anything shown in the app's panel, verbatim.
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Launch Recipe Lab
+        2. Turn the wheel to …
+        3. Press …
+    validations: { required: true }
+  - type: dropdown
+    id: powercycle
+    attributes:
+      label: Did you turn the camera off and on before checking?
+      description: Some settings only take effect after a power cycle — this is the single most common cause of "it didn't work".
+      options: ["Yes", "No"]
+    validations: { required: true }

@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest a change to the app itself
+labels: ["type: feat", "status: needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is the problem?
+      description: What are you trying to do that the app makes hard today?
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What should it do instead?
+      description: If it involves camera controls, say which key or dial — the app only has the wheel, top dial, centre, Fn, C1, AEL, trash and MENU.
+    validations: { required: true }
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Which part of the app?
+      options: [ui, input, browser, recipes, tools, build, "not sure"]
+    validations: { required: true }

@@ -1,0 +1,64 @@
+# Recipe Lab — agent rules
+
+A PlayMemories (PMCA) camera app for the Sony A6000: 77 film-look recipes written straight into the
+camera's settings store. Native lib (ndk-build, NDK r16b) + Java, no Gradle.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and [DEVELOPMENT.md](DEVELOPMENT.md) before changing anything.
+The rules below are the ones that break things when ignored.
+
+## Branching
+
+- **Never commit to `main`.** `main` is releases only; every commit on it is tagged.
+- Branch off `development`: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`, also
+  `docs/ refactor/ chore/ build/ ci/ perf/ test/`.
+- There must be a GitHub issue first; its number goes in the branch name.
+- `release/<x.y.z>` off `development`, `hotfix/<x.y.z>` off `main`.
+
+## Commits
+
+```
+type(scope): subject
+
+Closes #123
+```
+
+- Types: `feat fix docs refactor perf test build ci chore revert`.
+- Scopes: `ui input browser recipes tools build ci docs deps release`. Optional.
+- **Do not write the issue number in the subject.** It goes in the `Closes #N` footer and the branch name;
+  GitHub appends the PR number to the subject itself on squash merge.
+- Subject ≤ 72 chars, imperative, no trailing period.
+
+## Versions
+
+- `AndroidManifest.xml` `android:versionName` is the **only** version in the tree, and holds the *next target
+  release* (`X.Y.Z`, never a `-dev` suffix).
+- **Never hand-edit a version.** Run `tools/bump-version.sh <x.y.z>`.
+- Never add a version string to `README.md`, `MainActivity.java` or anywhere else —
+  `tools/check-version.sh` fails the build if one reappears.
+- `versionCode = MAJOR*10_000_000 + MINOR*100_000 + PATCH*1_000 + P`, `P=999` for a release, `P=N` for a
+  dev build. A build derives this itself; it never rewrites the checked-in manifest.
+
+## Never commit
+
+- APKs (`dist/` no longer holds one — releases carry the binaries)
+- keystores, or anything decoded from `ANDROID_KEYSTORE_B64`
+- `out/`, `jni/platform/errno.h.updater_only`
+
+## Building
+
+- Windows: `build.cmd`. Linux/WSL/CI: `./build.sh` (needs `ANDROID_NDK` pointing at **r16b** — later NDKs
+  cannot build this target).
+- Keep `build.cmd` and `build.sh` in step. A change to one needs the same change in the other.
+- The `errno.h` park must stay reversible (`build.sh` does it from an `EXIT` trap). A build that leaves the
+  submodule dirty is a bug.
+
+## What CI cannot check
+
+Nothing about recipes, settings-store IDs, live preview or key handling can be validated by a build. Those
+changes need a real A6000, exercised **and power-cycled** — a look that vanishes after a power cycle was
+never stored. Say so plainly rather than implying a green build means the change works.
+
+## Releasing
+
+`development` → `main` as a **merge commit** (never squash), tag `vX.Y.Z`, then
+`git switch development && git merge --ff-only main`. Full checklist in [docs/RELEASING.md](docs/RELEASING.md).

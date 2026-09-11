@@ -1,0 +1,79 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [development, main]
+  push:
+    branches-ignore: [development, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      # The PR title is what becomes the commit on a squash merge, so it is the thing that matters.
+      - name: Check PR title
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: ./tools/check-commit-msg.sh "$PR_TITLE"
+      - name: Check commit subjects
+        if: github.event_name == 'pull_request'
+        run: ./tools/check-commit-msg.sh --range "origin/${{ github.base_ref }}..HEAD"
+
+  version-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: ./tools/check-version.sh
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install the SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
+      - name: Build
+        env:
+          ANDROID_SDK: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/16.1.4479499
+          # Signed with the project key so the artifact can be installed over an existing app.
+          # Absent on fork PRs, where build.sh falls back to a throwaway key.
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./build.sh
+      # Catches a leaked errno.h rename or a manifest the build mutated.
+      - name: Working tree must be clean
+        run: git diff --exit-code
+      - name: Name the artifact
+        id: name
+        run: |
+          . tools/version.sh
+          mv RecipeLab.apk "RecipeLab-$VERSION_NAME+${GITHUB_SHA::7}.apk"
+          echo "file=RecipeLab-$VERSION_NAME+${GITHUB_SHA::7}.apk" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.name.outputs.file }}
+          path: ${{ steps.name.outputs.file }}
+          retention-days: 14
