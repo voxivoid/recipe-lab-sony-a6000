@@ -31,11 +31,11 @@ Naming — the prefix is the commit type, so the branch says what kind of change
 feat/<issue>-<slug>        feat/123-brand-jump-top-dial
 fix/<issue>-<slug>         fix/131-wb-finetune-sign
 docs/ refactor/ chore/ build/ ci/ perf/ test/   same shape
-release/<x.y.z>            cut from development → PR to main
-hotfix/<x.y.z>             cut from main → PR to main → back-merged to development
+hotfix/<x.y.z>             branched off main → PR to main → back-merged to development
 ```
 
-Every branch except `release/*` and `hotfix/*` carries its issue number.
+Every branch except `hotfix/*` carries its issue number. There is no `release/*` branch:
+**create-release** merges `development` into `main` itself.
 
 ## Commits
 
@@ -67,22 +67,46 @@ A breaking change takes `!` after the scope and a `BREAKING CHANGE:` footer.
 | `deps` | the `jni/platform` submodule |
 | `release` | `chore(release): x.y.z` only |
 
-**Issue linkage.** Do not hand-write the issue number in the subject. Put `Closes #123` in the body — it
-closes the issue on merge — and let the branch name carry it too. GitHub appends the **PR** number to the
-subject automatically when the PR is squash-merged, so the commit on `development` ends up reading
-`feat(browser): jump to a brand with the top dial (#45)`. Two bare `#N` in one subject would be ambiguous,
-since issues and PRs share a number space.
+**Issue linkage — every commit carries its issue.** Put it in a footer, never in the subject:
+
+- `Closes #123` when the commit finishes the issue. On a branch with several commits, the last one closes.
+- `Refs #123` when it is one step of several.
+
+The number lives in the branch name, so you never have to look it up:
+
+```bash
+git branch --show-current | sed -nE 's|^[a-z]+/([0-9]+)-.*|\1|p'
+```
+
+`commit-lint` warns (it does not fail) about any commit on the branch that omits the reference — release
+commits and back-merges legitimately have none.
+
+Keep it out of the subject: GitHub appends the **PR** number there automatically on squash merge, so the
+commit on `development` reads `feat(browser): jump to a brand with the top dial (#45)`. Two bare `#N` in one
+subject would be ambiguous, since issues and PRs share a number space.
 
 ## Pull requests
 
-**The PR title becomes the commit message.** It must be a valid Conventional Commit subject — `commit-lint`
-checks the title, not just the commits on the branch.
+Working in Claude Code? `/commit-and-pr` walks the whole flow below — branch, gates, commit
+message, push, PR — and stops before merging.
+
+**The PR title becomes the commit message — and the release.** A squash merge leaves only the title, so it
+is the string semantic-release reads to decide the next version. A PR titled `chore:` releases nothing
+however large its diff; `fix:` makes a patch, `feat:` a minor, `!` a major. The `pr-title` check exists for
+exactly this reason.
 
 - work branch → `development`: **squash merge**. One commit per issue; your WIP never surfaces.
 - `development` → `main`: **merge commit**, never squash. Squashing would put a commit on `main` that is not
   on `development` and the branches would diverge permanently.
 
-Required checks: `build`, `version-consistency`, `commit-lint`.
+**Every PR needs an approving review from a code owner** ([.github/CODEOWNERS](../.github/CODEOWNERS))
+before it can merge, and review threads must be resolved.
+
+Required checks: `build`, `version-consistency`, `commit-lint`, `pr-title`.
+
+> GitHub does not let you approve your own pull request. While `@voxivoid` is the only code
+> owner, their own PRs cannot be approved by anyone else and have to be merged using the
+> repository-admin bypass. Adding a second code owner is what makes the rule bite.
 
 ## Issues and milestones
 
@@ -108,10 +132,10 @@ Never commit an APK or a keystore. Both are gitignored; releases carry the binar
 
 ## Releases
 
-**Actions → cut-release → Run workflow.** It merges `development` into `main` as a merge commit, tags
-`vX.Y.Z`, publishes the release, fast-forwards `development` back and can open the next cycle. The version
-comes from `AndroidManifest.xml`, so bump that on `development` first if the target changed.
-Details and the by-hand fallback: **[docs/RELEASING.md](docs/RELEASING.md)**.
+**Actions → create-release → Run workflow** (`-f dry_run=true` to just see what would ship). semantic-release
+reads the commits, decides the version, builds, tags and publishes; the workflow merges `development` into
+`main` around it and fast-forwards back. Nobody picks a version number.
+Details: **[RELEASING.md](RELEASING.md)**.
 
 Handy aliases:
 

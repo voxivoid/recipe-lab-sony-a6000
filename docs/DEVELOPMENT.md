@@ -1,7 +1,7 @@
 # Development notes
 
 Reverse-engineering notes, the settings-store map, and how to build Recipe Lab.
-For using the app, see the [README](README.md). For the branch/commit/release rules,
+For using the app, see the [README](../README.md). For the branch/commit/release rules,
 see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---

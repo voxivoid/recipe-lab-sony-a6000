@@ -3,7 +3,7 @@ name: dev-build
 on:
   push:
     branches: [development]
-  # cut-release calls this after it bumps development. A push made with GITHUB_TOKEN
+  # create-release calls this after it bumps development. A push made with GITHUB_TOKEN
   # does not start a workflow run, so the trigger above never fires for it.
   workflow_call:
   workflow_dispatch:
@@ -32,6 +32,20 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+
+      # Label the build with the version semantic-release would publish next, not the one
+      # already released -- 1.2.0-dev.3 sorts below 1.2.0, whereas reusing the shipped
+      # version would sort below something already out.
+      - name: Work out the version being developed towards
+        id: next
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: echo "version=$(./tools/next-version.sh)" >> "$GITHUB_OUTPUT"
       - name: Install the SDK packages
         run: |
           # sdkmanager is not on PATH on the runner image.
@@ -46,6 +60,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          DEV_BASE_VERSION: ${{ steps.next.outputs.version }}
         run: |
           export ANDROID_SDK="$ANDROID_SDK_ROOT"
           export ANDROID_NDK="$ANDROID_SDK_ROOT/ndk/16.1.4479499"
@@ -58,6 +73,7 @@ jobs:
       - name: Publish the rolling dev prerelease
         env:
           GH_TOKEN: ${{ github.token }}
+          DEV_BASE_VERSION: ${{ steps.next.outputs.version }}
         run: |
           . tools/version.sh
           SHA="$(git rev-parse HEAD)"
@@ -68,7 +84,7 @@ jobs:
           gh release create dev \
             --prerelease \
             --target "$SHA" \
-            --title "development ($VERSION_NAME)" \
+            --title "v$VERSION_NAME" \
             --notes "Automatic build of \`development\` @ \`${SHA::7}\`.
 
           Not a release — see [Releases](https://github.com/${GITHUB_REPOSITORY}/releases) for stable builds.

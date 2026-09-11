@@ -3,7 +3,7 @@
 A PlayMemories (PMCA) camera app for the Sony A6000: 77 film-look recipes written straight into the
 camera's settings store. Native lib (ndk-build, NDK r16b) + Java, no Gradle.
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and [DEVELOPMENT.md](DEVELOPMENT.md) before changing anything.
+Read [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) before changing anything.
 The rules below are the ones that break things when ignored.
 
 ## Branching
@@ -12,7 +12,10 @@ The rules below are the ones that break things when ignored.
 - Branch off `development`: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`, also
   `docs/ refactor/ chore/ build/ ci/ perf/ test/`.
 - There must be a GitHub issue first; its number goes in the branch name.
-- `release/<x.y.z>` off `development`, `hotfix/<x.y.z>` off `main`.
+- **Never merge a PR yourself.** Every PR needs an approving review from a code owner; open it
+  and leave the merge to a human.
+- `hotfix/<x.y.z>` off `main`. There is no `release/*` branch — **create-release** merges `development`
+  into `main` itself.
 
 ## Commits
 
@@ -22,17 +25,23 @@ type(scope): subject
 Closes #123
 ```
 
+- **Every commit references its issue**, in a footer: `Closes #N` when it finishes the issue, `Refs #N`
+  when it is one step of several. The number is in the branch name.
+
 - Types: `feat fix docs refactor perf test build ci chore revert`.
 - Scopes: `ui input browser recipes tools build ci docs deps release`. Optional.
 - **Do not write the issue number in the subject.** It goes in the `Closes #N` footer and the branch name;
   GitHub appends the PR number to the subject itself on squash merge.
 - Subject ≤ 72 chars, imperative, no trailing period.
+- **The PR title decides the release.** A squash merge leaves only the title, so it is what semantic-release
+  reads: `fix:` → patch, `feat:` → minor, `!` → major, `chore:`/`docs:` → no release at all.
 
 ## Versions
 
 - `AndroidManifest.xml` `android:versionName` is the **only** version in the tree, and holds the *next target
   release* (`X.Y.Z`, never a `-dev` suffix).
-- **Never hand-edit a version.** Run `tools/bump-version.sh <x.y.z>`.
+- **Never hand-edit a version, and never pick one.** semantic-release derives it from the commits and calls
+  `tools/bump-version.sh` itself.
 - Never add a version string to `README.md`, `MainActivity.java` or anywhere else —
   `tools/check-version.sh` fails the build if one reappears.
 - `versionCode = MAJOR*10_000_000 + MINOR*100_000 + PATCH*1_000 + P`, `P=999` for a release, `P=N` for a
@@ -60,6 +69,6 @@ never stored. Say so plainly rather than implying a green build means the change
 
 ## Releasing
 
-Run the **cut-release** workflow (`gh workflow run cut-release.yml -f next_version=X.Y.Z`). Do not merge
+Run the **create-release** workflow (`gh workflow run create-release.yml`, or `-f dry_run=true` to preview). Do not merge
 `development` into `main` by hand unless that workflow is broken — and never squash it if you do.
 Full runbook in [docs/RELEASING.md](docs/RELEASING.md).

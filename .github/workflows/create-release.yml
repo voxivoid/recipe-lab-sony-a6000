@@ -1,0 +1,167 @@
+name: create-release
+
+# The whole release runbook as one button: merge development into main, let
+# semantic-release decide the version and publish it, then fast-forward development back
+# and rebuild the rolling dev prerelease.
+#
+# Run it from the Actions tab, or:
+#   gh workflow run create-release.yml                  release
+#   gh workflow run create-release.yml -f dry_run=true  report only, change nothing
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report the version that would be released, change nothing'
+        required: false
+        type: boolean
+        default: false
+      allow_failing_checks:
+        description: 'Release even if the last development build failed'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: create-release
+  cancel-in-progress: false
+
+jobs:
+  # What would ship, and is development in a state worth shipping? Nothing is pushed here.
+  preview:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.next.outputs.version }}
+      releasable: ${{ steps.next.outputs.releasable }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: development
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+
+      - name: Is development ahead of main?
+        run: |
+          git fetch --no-tags origin main
+          if [ -z "$(git log FETCH_HEAD..HEAD --oneline)" ]; then
+            echo "::error::development has nothing that main does not. Nothing to release."
+            exit 1
+          fi
+
+      # A green build is the gate CI can give. Nothing about recipes or the settings store
+      # can be proven without a camera.
+      - name: Did the last development build pass?
+        if: ${{ !inputs.allow_failing_checks }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          C="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow dev-build.yml \
+                 --branch development --limit 1 --json conclusion --jq '.[0].conclusion // "none"')"
+          case "$C" in
+            success) echo "last development build: success" ;;
+            none)    echo "::warning::no development build found — continuing" ;;
+            *)       echo "::error::last development build concluded '$C'. Re-run it, or dispatch again with allow_failing_checks."; exit 1 ;;
+          esac
+
+      - name: What would semantic-release publish?
+        id: next
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          OUT="$(npx semantic-release --dry-run --no-ci --branches development 2>&1 || true)"
+          echo "$OUT" | grep -viE 'Loaded plugin' | tail -40
+          V="$(printf '%s' "$OUT" | sed -n 's/.*next release version is \([0-9][0-9.]*\).*/\1/p' | tail -1)"
+          if [ -n "$V" ]; then
+            echo "version=$V"     >> "$GITHUB_OUTPUT"
+            echo "releasable=true" >> "$GITHUB_OUTPUT"
+            echo "## Would release $V" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "releasable=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Nothing to release"
+              echo
+              echo "No commit since the last tag carries a releasable type. Remember that a"
+              echo "squash merge leaves only the PR title, so a PR titled \`chore:\` contributes"
+              echo "nothing releasable even if its diff does."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # Merge, then let semantic-release decide the version, build, tag and publish.
+  release:
+    needs: preview
+    if: ${{ !inputs.dry_run && needs.preview.outputs.releasable == 'true' }}
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          submodules: true
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: true
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install the SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || SDKMANAGER="$(command -v sdkmanager)"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
+
+      - name: Merge development into main
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --no-tags origin development
+          # A merge commit, never a squash: main stays a strict superset of development.
+          git merge --no-ff FETCH_HEAD -m "chore(release): merge development"
+          git push origin main
+
+      # Decides the version from the commits, writes the manifest via tools/bump-version.sh,
+      # builds the APK, tags, publishes the release and commits the manifest back to main.
+      - name: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          export ANDROID_SDK="$ANDROID_SDK_ROOT"
+          export ANDROID_NDK="$ANDROID_SDK_ROOT/ndk/16.1.4479499"
+          npx semantic-release
+
+      # The tag sits on main, which is now ahead of development by the release commit.
+      # Without this, git describe on development would not see the tag and the -dev.N
+      # counter would not reset.
+      - name: Fast-forward development onto main
+        run: |
+          git fetch --no-tags origin main
+          git checkout -B development origin/development
+          git merge --ff-only FETCH_HEAD
+          git push origin development
+
+  # The pushes above use GITHUB_TOKEN, which does not start a workflow run, so dev-build's
+  # push trigger never fires for them. Call it, or the rolling `dev` prerelease keeps
+  # serving the pre-release build.
+  refresh-dev-prerelease:
+    needs: release
+    uses: ./.github/workflows/dev-build.yml
+    secrets: inherit

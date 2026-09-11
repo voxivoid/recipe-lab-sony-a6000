@@ -1,28 +1,42 @@
 # Releasing
 
-A release is a merge of `development` into `main` plus a tag. One button does all of it.
+The version is not a decision any more — it is computed from the commit messages by
+[semantic-release](https://semantic-release.gitbook.io/). One button does the rest.
 
 ## The button
 
-**Actions → cut-release → Run workflow**, or:
+**Actions → create-release → Run workflow**, or:
 
 ```bash
-gh workflow run cut-release.yml -f next_version=1.2.0
+gh workflow run create-release.yml                    # release
+gh workflow run create-release.yml -f dry_run=true    # just report what would ship
 ```
 
 | input | meaning |
 |---|---|
-| `version` | Optional. A confirmation — it must match `AndroidManifest.xml`, which decides. |
-| `next_version` | Optional. Bumps `development` to the next cycle once the release is out. |
+| `dry_run` | Report the version that would be released and change nothing. |
 | `allow_failing_checks` | Release even though the last `development` build failed. |
 
-It refuses to run if the manifest is inconsistent, the tag already exists, `development`
-has nothing `main` lacks, or the last development build failed. Then it merges
-`development` into `main` with a **merge commit**, tags `vX.Y.Z`, builds and publishes the
-release, fast-forwards `development` back onto `main`, and optionally opens the next cycle.
+It refuses if `development` has nothing `main` lacks, if the last development build
+failed, or if no commit since the last tag carries a releasable type. Then it merges
+`development` into `main` with a **merge commit**, and semantic-release decides the
+version, writes `AndroidManifest.xml` via `tools/bump-version.sh`, builds the APK, tags,
+publishes the release and commits the manifest back. Finally `development` is
+fast-forwarded onto `main` and the rolling `dev` prerelease is rebuilt.
 
-> The version comes from `AndroidManifest.xml`. If the cycle ended on a different number
-> than planned, run `tools/bump-version.sh X.Y.Z` on `development` and merge that first.
+## What decides the version
+
+| commit type | bump |
+|---|---|
+| `fix:` `perf:` `refactor:` | patch |
+| `feat:` | minor |
+| any type with `!`, or a `BREAKING CHANGE:` footer | major |
+| `docs:` `chore:` `ci:` `test:` `build:` | nothing |
+
+**A squash merge leaves only the PR title**, so the PR title is what semantic-release
+reads. A PR titled `chore:` contributes nothing releasable however large its diff — which
+is why `pr-title` is a required check. Get the type right on the PR, not on the commits
+inside it.
 
 **Still verify on a camera.** A green build says it compiles. Install the published APK
 over the previous version — it must succeed *without uninstalling*, which is what proves
@@ -30,68 +44,34 @@ the signing key is unchanged.
 
 ## Doing it by hand
 
-If the workflow is broken, or you want to drive it yourself:
+If the workflow is broken:
 
-### Checklist
-
-1. **Decide the version.** `AndroidManifest.xml` already holds it — the manifest carries the *next target
-   release* for the whole cycle. If the cycle turned out bigger or smaller than planned, change it now:
-   ```bash
-   tools/bump-version.sh 1.2.0        # only if the target changed
-   ```
-
-2. **Cut the release branch:**
-   ```bash
-   git switch -c release/1.1.0 development
-   git push -u origin release/1.1.0
-   ```
-
-3. **Open a PR `release/1.1.0` → `main`**, title `chore(release): 1.1.0`.
-   Merge it with a **merge commit** — never squash. Squashing puts a commit on `main` that is not on
-   `development`, and the two branches diverge for good.
-
-4. **Tag it:**
-   ```bash
-   git switch main && git pull
-   git tag -a v1.1.0 -m "Recipe Lab 1.1.0"
-   git push origin v1.1.0
-   ```
-   The tag fires `release.yml`, which rebuilds from the tag, **fails if the tag does not match the
-   manifest**, signs with the project key, publishes the release with the APK and its `.sha256`, and closes
-   the matching milestone.
-
-5. **Fast-forward `development` onto `main`:**
-   ```bash
-   git switch development && git merge --ff-only main && git push
-   ```
-   Not cosmetic. The tag sits on the merge commit, which is a *descendant* of `development`'s tip — without
-   this, `git describe --tags` on `development` never sees `v1.1.0` and the `-dev.N` counter never resets.
-
-6. **Open the next cycle:**
-   ```bash
-   tools/bump-version.sh 1.2.0
-   git commit -am "chore(release): open 1.2.0 development cycle"
-   git push
-   ```
-
-7. **Verify:** the release page shows the APK, `aapt dump badging` reports the expected
-   `versionName`/`versionCode`, and installing over the previous version on a camera succeeds **without
-   uninstalling** (which is what proves the signing key is unchanged).
+```bash
+git switch main && git pull
+git merge --no-ff development -m "chore(release): merge development"
+git push origin main
+GITHUB_TOKEN=$(gh auth token) npx semantic-release
+git switch development && git merge --ff-only main && git push
+```
 
 ## Hotfix
 
 ```bash
 git switch -c hotfix/1.1.1 main
-# fix, PR → main (squash), tag v1.1.1, then:
+# fix, PR → main titled "fix: ...", squash-merge it, then run semantic-release on main:
+GITHUB_TOKEN=$(gh auth token) npx semantic-release
 git switch development && git merge --no-ff main && git push
 ```
 
-A hotfix back-merge is `--no-ff`, not `--ff-only`: `development` has moved on by then.
+The `fix:` title is what makes it a patch release. The back-merge is `--no-ff`, not
+`--ff-only`: `development` has moved on by then.
 
 ## If something goes wrong
 
-- **Tag pushed with the wrong version.** `release.yml` fails the version check before publishing anything.
-  Delete the tag (`git push --delete origin vX.Y.Z`), fix the manifest, re-tag. Note that the `release-tags`
-  ruleset blocks tag deletion for non-admins.
+- **Nothing was released.** No commit since the last tag carried a releasable type — most often a PR
+  titled `chore:` or `docs:`. Land a `fix:` or `feat:` PR, or merge with a corrected title.
+- **The manifest and the tag disagree.** `version-consistency` fails if the manifest falls behind the last
+  release, which means a release commit did not land. Re-run the release; semantic-release is idempotent
+  about a version it has already published.
 - **A release was published with a bad APK.** Fix forward with a patch release. Do not move a tag — the
   ruleset blocks it, and anyone who already downloaded has the old bytes.

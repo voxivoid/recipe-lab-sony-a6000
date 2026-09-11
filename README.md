@@ -84,7 +84,9 @@ Sony's own app store did before it closed.
   ```
 
 **2. Download the app:** [`RecipeLab.apk`](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk)
-from the latest release.
+— that link always serves the newest release, so it is the one to use. The
+[releases page](https://github.com/voxivoid/recipe-lab-sony-a6000/releases) has older versions and the
+version-stamped copies.
 
 **3. Prepare the camera.** Battery charged, memory card inside. In the camera menu go to
 `Setup (toolbox icon) → USB Connection` and choose **Mass Storage**. Turn the camera on and plug it into the computer.
@@ -182,9 +184,9 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 ## For developers
 
 The reverse-engineering notes — source layout, the settings-store ID map, the exit rule, live-preview
-parameters, key scan codes and how to build — live in **[DEVELOPMENT.md](DEVELOPMENT.md)**.
+parameters, key scan codes and how to build — live in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**.
 
-To contribute, read **[CONTRIBUTING.md](CONTRIBUTING.md)** first: branch naming, commit format and the
+To contribute, read **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** first: branch naming, commit format and the
 release flow are all enforced by CI.
 
 ## Credits
