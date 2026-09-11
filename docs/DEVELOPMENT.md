@@ -12,7 +12,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Settings slots](#settings-slots)
 - [Exit rule](#exit-rule)
 - [Live preview](#live-preview)
+- [Developing on WSL](#developing-on-wsl)
 - [Building](#building)
+- [Installing on the camera](#installing-on-the-camera)
 - [Versioning](#versioning)
 - [Adding recipes](#adding-recipes)
 
@@ -33,7 +35,9 @@ src/com/voxivoid/recipelab/
 jni/jni.cpp                    Backup_read / Backup_write / Backup_sync_all via OpenMemories-Platform
 jni/platform/                  git submodule: ma1co/OpenMemories-Platform
 res/                           layout, shape drawables, launcher icon
-build.cmd                      full Windows build → RecipeLab.apk (+ copy to dist/)
+build.sh                       the build: ndk-build, aapt, javac, d8, zipalign, apksigner
+build.cmd                      the same seven steps on Windows
+tools/                         version computation, bumping, and the CI gates
 ```
 
 ## Settings slots
@@ -71,6 +75,63 @@ Goes through `Camera.Parameters`: `color-mode`, `saturation`, `contrast`, `sharp
 `exposure-compensation` (1/3 EV steps), `dro-mode` + `dro-level`.
 **Key scan codes:** wheel 522 / 523, top dial 525 / 526, AEL 532, C1 622, Fn 520, trash 595, centre 232, MENU 514.
 
+## Developing on WSL
+
+This is how the machine is set up: everything except talking to the camera happens inside WSL.
+
+**Keep the repository on the Linux filesystem** — `~/code/...`, never `/mnt/c/...`. Windows
+drives are reached over the 9p protocol, where each file operation costs milliseconds instead
+of microseconds. A build does thousands of them, so the difference is seconds versus minutes,
+and every git command crawls.
+
+Where things live:
+
+| | |
+|---|---|
+| `~/toolchains/jdk17` | JDK 17 (Temurin) |
+| `~/Android/Sdk` | build-tools 30.0.3, platform-28, NDK r16b |
+| `~/.keys/recipelab-release.keystore` | the signing key, `chmod 600` |
+| `~/code/sony-pmca-re` | Sony-PMCA-RE — dumps, the updater shell, installing |
+| `~/code/a6000-dumps` | firmware and settings-store dumps |
+| `~/code/pmca-scripts` | camera helper scripts |
+
+Worth putting in `~/.bashrc`:
+
+```bash
+export JAVA_HOME=$HOME/toolchains/jdk17
+export ANDROID_SDK=$HOME/Android/Sdk
+export ANDROID_NDK=$ANDROID_SDK/ndk/16.1.4479499
+export PATH="$HOME/.local/bin:$PATH"      # gh lives here
+export BROWSER=wsl-browser                # so `gh auth login` opens Windows Firefox
+```
+
+To build with the project key instead of a throwaway one:
+
+```bash
+export ANDROID_KEYSTORE_B64="$(base64 -w0 ~/.keys/recipelab-release.keystore)"
+export ANDROID_KEYSTORE_PASSWORD=android
+export ANDROID_KEY_ALIAS=probe
+export ANDROID_KEY_PASSWORD=android
+```
+
+An APK signed with a different key **cannot be installed over an existing Recipe Lab** — the
+app has to be removed first — so use these whenever you are updating a camera that already
+has it.
+
+`npm ci` is only needed for the release tooling (semantic-release, `tools/next-version.sh`).
+No JavaScript ships in the APK.
+
+### Things that bite
+
+- **`apksigner` and `keytool` exec `java` from `PATH`**, so `JAVA_HOME` on its own is not
+  enough; `build.sh` prepends `$JAVA_HOME/bin` for exactly this. Without it, step 6 fails with
+  `exec: java: not found`.
+- **`BROWSER` is word-split**, so a path containing spaces cannot be used directly.
+  `~/.local/bin/wsl-browser` is a two-line wrapper that quotes the Windows Firefox path.
+- **`sudo` prompts for a password**, so anything needing root — usbip tools, udev rules —
+  cannot be scripted unattended.
+- **The camera is invisible from WSL.** See [Installing on the camera](#installing-on-the-camera).
+
 ## Building
 
 Toolchain, both platforms: **JDK 17**, Android SDK **build-tools 30.0.3** with a platform jar (**API 28**), and
@@ -83,15 +144,7 @@ git clone --recursive https://github.com/voxivoid/recipe-lab-sony-a6000.git
 cd recipe-lab-sony-a6000
 ```
 
-**Windows** — `build.cmd`:
-
-```
-set ANDROID_NDK=C:\path\to\android-ndk-r16b      REM optional: JAVA_HOME, ANDROID_SDK, BUILD_TOOLS, PLATFORM_JAR
-build.cmd
-```
-
-**Linux / WSL / macOS** — `build.sh`, the same seven steps and the same APK. This is what CI
-runs, and it is the supported way to build:
+**Linux / WSL / macOS** — `build.sh`. This is what CI runs and the supported way to build:
 
 ```bash
 export JAVA_HOME=$HOME/toolchains/jdk17
@@ -117,7 +170,10 @@ yes | ~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null
   "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
 ```
 
-About 3 GB installed. To sign with the project key rather than a throwaway one, set
+About 3 GB installed. `build.cmd` is the Windows equivalent and is kept in step with
+`build.sh`, but the toolchain it needs is no longer installed on this machine.
+
+To sign with the project key rather than a throwaway one, set
 `ANDROID_KEYSTORE_B64` (`base64 -w0 <keystore>`), `ANDROID_KEYSTORE_PASSWORD`,
 `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` — the same four values CI holds as secrets.
 
@@ -131,15 +187,29 @@ different key **cannot be installed over an existing one** — the camera would 
 CI therefore signs with the project key, held as the `ANDROID_KEYSTORE_B64` repo secret; set the same four
 `ANDROID_KEYSTORE_*` variables locally if you need a build that updates an existing install in place.
 
-### Installing on the camera from WSL
+### Installing on the camera
 
-WSL2 has no USB stack of its own, so the camera is not visible until the device is forwarded
-in. `~/code/pmca-scripts/setup-usb-wsl.sh` does the Linux half (usbip tools, the `054c` udev
-rule, pyusb); the Windows half is `usbipd-win`, installed once from an Administrator
-PowerShell, then `usbipd attach --wsl --busid <id>` each time the camera is plugged in.
+**Build in WSL, install from Windows.** WSL2 is a VM with no USB controller, so the camera is
+only reachable from the Windows side. Everything else — building, dumps, git, releases — is
+WSL-native.
 
-This is the one part that cannot live entirely inside WSL — forwarding a USB device requires
-a driver on the Windows side by design.
+```bash
+./build.sh                              # in the repo
+~/code/pmca-scripts/install-to-camera.sh   # copies the APK over and drives Sony-PMCA-RE
+```
+
+The camera must be on, with `Setup → USB Connection` set to **Mass Storage**. The script
+uses the Windows Python at
+`C:\Users\voxiv\AppData\Local\Programs\Python\Python311\python.exe` against the
+Sony-PMCA-RE checkout at `C:\Users\voxiv\pmca\src`; those two are the only things this
+project still needs on Windows.
+
+If you would rather install from inside WSL as well, `~/code/pmca-scripts/setup-usb-wsl.sh`
+sets up the Linux half of USB forwarding (usbip tools, the `054c` udev rule, pyusb). The
+Windows half is `usbipd-win`: `winget install dorssel.usbipd-win` once from an Administrator
+PowerShell, `usbipd bind --busid <id>` once per camera, then `usbipd.exe attach --wsl --busid
+<id>` after each replug. Forwarding a USB device needs a Windows-side driver either way —
+that part cannot be removed.
 
 ## Versioning
 
