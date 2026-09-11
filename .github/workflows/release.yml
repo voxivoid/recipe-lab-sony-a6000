@@ -28,21 +28,26 @@ jobs:
           java-version: '17'
       - name: Install the SDK packages
         run: |
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
+          # sdkmanager is not on PATH on the runner image.
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || SDKMANAGER="$(command -v sdkmanager)"
+          [ -x "$SDKMANAGER" ] || { echo "no sdkmanager under $ANDROID_SDK_ROOT" >&2; exit 1; }
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
 
       # RELEASE=1 makes tools/version.sh fail outright if the tag does not match the
       # manifest, so a tag can never ship a version it does not contain.
       - name: Build the release
         env:
           RELEASE: '1'
-          ANDROID_SDK: ${{ env.ANDROID_SDK_ROOT }}
-          ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/16.1.4479499
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./build.sh
+        run: |
+          export ANDROID_SDK="$ANDROID_SDK_ROOT"
+          export ANDROID_NDK="$ANDROID_SDK_ROOT/ndk/16.1.4479499"
+          ./build.sh
       - name: Working tree must be clean
         run: git diff --exit-code
 
