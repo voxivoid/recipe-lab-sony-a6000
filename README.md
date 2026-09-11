@@ -22,7 +22,7 @@
 - [Installing](#installing)
 - [Using it](#using-it)
 - [What it changes](#what-it-changes)
-- [Undoing it, and uninstalling](#undoing-it-and-uninstalling)
+- [Uninstalling](#uninstalling)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](docs/FAQ.md)
 - [For developers](#for-developers)
@@ -225,7 +225,7 @@ any time. The app also reopens on the recipe you last selected. It does not modi
 camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
 Sony used for its own downloadable apps.
 
-## Undoing it, and uninstalling
+## Uninstalling
 
 **Is it permanent?** The look stays until you change it — on purpose, that is what makes it work in every mode
 without the app. It is not permanent in the sense of damage. Undo it any time, three ways:

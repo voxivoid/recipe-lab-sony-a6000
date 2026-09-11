@@ -33,7 +33,7 @@ same way Sony's app store did before it closed. No firmware is replaced, nothing
 Recipe Lab then writes only values the menus can already write — Creative Style and its sliders, white balance,
 exposure bias, Picture Effect, DRO, Quality — plus one hidden colour-matrix switch the camera has but never lists.
 Any of it can be undone from the camera's own
-[`Setup → Setting Reset → Camera Settings Reset`](../README.md#undoing-it-and-uninstalling).
+[`Setup → Setting Reset → Camera Settings Reset`](../README.md#uninstalling).
 
 The honest caveat is **other bodies**. The setting IDs were reverse engineered on an A6000, and the same value can
 live in a different slot on a different model — so on an untested body a recipe could land somewhere unintended.
@@ -60,15 +60,14 @@ which ones people have confirmed, and which Sony bodies cannot run apps at all.
 If you try one, please file a
 [compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml).
 
-## My camera is newer than an A6500 — is there a version for it?
+## My camera is newer than that — is there a version for it?
 
-There cannot be. Sony dropped the on-camera app platform after 2016: every body since — A6100, A6400, A6600, A6700,
-A7 III onwards, A9, A1, the ZV and FX cameras, RX100 VA and later — has cryptographically signed firmware and no
-`MENU → Application` at all. Nothing can be installed on them, by this project or anyone else. Those cameras do have
-Picture Profiles and Creative Looks in the menus, which is the feature Recipe Lab exists to make up for.
+There cannot be. Sony's last app-capable bodies are from late 2016, the A6500 and the A99 II. Everything since —
+A6100, A6400, A6600, A6700, A7 III onwards, A9, A1, the ZV and FX cameras, RX100 VA and later — has signed firmware
+and no `MENU → Application`, so nothing can be installed on it by anyone.
 
-You may come across a report of Recipe Lab running on one of these. It cannot: check for the Application menu, and if
-it is missing, no app is installed.
+Those cameras do have Picture Profiles and Creative Looks in the menus, which is the feature Recipe Lab exists to make
+up for on the A6000.
 
 ## Can I make my own recipes and save them?
 
