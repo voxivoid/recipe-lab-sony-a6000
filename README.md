@@ -87,35 +87,35 @@ just as useful as reports that it worked.
 
 ✅ someone has run it on that body · ❔ app-capable, nobody has reported back yet
 
-| camera | model code | status |
-|---|---|---|
-| **A6000** | ILCE-6000 | ✅ built and tested on it, firmware 3.21 |
-| **A6500** | ILCE-6500 | ✅ installs, stores, survives a power cycle — but the badge reads **PROTECTED** where the A6000 says ACTIVE |
-| **A5100** | ILCE-5100 | ✅ works; the body has no **Fn** or **AEL** button, so the brand list and the clean-preview toggle are out of reach — the wheel still scrolls every recipe |
-| **A7 II** | ILCE-7M2 | ✅ reported working |
-| A6300 | ILCE-6300 | ❔ |
-| A5000 | ILCE-5000 | ❔ |
-| A7 | ILCE-7 | ❔ |
-| A7R | ILCE-7R | ❔ |
-| A7S | ILCE-7S | ❔ |
-| A7R II | ILCE-7RM2 | ❔ |
-| A7S II | ILCE-7SM2 | ❔ |
-| NEX-5R | NEX-5R | ❔ |
-| NEX-5T | NEX-5T | ❔ |
-| NEX-6 | NEX-6 | ❔ menus differ a lot from the A6000 generation |
-| A68 | ILCA-68 | ❔ |
-| A77 II | ILCA-77M2 | ❔ |
-| A99 II | ILCA-99M2 | ❔ |
-| RX100 III | DSC-RX100M3 | ❔ |
-| RX100 IV | DSC-RX100M4 | ❔ |
-| RX100 V | DSC-RX100M5 | ❔ |
-| RX1R II | DSC-RX1RM2 | ❔ |
-| RX10 II | DSC-RX10M2 | ❔ |
-| RX10 III | DSC-RX10M3 | ❔ |
-| HX60 / HX60V | DSC-HX60 | ❔ |
-| HX90 / HX90V | DSC-HX90 | ❔ |
-| HX400 / HX400V | DSC-HX400 | ❔ |
-| WX500 | DSC-WX500 | ❔ |
+| camera | model code | status | comment |
+|---|---|---|---|
+| **A6000** | ILCE-6000 | ✅ | built and tested on it, firmware 3.21 |
+| **A6500** | ILCE-6500 | ✅ | installs, stores, survives a power cycle — but the badge reads **PROTECTED** where the A6000 says ACTIVE |
+| **A5100** | ILCE-5100 | ✅ | works, and the wheel scrolls every recipe — but the body has no **Fn** or **AEL** button, so the brand list and the clean-preview toggle are out of reach |
+| **A7 II** | ILCE-7M2 | ✅ | reported working |
+| A6300 | ILCE-6300 | ❔ | same generation as the A6000; the most likely of these to behave identically |
+| A5000 | ILCE-5000 | ❔ | as with the A5100, expect no **Fn** or **AEL** button |
+| A7 | ILCE-7 | ❔ |  |
+| A7R | ILCE-7R | ❔ |  |
+| A7S | ILCE-7S | ❔ |  |
+| A7R II | ILCE-7RM2 | ❔ |  |
+| A7S II | ILCE-7SM2 | ❔ |  |
+| NEX-5R | NEX-5R | ❔ | oldest app-capable generation |
+| NEX-5T | NEX-5T | ❔ | oldest app-capable generation |
+| NEX-6 | NEX-6 | ❔ | menus differ a lot from the A6000 generation, so the settings are the least likely to sit in the same place |
+| A68 | ILCA-68 | ❔ | A-mount; not in the installer's device table either, so even the install is untested |
+| A77 II | ILCA-77M2 | ❔ | A-mount |
+| A99 II | ILCA-99M2 | ❔ | A-mount |
+| RX100 III | DSC-RX100M3 | ❔ |  |
+| RX100 IV | DSC-RX100M4 | ❔ |  |
+| RX100 V | DSC-RX100M5 | ❔ |  |
+| RX1R II | DSC-RX1RM2 | ❔ |  |
+| RX10 II | DSC-RX10M2 | ❔ |  |
+| RX10 III | DSC-RX10M3 | ❔ |  |
+| HX60 / HX60V | DSC-HX60 | ❔ | compact; no control wheel of the kind the app is driven with |
+| HX90 / HX90V | DSC-HX90 | ❔ | compact; no control wheel of the kind the app is driven with |
+| HX400 / HX400V | DSC-HX400 | ❔ | compact; no control wheel of the kind the app is driven with |
+| WX500 | DSC-WX500 | ❔ | compact; no control wheel of the kind the app is driven with |
 
 Two more with an asterisk: the **RX100 II** (DSC-RX100M2) and the original **RX10** were sold with Sony's app store,
 but neither appears in the installer's device table, so whether `Sony-PMCA-RE` can put an app on them is untested.
