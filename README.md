@@ -21,8 +21,10 @@
 - [Compatibility](#compatibility)
 - [Installing](#installing)
 - [Using it](#using-it)
-- [What it changes — and how to undo it](#what-it-changes--and-how-to-undo-it)
+- [What it changes](#what-it-changes)
+- [Undoing it, and uninstalling](#undoing-it-and-uninstalling)
 - [Troubleshooting](#troubleshooting)
+- [FAQ](docs/FAQ.md)
 - [For developers](#for-developers)
 - [Credits](#credits)
 
@@ -76,8 +78,10 @@ What nobody can promise from a build is that the *setting IDs* are the same on a
 different slot, or in none. So a camera only gets a ✅ here once someone has run the app on it, stored a recipe and
 **power-cycled** the camera — a look that disappears after a power cycle was never stored.
 
-The ✅ rows below come from people who installed it and said what happened. **Tried it?** Open an issue with the model, the firmware version and whether the look survived a power cycle, and the
-table below gets updated.
+The ✅ rows below come from people who installed it and said what happened. **Tried it on any body?** Please file a
+[compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml)
+— model, firmware, whether the look survived a power cycle — and the table gets updated. Reports that it *failed* are
+just as useful as reports that it worked.
 
 ### Cameras that run PlayMemories apps
 
@@ -145,9 +149,13 @@ Linux).
 **1. Get the installer tool.** It is called *Sony-PMCA-RE*, made by ma1co. It puts apps on Sony cameras the same way
 Sony's own app store did before it closed.
 
-- *Windows, easiest:* download `pmca-gui.exe` from the
+- *Windows:* download `pmca-gui.exe` from the
   [releases page](https://github.com/ma1co/Sony-PMCA-RE/releases). Nothing to install, just run it.
-- *Mac, Linux, or Windows without the GUI:* install Python 3, then in a terminal:
+- *macOS:* the same releases page has a macOS build of the GUI. It is less tested than the Windows one, so if it
+  misbehaves use the Python route below. Sony's own camera driver has to be present, and anything that grabs USB
+  devices in the background — Photos, Dropbox, Google Drive — has to be closed, or it will take the camera before the
+  installer can.
+- *Linux, or any platform without the binary:* Python 3 and libusb, then in a terminal:
 
   ```
   git clone https://github.com/ma1co/Sony-PMCA-RE.git
@@ -174,10 +182,22 @@ The camera screen should say *USB Mode*.
   ```
 
 The camera will flicker, go black and switch modes a couple of times on its own. That is normal — do not press
-anything. After about a minute the computer prints `Task completed successfully` and the camera is back on its
-shooting screen.
+anything. After about a minute the computer prints `Task completed successfully`.
 
-**5. Unplug.** The app now lives under `MENU → Application → Application List → Recipe Lab`.
+**Go by the computer, not by the camera.** When the installer is done the camera is usually left sitting on its own
+USB screen:
+
+```
+Application Download
+Connecting via USB...
+To change the USB connection mode, disconnect the USB cable from the computer and reconnect.
+```
+
+That looks stuck, and it is not — it is simply where the install leaves the camera. If the computer said
+`Task completed successfully`, the app is on.
+
+**5. Unplug, then turn the camera off and on.** The app now lives under
+`MENU → Application → Application List → Recipe Lab`.
 
 ## Using it
 
@@ -208,7 +228,7 @@ The small badge next to the recipe name tells you where you stand: **ACTIVE** �
 values · **PREVIEW** — you are only looking, press the centre button to keep it · **PROTECTED** — the camera is not
 accepting changes (see [Troubleshooting](#troubleshooting)).
 
-## What it changes — and how to undo it
+## What it changes
 
 **What it actually does.** Recipe Lab sets the same things you could set by hand in the menus — Creative Style with
 its contrast, saturation and sharpness sliders, white balance and its fine-tune, exposure compensation, Picture
@@ -224,6 +244,8 @@ any time. The app also reopens on the recipe you last selected. It does not modi
 camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
 Sony used for its own downloadable apps.
 
+## Undoing it, and uninstalling
+
 **Is it permanent?** The look stays until you change it — on purpose, that is what makes it work in every mode
 without the app. It is not permanent in the sense of damage. Undo it any time, three ways:
 
@@ -231,18 +253,23 @@ without the app. It is not permanent in the sense of damage. Undo it any time, t
 - In the menus: set Creative Style back to *Standard* 0 / 0 / 0 and White Balance to *Auto*.
 - Or use the camera's own `Setup → Setting Reset → Camera Settings Reset`.
 
+**Removing the app.** `MENU → Application → Application Management → Manage and Remove → Recipe Lab`. Uninstalling
+does **not** put the colour settings back — the app only ever wrote what the menus can write, and those values stay
+where they are. So undo the look first, by any of the three ways above, and remove the app after.
+
 **Worth knowing:**
 
 - Some recipes push saturation further than the menu slider goes (the menu allows ±3, the camera accepts more). The
   menu then shows the nearest value it can; if you touch that slider it snaps back to the normal range and the
   recipe loses that extra punch. Re-store from the app if that happens.
 - The preview inside the app is temporary; closing the app removes it. Only what you *stored* stays.
-- Uninstalling the app does **not** put the colour settings back. Undo first (any of the three ways above), then
-  remove it via `MENU → Application → Application Management → Manage and Remove → Recipe Lab`.
 - Built and tested on the A6000 with firmware 3.21. Other Sony bodies of the same generation probably keep these
   settings in the same place, but nobody has checked — compare what the chips show with your menus before storing.
 
 ## Troubleshooting
+
+Answers to the questions people ask most — RAW safety, whether this can damage the camera, LUTs, newer bodies — live
+in the **[FAQ](docs/FAQ.md)**.
 
 | what you see | what to do |
 |---|---|

@@ -1,0 +1,90 @@
+name: Compatibility report
+description: Tell us how Recipe Lab behaved on a camera other than the A6000
+labels: ["type: docs", "status: needs-triage"]
+title: "compat: <camera model>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Recipe Lab has no model check in it, so it installs on any body that runs PlayMemories camera apps — but the
+        settings IDs were reverse engineered on an A6000 and may sit elsewhere on your camera. This report is what
+        moves a row in the [compatibility table](https://github.com/voxivoid/recipe-lab-sony-a6000#compatibility)
+        from ❔ to ✅.
+
+        **A report that it failed is as useful as one that it worked.** Please file it either way.
+  - type: input
+    id: camera
+    attributes:
+      label: Camera body
+      placeholder: "Sony A5100 (ILCE-5100)"
+    validations: { required: true }
+  - type: input
+    id: firmware
+    attributes:
+      label: Camera firmware version
+      description: MENU → Setup → Version
+      placeholder: "3.10"
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Recipe Lab version
+      placeholder: "1.1.0 / dev"
+    validations: { required: true }
+  - type: dropdown
+    id: installed
+    attributes:
+      label: Did it install?
+      options:
+        - "Yes"
+        - "No — the installer failed"
+        - "No — the camera has no Application menu"
+    validations: { required: true }
+  - type: dropdown
+    id: stored
+    attributes:
+      label: Did storing a recipe work?
+      description: Pick a recipe, press the centre button, and see what the app says.
+      options:
+        - "Yes — the app confirmed it was stored"
+        - "No — the app reported an error"
+        - "Did not get that far"
+    validations: { required: true }
+  - type: dropdown
+    id: powercycle
+    attributes:
+      label: Did the look survive a power cycle?
+      description: Turn the camera off and on, close the app, take a picture. A look that vanishes after a power cycle was never stored — this is the question the table turns on.
+      options:
+        - "Yes — still there with the app closed"
+        - "No — it was gone"
+        - "Not tested"
+    validations: { required: true }
+  - type: dropdown
+    id: correct
+    attributes:
+      label: Did the stored settings match the recipe?
+      description: Compare the app's chips (style, saturation, contrast, WB, EV) against your camera menus after storing. A mismatch means the setting IDs differ on your body — the thing we most need to know.
+      options:
+        - "Yes — the menus show what the app showed"
+        - "No — something else changed, or a value landed in the wrong place"
+        - "Not checked"
+    validations: { required: true }
+  - type: textarea
+    id: controls
+    attributes:
+      label: Which controls were missing or behaved differently?
+      description: Some bodies have no Fn or AEL button, a different wheel, or a different menu layout. Say what you could not reach.
+      placeholder: "No Fn button, so the brand list never opened. The wheel scrolled recipes fine."
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Badge text, messages shown in the app panel (verbatim), screenshots or photos of the camera screen.
+  - type: checkboxes
+    id: ack
+    attributes:
+      label: Before you file
+      options:
+        - label: I understand this app was built and tested on an A6000, and that trying it on another body is at my own risk.
+          required: true
