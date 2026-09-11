@@ -193,7 +193,7 @@ is usually left on its own `Application Download / Connecting via USB...` screen
    works. Press again to bring the panel back.
 5. Like it? Press the **centre button**. A message confirms it was stored.
 6. **Turn the camera off and on.** Done. The look is now the camera's default in every mode — P, A, S, M, movie —
-   with the app closed.
+   with the app closed. Next time you open the app it starts on that recipe.
 
 A few extras:
 
@@ -211,19 +211,22 @@ accepting changes (see [Troubleshooting](#troubleshooting)).
 
 ## What it changes
 
-**What it actually does.** Recipe Lab sets the same things you could set by hand in the menus — Creative Style with
-its contrast, saturation and sharpness sliders, white balance and its fine-tune, exposure compensation, Picture
-Effect — plus one hidden switch that turns on a richer colour matrix the camera has but never shows. Recipes that
-use a Picture Effect (Retro, Soft High-key, High Contrast Mono) behave like that menu item does: the camera ignores
-Creative Style while it is on, and **it needs Quality = JPEG** — with RAW or RAW+JPEG set, the camera silently drops
-the effect. Quality is therefore handled like this: the **Factory recipe carries your Quality** — it starts as
-whatever the camera is set to, and if you change it there (QUALITY chip or Fn) the app remembers it. Every Creative
-Style recipe uses that same Quality. Picture Effect recipes use it too when it is a JPEG setting, otherwise they use
-JPEG Fine. Whenever storing a recipe would change the camera's Quality the app asks first (`Quality: RAW+JPG → JPG
-Fine — JPEG is needed to apply this recipe`, *Accept* / *Cancel*); Cancel stores nothing. The QUALITY chip changes it
-any time. The app also reopens on the recipe you last selected. It does not modify the
-camera's firmware or operating system and needs no unlocking or "jailbreak". Installing it uses the same mechanism
-Sony used for its own downloadable apps.
+Only camera settings you could set by hand: Creative Style and its saturation, contrast and sharpness sliders, white
+balance and its fine-tune, exposure compensation, DRO, Picture Effect — plus one hidden switch for a richer colour
+matrix the camera has but never shows. No firmware is touched, nothing is unlocked.
+
+**Picture Effect recipes** (marked **PE**) behave like the menu item does: the camera ignores Creative Style while one
+is on, and it only works with **Quality = JPEG** — set to RAW or RAW+JPEG, the camera drops the effect silently.
+
+**Quality** therefore follows you rather than being dictated by a recipe. The Factory recipe starts as whatever the
+camera is set to, and every Creative Style recipe uses that. Change it any time with the `QUALITY` chip. Only when a
+recipe needs JPEG and you are on RAW does the app ask:
+
+```
+Quality: RAW+JPG → JPG Fine — JPEG is needed to apply this recipe
+```
+
+*Cancel* stores nothing.
 
 ## Uninstalling
 
