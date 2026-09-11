@@ -18,6 +18,7 @@
 
 - [What it is](#what-it-is)
 - [The recipes](#the-recipes)
+- [Compatibility](#compatibility)
 - [Installing](#installing)
 - [Using it](#using-it)
 - [What it changes — and how to undo it](#what-it-changes--and-how-to-undo-it)
@@ -64,6 +65,77 @@ curve gets closer than Creative Style can; everything else stays Creative Style 
 Not included, because the camera simply cannot do them: log profiles (S-Log, V-Log, Blackmagic Film, Cinelike D) and
 tinted black & white (selenium, cyanotype). Sony's camcorder *Cinematone* gamma exists in the firmware but the A6000's
 camera layer neither lists nor accepts it, so that door is closed too.
+
+## Compatibility
+
+Recipe Lab has no model check in it. It reaches the camera's settings store through ma1co's OpenMemories backup
+driver, and **every Sony body that accepts PlayMemories camera apps has that same store** — so the app should install
+and run on all of them, not only the A6000.
+
+What nobody can promise from a build is that the *setting IDs* are the same on another body. A recipe could land in a
+different slot, or in none. So a camera only gets a ✅ here once someone has run the app on it, stored a recipe and
+**power-cycled** the camera — a look that disappears after a power cycle was never stored.
+
+The ✅ rows below come from people who installed it and said what happened. **Tried it?** Open an issue with the model, the firmware version and whether the look survived a power cycle, and the
+table below gets updated.
+
+### Cameras that run PlayMemories apps
+
+✅ someone has run it on that body · ❔ app-capable, nobody has reported back yet
+
+| camera | model code | status |
+|---|---|---|
+| **A6000** | ILCE-6000 | ✅ built and tested on it, firmware 3.21 |
+| **A6500** | ILCE-6500 | ✅ installs, stores, survives a power cycle — but the badge reads **PROTECTED** where the A6000 says ACTIVE |
+| **A5100** | ILCE-5100 | ✅ works; the body has no **Fn** or **AEL** button, so the brand list and the clean-preview toggle are out of reach — the wheel still scrolls every recipe |
+| **A7 II** | ILCE-7M2 | ✅ reported working |
+| A6300 | ILCE-6300 | ❔ |
+| A5000 | ILCE-5000 | ❔ |
+| A7 | ILCE-7 | ❔ |
+| A7R | ILCE-7R | ❔ |
+| A7S | ILCE-7S | ❔ |
+| A7R II | ILCE-7RM2 | ❔ |
+| A7S II | ILCE-7SM2 | ❔ |
+| NEX-5R | NEX-5R | ❔ |
+| NEX-5T | NEX-5T | ❔ |
+| NEX-6 | NEX-6 | ❔ menus differ a lot from the A6000 generation |
+| A68 | ILCA-68 | ❔ |
+| A77 II | ILCA-77M2 | ❔ |
+| A99 II | ILCA-99M2 | ❔ |
+| RX100 III | DSC-RX100M3 | ❔ |
+| RX100 IV | DSC-RX100M4 | ❔ |
+| RX100 V | DSC-RX100M5 | ❔ |
+| RX1R II | DSC-RX1RM2 | ❔ |
+| RX10 II | DSC-RX10M2 | ❔ |
+| RX10 III | DSC-RX10M3 | ❔ |
+| HX60 / HX60V | DSC-HX60 | ❔ |
+| HX90 / HX90V | DSC-HX90 | ❔ |
+| HX400 / HX400V | DSC-HX400 | ❔ |
+| WX500 | DSC-WX500 | ❔ |
+
+Two more with an asterisk: the **RX100 II** (DSC-RX100M2) and the original **RX10** were sold with Sony's app store,
+but neither appears in the installer's device table, so whether `Sony-PMCA-RE` can put an app on them is untested.
+
+App-capable, but **not** Recipe Lab targets: the QX lens-style cameras (ILCE-QX1, DSC-QX10/QX30/QX100) have no screen
+or control wheel to drive the app with, and the Handycam camcorders (FDR-AX…, HDR-CX/PJ…) and action cams
+(FDR-X…, HDR-AS…) have no Creative Style to write. The app may install; there is nothing useful behind it.
+
+### Cameras that cannot run camera apps at all
+
+Everything Sony has released since the A6500 (late 2016). Their firmware is cryptographically signed, so no app can be
+installed on them by any means — not this one, not Sony's own store, which closed in 2021. There is no workaround and
+none is coming.
+
+| | |
+|---|---|
+| **E-mount, APS-C** | A6100, A6400, A6600, A6700, ZV-E10, ZV-E10 II, FX30 |
+| **E-mount, full frame** | A7 III, A7R III, A7R IV / IVA, A7R V, A7S III, A7C, A7C II, A7CR, A9, A9 II, A9 III, A1, A1 II, ZV-E1, FX3 |
+| **Cyber-shot** | RX100 VA, RX100 VI, RX100 VII, RX10 IV, RX0, RX0 II, HX99, ZV-1, ZV-1F, ZV-1 II |
+
+…and every model launched after those. If your camera is newer than an A6500, it cannot run Recipe Lab.
+
+You may come across a report that it runs on one of these anyway. It cannot: these bodies have no `MENU →
+Application` at all. If that menu is missing on your camera, nothing can be installed on it.
 
 ## Installing
 
