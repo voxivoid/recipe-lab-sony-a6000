@@ -1,5 +1,5 @@
 name: Compatibility report
-description: Tell us how Recipe Lab behaved on a camera other than the A6000
+description: Tell us how Recipe Lab behaved on your PlayMemories camera
 labels: ["type: docs", "status: needs-triage"]
 title: "compat: <camera model>"
 body:
@@ -9,7 +9,7 @@ body:
         Recipe Lab has no model check in it, so it installs on any body that runs PlayMemories camera apps — but the
         settings IDs were reverse engineered on an A6000 and may sit elsewhere on your camera. This report is what
         moves a row in the [compatibility table](https://github.com/voxivoid/recipe-lab-sony-a6000#compatibility)
-        from ❔ to ✅.
+        from ❔ to ✅, or adds a body the table does not list yet.
 
         **A report that it failed is as useful as one that it worked.** Please file it either way.
   - type: input

@@ -2,12 +2,20 @@ name: Bug report
 description: Something in the app misbehaves on the camera
 labels: ["type: fix", "status: needs-triage"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Recipe Lab runs on any Sony body that takes PlayMemories camera apps. It was developed on an **A6000**, and
+        the settings IDs come from that body — so on another camera a wrong value or a missing control is expected
+        rather than a bug. If that is what you are seeing, the
+        [compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml)
+        is the better form.
   - type: input
     id: camera
     attributes:
       label: Camera body
-      description: The app is built for the A6000, but other PMCA bodies turn up.
-      value: Sony A6000
+      description: Model name and code, if you know it.
+      placeholder: "Sony A6000 (ILCE-6000)"
     validations: { required: true }
   - type: input
     id: firmware

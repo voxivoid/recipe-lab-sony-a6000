@@ -2,6 +2,12 @@ name: Feature request
 description: Suggest a change to the app itself
 labels: ["type: feat", "status: needs-triage"]
 body:
+  - type: input
+    id: camera
+    attributes:
+      label: Which camera do you use?
+      description: Optional, but it matters — controls and settings differ across PlayMemories bodies.
+      placeholder: "Sony A5100 (ILCE-5100)"
   - type: textarea
     id: problem
     attributes:
@@ -12,11 +18,14 @@ body:
     id: proposal
     attributes:
       label: What should it do instead?
-      description: If it involves camera controls, say which key or dial — the app only has the wheel, top dial, centre, Fn, C1, AEL, trash and MENU.
+      description: >
+        If it involves camera controls, say which key or dial. On an A6000 the app has the wheel, top dial, four-way,
+        centre, Fn, C1, AEL, trash and MENU — but not every PlayMemories body has all of those (an A5100 has no Fn and
+        no AEL), so anything that hangs off one of those keys needs a route that works without it.
     validations: { required: true }
   - type: dropdown
     id: scope
     attributes:
       label: Which part of the app?
-      options: [ui, input, browser, recipes, tools, build, "not sure"]
+      options: [ui, input, browser, recipes, tools, build, "other camera bodies", "not sure"]
     validations: { required: true }
