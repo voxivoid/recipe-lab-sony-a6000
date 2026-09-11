@@ -1,10 +1,10 @@
 name: ci
 
+# Pull requests only. A push trigger would double every job for any branch that has
+# an open PR, since both events match the same commit.
 on:
   pull_request:
     branches: [development, main]
-  push:
-    branches-ignore: [development, main]
 
 permissions:
   contents: read
@@ -22,12 +22,10 @@ jobs:
           fetch-depth: 0
       # The PR title is what becomes the commit on a squash merge, so it is the thing that matters.
       - name: Check PR title
-        if: github.event_name == 'pull_request'
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: ./tools/check-commit-msg.sh "$PR_TITLE"
       - name: Check commit subjects
-        if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: ./tools/check-commit-msg.sh --range "$BASE_SHA..HEAD"
