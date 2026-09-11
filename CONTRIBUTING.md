@@ -108,9 +108,10 @@ Never commit an APK or a keystore. Both are gitignored; releases carry the binar
 
 ## Releases
 
-See **[docs/RELEASING.md](docs/RELEASING.md)**. Short version: PR `development` → `main` as a merge commit,
-tag `vX.Y.Z`, then fast-forward `development` back onto `main` and open the next cycle with
-`tools/bump-version.sh`.
+**Actions → cut-release → Run workflow.** It merges `development` into `main` as a merge commit, tags
+`vX.Y.Z`, publishes the release, fast-forwards `development` back and can open the next cycle. The version
+comes from `AndroidManifest.xml`, so bump that on `development` first if the target changed.
+Details and the by-hand fallback: **[docs/RELEASING.md](docs/RELEASING.md)**.
 
 Handy aliases:
 

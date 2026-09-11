@@ -60,5 +60,6 @@ never stored. Say so plainly rather than implying a green build means the change
 
 ## Releasing
 
-`development` → `main` as a **merge commit** (never squash), tag `vX.Y.Z`, then
-`git switch development && git merge --ff-only main`. Full checklist in [docs/RELEASING.md](docs/RELEASING.md).
+Run the **cut-release** workflow (`gh workflow run cut-release.yml -f next_version=X.Y.Z`). Do not merge
+`development` into `main` by hand unless that workflow is broken — and never squash it if you do.
+Full runbook in [docs/RELEASING.md](docs/RELEASING.md).

@@ -1,8 +1,38 @@
 # Releasing
 
-A release is a merge of `development` into `main` plus a tag. Everything else is automated.
+A release is a merge of `development` into `main` plus a tag. One button does all of it.
 
-## Checklist
+## The button
+
+**Actions → cut-release → Run workflow**, or:
+
+```bash
+gh workflow run cut-release.yml -f next_version=1.2.0
+```
+
+| input | meaning |
+|---|---|
+| `version` | Optional. A confirmation — it must match `AndroidManifest.xml`, which decides. |
+| `next_version` | Optional. Bumps `development` to the next cycle once the release is out. |
+| `allow_failing_checks` | Release even though the last `development` build failed. |
+
+It refuses to run if the manifest is inconsistent, the tag already exists, `development`
+has nothing `main` lacks, or the last development build failed. Then it merges
+`development` into `main` with a **merge commit**, tags `vX.Y.Z`, builds and publishes the
+release, fast-forwards `development` back onto `main`, and optionally opens the next cycle.
+
+> The version comes from `AndroidManifest.xml`. If the cycle ended on a different number
+> than planned, run `tools/bump-version.sh X.Y.Z` on `development` and merge that first.
+
+**Still verify on a camera.** A green build says it compiles. Install the published APK
+over the previous version — it must succeed *without uninstalling*, which is what proves
+the signing key is unchanged.
+
+## Doing it by hand
+
+If the workflow is broken, or you want to drive it yourself:
+
+### Checklist
 
 1. **Decide the version.** `AndroidManifest.xml` already holds it — the manifest carries the *next target
    release* for the whole cycle. If the cycle turned out bigger or smaller than planned, change it now:

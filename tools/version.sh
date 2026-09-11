@@ -26,8 +26,11 @@ IFS=. read -r MAJOR MINOR PATCH <<<"$VERSION_BASE"
 
 if [ "${RELEASE:-0}" = "1" ]; then
   # A release tag must match the manifest, or the tag is lying about what it contains.
-  if [ -n "${GITHUB_REF_NAME:-}" ] && [ "$GITHUB_REF_NAME" != "v$VERSION_BASE" ]; then
-    echo "version.sh: tag '$GITHUB_REF_NAME' does not match manifest version 'v$VERSION_BASE'" >&2
+  # RELEASE_TAG lets a reusable-workflow caller name the tag; on a tag push the runner
+  # supplies GITHUB_REF_NAME.
+  TAG="${RELEASE_TAG:-${GITHUB_REF_NAME:-}}"
+  if [ -n "$TAG" ] && [ "$TAG" != "v$VERSION_BASE" ]; then
+    echo "version.sh: tag '$TAG' does not match manifest version 'v$VERSION_BASE'" >&2
     exit 1
   fi
   DEV_COUNT=0
