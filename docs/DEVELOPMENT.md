@@ -90,14 +90,36 @@ set ANDROID_NDK=C:\path\to\android-ndk-r16b      REM optional: JAVA_HOME, ANDROI
 build.cmd
 ```
 
-**Linux / WSL / macOS** — `build.sh`, the same seven steps and the same APK. This is what CI runs:
+**Linux / WSL / macOS** — `build.sh`, the same seven steps and the same APK. This is what CI
+runs, and it is the supported way to build:
 
 ```bash
+export JAVA_HOME=$HOME/toolchains/jdk17
 export ANDROID_SDK=$HOME/Android/Sdk
 export ANDROID_NDK=$ANDROID_SDK/ndk/16.1.4479499
 ./build.sh                 # X.Y.Z-dev.N
 RELEASE=1 ./build.sh       # X.Y.Z — the tag must match the manifest
 ```
+
+Setting the toolchain up from nothing, no root required:
+
+```bash
+# JDK 17
+curl -sL -o jdk.tar.gz "https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jdk/hotspot/normal/eclipse"
+mkdir -p ~/toolchains/jdk17 && tar xzf jdk.tar.gz -C ~/toolchains/jdk17 --strip-components=1
+
+# Android cmdline-tools, then the three packages
+curl -sL -o cmdline.zip "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+mkdir -p ~/Android/Sdk/cmdline-tools && unzip -q cmdline.zip -d /tmp/ct
+mv /tmp/ct/cmdline-tools ~/Android/Sdk/cmdline-tools/latest
+yes | ~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null
+~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager \
+  "build-tools;30.0.3" "platforms;android-28" "ndk;16.1.4479499"
+```
+
+About 3 GB installed. To sign with the project key rather than a throwaway one, set
+`ANDROID_KEYSTORE_B64` (`base64 -w0 <keystore>`), `ANDROID_KEYSTORE_PASSWORD`,
+`ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` — the same four values CI holds as secrets.
 
 Both scripts park the platform's `errno.h` shim (updater-only, it shadows the NDK header), then run ndk-build,
 aapt, javac (`-encoding UTF-8`), d8 (invoked as `java -cp d8.jar`, because `d8.bat` uses whatever Java is on
@@ -109,8 +131,15 @@ different key **cannot be installed over an existing one** — the camera would 
 CI therefore signs with the project key, held as the `ANDROID_KEYSTORE_B64` repo secret; set the same four
 `ANDROID_KEYSTORE_*` variables locally if you need a build that updates an existing install in place.
 
-> There is a second, hand-synced copy of this repo at `C:\Users\voxiv\pmca\apps\RecipeLab\` — that is where
-> `build.cmd` historically ran. Treat it as build output only; edit the git checkout.
+### Installing on the camera from WSL
+
+WSL2 has no USB stack of its own, so the camera is not visible until the device is forwarded
+in. `~/code/pmca-scripts/setup-usb-wsl.sh` does the Linux half (usbip tools, the `054c` udev
+rule, pyusb); the Windows half is `usbipd-win`, installed once from an Administrator
+PowerShell, then `usbipd attach --wsl --busid <id>` each time the camera is plugged in.
+
+This is the one part that cannot live entirely inside WSL — forwarding a USB device requires
+a driver on the Windows side by design.
 
 ## Versioning
 

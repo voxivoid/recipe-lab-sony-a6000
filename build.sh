@@ -22,6 +22,9 @@ ROOT="$PWD"
 : "${PLATFORM_JAR:=$ANDROID_SDK/platforms/android-28/android.jar}"
 BT="$ANDROID_SDK/build-tools/$BUILD_TOOLS"
 if [ -n "${JAVA_HOME:-}" ]; then JAVA="$JAVA_HOME/bin"; else JAVA="$(dirname "$(command -v javac)")"; fi
+# apksigner and keytool are shell wrappers that exec `java` from PATH, so JAVA_HOME on its
+# own is not enough. CI does not hit this because setup-java also puts java on PATH.
+export PATH="$JAVA:$PATH"
 AJ="$PLATFORM_JAR"
 
 for f in "$AJ" "$BT/aapt" "$BT/zipalign" "$BT/apksigner" "$BT/lib/d8.jar" "$ANDROID_NDK/ndk-build"; do
