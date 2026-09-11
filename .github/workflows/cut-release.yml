@@ -141,3 +141,12 @@ jobs:
           ./tools/bump-version.sh "$NEXT"
           git commit -am "chore(release): open $NEXT development cycle"
           git push origin development
+
+  # The pushes above were made with GITHUB_TOKEN, which does not start a workflow run,
+  # so dev-build's push trigger never fires for them. Call it directly, or the rolling
+  # `dev` prerelease would sit on the pre-release build until the next human push.
+  refresh-dev-prerelease:
+    needs: [cut, release, open-next-cycle]
+    if: ${{ always() && needs.cut.result == 'success' && needs.release.result == 'success' && needs.open-next-cycle.result != 'failure' }}
+    uses: ./.github/workflows/dev-build.yml
+    secrets: inherit

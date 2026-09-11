@@ -3,6 +3,10 @@ name: dev-build
 on:
   push:
     branches: [development]
+  # cut-release calls this after it bumps development. A push made with GITHUB_TOKEN
+  # does not start a workflow run, so the trigger above never fires for it.
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -20,6 +24,7 @@ jobs:
           # Not recursive: OpenMemories-Platform pins an stlport submodule whose SourceForge
           # repo is gone, and it is only used by the updater build. APP_STL := stlport_static
           # resolves to the NDK's own bundled STLport.
+          ref: development
           submodules: true
           fetch-depth: 0
           fetch-tags: true
@@ -55,15 +60,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           . tools/version.sh
+          SHA="$(git rev-parse HEAD)"
           cp RecipeLab.apk "RecipeLab-$VERSION_NAME.apk"
           cp RecipeLab.apk RecipeLab-dev.apk
           sha256sum RecipeLab-dev.apk > RecipeLab-dev.apk.sha256
           gh release delete dev --yes --cleanup-tag || true
           gh release create dev \
             --prerelease \
-            --target "$GITHUB_SHA" \
+            --target "$SHA" \
             --title "development ($VERSION_NAME)" \
-            --notes "Automatic build of \`development\` @ \`${GITHUB_SHA::7}\`.
+            --notes "Automatic build of \`development\` @ \`${SHA::7}\`.
 
           Not a release — see [Releases](https://github.com/${GITHUB_REPOSITORY}/releases) for stable builds.
           \`RecipeLab-dev.apk\` always points at the newest development build." \
