@@ -75,6 +75,9 @@ since issues and PRs share a number space.
 
 ## Pull requests
 
+Working in Claude Code? `/commit-and-pr` walks the whole flow below — branch, gates, commit
+message, push, PR — and stops before merging.
+
 **The PR title becomes the commit message — and the release.** A squash merge leaves only the title, so it
 is the string semantic-release reads to decide the next version. A PR titled `chore:` releases nothing
 however large its diff; `fix:` makes a patch, `feat:` a minor, `!` a major. The `pr-title` check exists for
