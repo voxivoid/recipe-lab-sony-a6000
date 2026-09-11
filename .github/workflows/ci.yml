@@ -28,7 +28,9 @@ jobs:
         run: ./tools/check-commit-msg.sh "$PR_TITLE"
       - name: Check commit subjects
         if: github.event_name == 'pull_request'
-        run: ./tools/check-commit-msg.sh --range "origin/${{ github.base_ref }}..HEAD"
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: ./tools/check-commit-msg.sh --range "$BASE_SHA..HEAD"
 
   version-consistency:
     runs-on: ubuntu-latest
