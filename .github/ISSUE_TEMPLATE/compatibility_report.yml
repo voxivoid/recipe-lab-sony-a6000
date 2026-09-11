@@ -8,7 +8,7 @@ body:
       value: |
         Recipe Lab has no model check in it, so it installs on any body that runs PlayMemories camera apps — but the
         settings IDs were reverse engineered on an A6000 and may sit elsewhere on your camera. This report is what
-        moves a row in the [compatibility table](https://github.com/voxivoid/recipe-lab-sony-a6000#compatibility)
+        moves a row in the [compatibility table](https://github.com/voxivoid/recipe-lab-sony-pmca#compatibility)
         from ❔ to ✅, or adds a body the table does not list yet.
 
         **A report that it failed is as useful as one that it worked.** Please file it either way.

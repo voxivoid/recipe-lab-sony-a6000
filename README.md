@@ -7,8 +7,8 @@
 <p align="center">
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
   <sub>
-    <img src="https://img.shields.io/github/v/release/voxivoid/recipe-lab-sony-a6000?label=version" alt="version"> ·
-    <a href="https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk">Download the app</a>
+    <img src="https://img.shields.io/github/v/release/voxivoid/recipe-lab-sony-pmca?label=version" alt="version"> ·
+    <a href="https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk">Download the app</a>
   </sub>
 </p>
 
@@ -77,7 +77,7 @@ The catch: the setting IDs were found on an A6000 and may sit elsewhere on anoth
 wrong place. A camera gets a ✅ only once someone has stored a recipe on it and power-cycled the camera.
 
 Tried one? File a
-[compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml).
+[compatibility report](https://github.com/voxivoid/recipe-lab-sony-pmca/issues/new?template=compatibility_report.yml).
 Failures are as useful as successes.
 
 ### Cameras that run PlayMemories apps
@@ -155,9 +155,9 @@ Sony's own app store did before it closed.
   pip install -r requirements.txt
   ```
 
-**2. Download the app:** [`RecipeLab.apk`](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest/download/RecipeLab.apk)
+**2. Download the app:** [`RecipeLab.apk`](https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk)
 — that link always serves the newest release, so it is the one to use. The
-[releases page](https://github.com/voxivoid/recipe-lab-sony-a6000/releases) has older versions and the
+[releases page](https://github.com/voxivoid/recipe-lab-sony-pmca/releases) has older versions and the
 version-stamped copies.
 
 **3. Prepare the camera.** Battery charged, memory card inside. In the camera menu go to
@@ -263,7 +263,7 @@ The common questions — RAW files, damage, LUTs, newer bodies — are in the **
 | Badge says **PROTECTED** | The camera's settings store is write-protected. Install [OpenMemories-Tweak](https://github.com/ma1co/OpenMemories-Tweak), turn off *Backup protection*, try again |
 | Look not applied after storing | Turn the camera off and on |
 | `no live preview: ...` in the panel | Something else is holding the camera; close and reopen the app |
-| Text shows `Â·` | Old build; install the APK from the [latest release](https://github.com/voxivoid/recipe-lab-sony-a6000/releases/latest) |
+| Text shows `Â·` | Old build; install the APK from the [latest release](https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest) |
 
 ## For developers
 

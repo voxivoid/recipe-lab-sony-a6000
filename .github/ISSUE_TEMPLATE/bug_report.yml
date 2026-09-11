@@ -8,7 +8,7 @@ body:
         Recipe Lab runs on any Sony body that takes PlayMemories camera apps. It was developed on an **A6000**, and
         the settings IDs come from that body — so on another camera a wrong value or a missing control is expected
         rather than a bug. If that is what you are seeing, the
-        [compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml)
+        [compatibility report](https://github.com/voxivoid/recipe-lab-sony-pmca/issues/new?template=compatibility_report.yml)
         is the better form.
   - type: input
     id: camera

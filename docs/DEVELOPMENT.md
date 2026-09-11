@@ -156,8 +156,8 @@ Toolchain, both platforms: **JDK 17**, Android SDK **build-tools 30.0.3** with a
 that combination is what rules out every later NDK.
 
 ```
-git clone --recursive https://github.com/voxivoid/recipe-lab-sony-a6000.git
-cd recipe-lab-sony-a6000
+git clone --recursive https://github.com/voxivoid/recipe-lab-sony-pmca.git
+cd recipe-lab-sony-pmca
 ```
 
 **Linux / WSL / macOS** — `build.sh`. This is what CI runs and the supported way to build:

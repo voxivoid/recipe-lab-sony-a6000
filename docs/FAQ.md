@@ -58,7 +58,7 @@ open question, body by body — see [Compatibility](../README.md#compatibility),
 which ones people have confirmed, and which Sony bodies cannot run apps at all.
 
 If you try one, please file a
-[compatibility report](https://github.com/voxivoid/recipe-lab-sony-a6000/issues/new?template=compatibility_report.yml).
+[compatibility report](https://github.com/voxivoid/recipe-lab-sony-pmca/issues/new?template=compatibility_report.yml).
 
 ## My camera is newer than that — is there a version for it?
 
@@ -112,4 +112,4 @@ write.
 
 The [Troubleshooting table](../README.md#troubleshooting) covers the common ones. Install and USB problems belong to
 [Sony-PMCA-RE](https://github.com/ma1co/Sony-PMCA-RE/issues), which is what puts apps on the camera; anything about
-the recipes or the app itself belongs [here](https://github.com/voxivoid/recipe-lab-sony-a6000/issues).
+the recipes or the app itself belongs [here](https://github.com/voxivoid/recipe-lab-sony-pmca/issues).
