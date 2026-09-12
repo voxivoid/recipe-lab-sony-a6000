@@ -8,9 +8,14 @@
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
   <sub>
     <img src="https://img.shields.io/github/v/release/voxivoid/recipe-lab-sony-pmca?label=version" alt="version"> ·
-    <a href="https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk">Download the app</a><br>
-    <a href="https://github.com/sponsors/voxivoid">Sponsor this project</a>
+    <a href="https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk">Download the app</a>
   </sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/sponsors/voxivoid"><img
+    src="https://img.shields.io/badge/Sponsor_this_project-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge"
+    alt="Sponsor this project"></a>
 </p>
 
 <p align="center">
