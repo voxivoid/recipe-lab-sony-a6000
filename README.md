@@ -277,6 +277,8 @@ release flow are all enforced by CI.
 
 **Author:** [André Domingues (voxivoid)](https://github.com/voxivoid) — reverse engineering of the A6000 settings
 store (backup IDs, PP flag behaviour, colour-matrix measurement), the app, the recipes, the icon.
+The app is free and stays that way; if it earned you another year with the camera you already own, you can
+[sponsor the work](https://github.com/sponsors/voxivoid).
 
 **Huge thanks to [ma1co](https://github.com/ma1co).** None of this would exist without his years of work reverse
 engineering Sony's PlayMemories camera platform:
