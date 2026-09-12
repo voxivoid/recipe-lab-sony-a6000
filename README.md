@@ -8,7 +8,15 @@
   Film simulations and camera looks for the <b>Sony A6000</b>, stored in the camera itself.<br>
   <sub>
     <img src="https://img.shields.io/github/v/release/voxivoid/recipe-lab-sony-pmca?label=version" alt="version"> ·
-    <a href="https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk">Download the app</a>
+    <a href="https://github.com/voxivoid/recipe-lab-sony-pmca/releases/latest/download/RecipeLab.apk">Download the app</a><br>
+    <a href="https://github.com/sponsors/voxivoid">Sponsor this project</a>
+  </sub>
+</p>
+
+<p align="center">
+  <sub>
+    The app is free and stays free. Sponsoring pays for keeping it maintained, for building new features, and for
+    buying the cameras it has to be tested on — every body beyond the A6000 is one someone has to own.
   </sub>
 </p>
 
@@ -277,8 +285,6 @@ release flow are all enforced by CI.
 
 **Author:** [André Domingues (voxivoid)](https://github.com/voxivoid) — reverse engineering of the A6000 settings
 store (backup IDs, PP flag behaviour, colour-matrix measurement), the app, the recipes, the icon.
-The app is free and stays that way; if it earned you another year with the camera you already own, you can
-[sponsor the work](https://github.com/sponsors/voxivoid).
 
 **Huge thanks to [ma1co](https://github.com/ma1co).** None of this would exist without his years of work reverse
 engineering Sony's PlayMemories camera platform:
